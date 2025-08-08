@@ -1,4 +1,4 @@
-# squidwardyell
+# piu-tourney-maker
 Pump It Up Tournament Builder/Leaderboard Web App
 
 ## Tech Stack
@@ -9,7 +9,7 @@ Pump It Up Tournament Builder/Leaderboard Web App
 - **Prerequisite:** Install [Node.js](https://nodejs.org/)
 - Clone this repository:
   ```bash
-  git clone https://github.com/jaekim019/squidwardyell
+  git clone https://github.com/AlanCooper509/piu-tourney-maker
   ```
 - Install dependencies:
   ```bash
