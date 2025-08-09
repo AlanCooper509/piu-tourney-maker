@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Leaderboard from './pages/Leaderboard.tsx'
+import DatabaseTest from './pages/DatabaseTest.tsx'
 import './App.css'
 
 function App() {
@@ -7,12 +8,14 @@ function App() {
     <BrowserRouter>
       <nav style={{ padding: '1rem' }}>
         <Link to="/" style={{ marginRight: '1rem' }}>Home</Link>
-        <Link to="/tournament/1234/round/1234/leaderboard">Leaderboard</Link>
+        <Link to="/tournament/1234/round/1234/leaderboard" style={{ marginRight: '1rem' }}>Leaderboard</Link>
+        <Link to="/database-test">Database Test</Link>
       </nav>
 
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/tournament/:tournamentId/round/:roundId/leaderboard" element={<Leaderboard />} />
+        <Route path="/database-test" element={<DatabaseTest />} />
       </Routes>
     </BrowserRouter>
   );
