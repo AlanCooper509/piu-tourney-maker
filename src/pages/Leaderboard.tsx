@@ -17,12 +17,12 @@ const sortedEntries = [...entries]
   }));
 
 function Leaderboard() {
-  const { tournamentId, roundId } = useParams();
+  const { tourneyId, roundId } = useParams();
 
   return (
     <>
       <Heading size="2xl">Leaderboard</Heading>
-      <Heading size="lg" mb="6">(Tournament Name for {tournamentId}) | (Round Name for {roundId})</Heading>
+      <Heading size="lg" mb="6">(Tournament Name for {tourneyId}) | (Round Name for {roundId})</Heading>
       <Table.Root size="lg" variant="outline" stickyHeader>
         <Table.ColumnGroup>
           <Table.Column htmlWidth="5%" />
