@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import Home from './pages/Home.tsx'
-import TourneyPage from './pages/Tourney.tsx'
-import Leaderboard from './pages/Leaderboard.tsx'
+import HomePage from './pages/HomePage.tsx'
+import TourneyPage from './pages/TourneyPage.tsx'
+import LeaderboardPage from './pages/LeaderboardPage.tsx'
 import './App.css'
 
 function App() {
@@ -14,9 +14,9 @@ function App() {
       </nav>
 
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/tourney/:tourneyId" element={<TourneyPage />} />
-        <Route path="/tourney/:tourneyId/round/:roundId/leaderboard" element={<Leaderboard />} />
+        <Route path="/tourney/:tourneyId/round/:roundId/leaderboard" element={<LeaderboardPage />} />
       </Routes>
     </BrowserRouter>
   );

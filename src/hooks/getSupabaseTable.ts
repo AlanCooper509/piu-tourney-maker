@@ -3,28 +3,27 @@ import { supabaseClient } from '../lib/supabaseClient';
 
 function getSupabaseTable<T>(tableName: string, filter?: { column: string; value: any }) {
   const [data, setData] = useState<T[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetchTable = async () => {
-        setLoading(true);
+      setLoading(true);
 
-        let query = supabaseClient.from(tableName).select('*');
-        if (filter && filter.column && filter.value !== undefined) {
-            query = query.eq(filter.column, filter.value);
-        }
-        const { data, error } = await query;
+      let query = supabaseClient.from(tableName).select('*');
+      if (filter && filter.column && filter.value !== undefined) {
+        query = query.eq(filter.column, filter.value);
+      }
+      const { data, error } = await query;
 
-        if (error) {
+      if (error) {
         console.error(`Error fetching ${tableName}:`, error);
         setError(error);
-        } else {
+      } else {
         setData(data);
-        }
-        setLoading(false);
+      }
+      setLoading(false);
     };
-
     fetchTable();
   }, [tableName]);
 
