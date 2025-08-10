@@ -1,4 +1,4 @@
-import { Box, Heading, Text, HStack, Span, Separator } from '@chakra-ui/react';
+import { Box, Heading, Text, HStack, Span, Separator, Button } from '@chakra-ui/react';
 
 import { handleAssignRandomChartToStage } from '../../handlers/handleAssignRandomChartToStage';
 import { toaster } from '../ui/toaster';
@@ -13,6 +13,8 @@ import DeleteStageButton from '../stages/DeleteStageButton';
 import type { Round } from '../../types/Round';
 import type { Stage } from '../../types/Stage';
 import type { ChartQuery } from '../../types/ChartQuery';
+import { useNavigate } from 'react-router-dom';
+import { IoArrowForward } from 'react-icons/io5';
 
 interface StageListProps {
   round: Round | null;
@@ -25,6 +27,7 @@ interface StageListProps {
 }
 
 export function StagesList({ round, stages, setStages, loading, error, admin, loadingAdmin }: StageListProps) {
+  const navigate = useNavigate();
   async function onRollChart(stageId: number) {
     const updatedStage = await handleAssignRandomChartToStage(stageId);
     if (!updatedStage) return;
@@ -39,6 +42,10 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
       type: "success",
       closable: true,
     });
+  }
+
+  async function onPlayAnimation(stageId: number) {
+    await navigate(`/tourney/${round?.tourney_id}/round/${round?.id}/stage/${stageId}/roll`);
   }
 
   async function onAddChartToPool(
@@ -58,11 +65,11 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
         prevStages?.map(stage =>
           stage.id === stageId
             ? {
-                ...stage,
-                chart_pools: stage.chart_pools
-                  ? [...stage.chart_pools, insertedPool]
-                  : [insertedPool],
-              }
+              ...stage,
+              chart_pools: stage.chart_pools
+                ? [...stage.chart_pools, insertedPool]
+                : [insertedPool],
+            }
             : stage
         ) || []
       );
@@ -97,16 +104,16 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
       {loading && <Text>Loading stages...</Text>}
       {error && <Text color="red">Error: {error.message}</Text>}
       {!loading && !error && sortedStages?.length ? (
-        sortedStages.map((stage) => { 
+        sortedStages.map((stage) => {
           return (
-            <Box key={stage.id} mb={2} p={2} background="gray.800" borderWidth="2px" borderRadius="md" borderColor="gray.600">
+            <Box key={stage.id} mb={2} p={2} background="gray.900" borderWidth="2px" borderRadius="md" borderColor="gray.800">
               <HStack justifyContent={"center"} alignItems="center">
                 {/* Stage Header */}
                 <Text fontWeight="bold">
                   Selected: {stage.charts?.name_en ?? <><Span fontWeight="normal">: ???</Span></>} {stage.charts?.type?.charAt(0) ?? ""}{stage.charts?.level ?? ""}
                 </Text>
                 {/* Delete Stage Button */}
-                {!loadingAdmin && admin && 
+                {!loadingAdmin && admin &&
                   <DeleteStageButton round={round} stageId={stage.id} setStages={setStages} />
                 }
               </HStack>
@@ -115,8 +122,15 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
               {!loadingAdmin && admin && !stage.chart_id && stage.chart_pools && stage.chart_pools.length !== 0 && (
                 <RollChartButton stageId={stage.id} onClick={onRollChart} />
               )}
+              {!loadingAdmin && admin && stage.chart_id && stage.chart_pools && stage.chart_pools.length !== 0 && stage.charts && (
+                <Button colorPalette="purple" onClick={() => onPlayAnimation(stage.id)}>
+                  Open Animation
+                  <IoArrowForward />
+                </Button>
+              )
+              }
 
-              <Separator size="lg" borderColor="gray.700" borderWidth="1px" mt={2} />
+              <Separator size="lg" borderColor="gray.800" borderWidth="1px" mt={2} />
 
               {/* Add Chart Form */}
               {!loadingAdmin && admin && (
