@@ -1,6 +1,6 @@
 import { Box, Button, Input, Stack, Text } from '@chakra-ui/react';
-
 import { useState } from 'react';
+
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginForm() {
@@ -21,6 +21,8 @@ export default function LoginForm() {
     setLoading(false);
   };
 
+  // TODO: Add error if email is already in use
+  // TODO: else, output message that sent an email
   const handleSignUp = async () => {
     setErrorMsg('');
     setLoading(true);
@@ -43,62 +45,73 @@ export default function LoginForm() {
     setLoading(false);
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSignIn();
+  };
+
   return (
     <Box maxW="sm" mx="auto" p={4} borderWidth={1} borderRadius="md">
-      <Stack gap={3}>
-        {!user && (
-          <>
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-            />
+      <form onSubmit={handleSubmit}>
+        <Stack gap={3}>
+          {!user && (
+            <>
+              <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                required
+              />
+              <Input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                required
+              />
 
-            {errorMsg && <Text color="red.500">{errorMsg}</Text>}
+              {errorMsg && <Text color="red.500">{errorMsg}</Text>}
 
-            <Button
-              colorPalette="blue"
-              onClick={handleSignIn}
-              loading={loading}
-              disabled={loading}
-            >
-              <Text>Sign In</Text>
-            </Button>
+              <Button
+                colorPalette="blue"
+                type="submit"
+                loading={loading}
+                disabled={loading}
+              >
+                Sign In
+              </Button>
 
-            <Button
-              colorPalette="green"
-              onClick={handleSignUp}
-              loading={loading}
-              disabled={loading}
-            >
-              <Text>Sign Up</Text>
-            </Button>
-          </>
-        )}
+              <Button
+                colorPalette="green"
+                onClick={handleSignUp}
+                loading={loading}
+                disabled={loading}
+                type="button"
+              >
+                Sign Up
+              </Button>
+            </>
+          )}
 
-        {user && (
-          <>
-            <Text>Signed in as: {user.email}</Text>
-            <Button
-              colorPalette="red"
-              onClick={handleSignOut}
-              loading={loading}
-              disabled={loading}
-            >
-              <Text>Sign Out</Text>
-            </Button>
-          </>
-        )}
-      </Stack>
+          {user && (
+            <>
+              <Text>Signed in as: {user.email}</Text>
+              <Button
+                colorPalette="red"
+                onClick={handleSignOut}
+                loading={loading}
+                disabled={loading}
+                type="button"
+              >
+                Sign Out
+              </Button>
+            </>
+          )}
+        </Stack>
+      </form>
     </Box>
   );
 }
