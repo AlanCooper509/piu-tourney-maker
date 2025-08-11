@@ -1,8 +1,8 @@
 import { Box, Heading, Text } from '@chakra-ui/react'
-import type { PlayerTourney } from '../types/PlayerTourney'
+import type { PlayerRound } from '../../types/PlayerRound'
 
 interface PlayersListProps {
-  players: PlayerTourney[] | null
+  players: PlayerRound[] | null
   loading: boolean
   error: Error | null
   admin: boolean
@@ -27,7 +27,7 @@ export function PlayersList({ players, loading, error, admin, loadingAdmin }: Pl
       {error && <Text color="red">Error: {error.message}</Text>}
       {adminText}
       {!loading && !error && players?.length ? (
-        players.map(p => <Text key={p.id}>{p.player_name}</Text>)
+        players.map(p => <Text key={p.id}>{p.player_tourneys.player_name}</Text>)
       ) : (
         !loading && !error && <Text>No players found.</Text>
       )}
