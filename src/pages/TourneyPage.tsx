@@ -43,8 +43,8 @@ function TourneyPage() {
         />
         <PlayersList
           players={players}
-          loading={loadingTourney}
-          error={errorTourney}
+          loading={loadingPlayers}
+          error={errorPlayers}
           admin={isAdmin} 
           loadingAdmin={loadingAdmin}
         />
