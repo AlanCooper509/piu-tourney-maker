@@ -5,14 +5,27 @@ interface RoundListProps {
   rounds: Round[] | null;
   loading: boolean;
   error: Error | null;
+  admin: boolean;
+  loadingAdmin: boolean;
 }
 
-export function RoundsList({ rounds, loading, error }: RoundListProps) {
+export function RoundsList({ rounds, loading, error, admin, loadingAdmin }: RoundListProps) {
+  const adminText = (
+    <>
+      {loadingAdmin && <Text>Loading admin status...</Text>}
+      {admin ?
+        <Text>(You are an admin for this tournament, you can add/modify rounds)</Text> :
+        <Text>(You are not an admin for this tournament, you cannot add/modify rounds)</Text>
+      }
+    </>
+  );
+
   return (
     <Box>
       <Heading mb={2}>Rounds</Heading>
       {loading && <Text>Loading rounds...</Text>}
       {error && <Text color="red">Error: {error.message}</Text>}
+      {adminText}
       {!loading && !error && rounds?.length ? (
         rounds.map((round) => (
           <Box key={round.id} mb={2} borderWidth="1px" borderRadius="md" p={2}>
