@@ -1,5 +1,5 @@
 import { Box, Heading, Text } from '@chakra-ui/react';
-import type { Round } from '../types/Round';
+import type { Round } from '../../types/Round';
 
 interface RoundListProps {
   rounds: Round[] | null;

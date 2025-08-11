@@ -4,9 +4,9 @@ import { useParams } from "react-router-dom";
 import getSupabaseTable from '../hooks/getSupabaseTable';
 import { isAdminForTourney } from "../hooks/AdminTourneyHelpers";
 
-import { TourneyDetails } from "../components/TourneyDetails";
-import { PlayersList } from "../components/PlayersList";
-import { RoundsList } from "../components/RoundsList";
+import { TourneyDetails } from "../components/tourney/TourneyDetails";
+import { PlayersList } from "../components/tourney/PlayersList";
+import { RoundsList } from "../components/tourney/RoundsList";
 
 import type { Tourney } from '../types/Tourney';
 import type { PlayerTourney } from "../types/PlayerTourney";

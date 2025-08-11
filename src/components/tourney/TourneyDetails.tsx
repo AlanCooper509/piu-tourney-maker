@@ -1,5 +1,5 @@
 import { Box, Heading, Text } from '@chakra-ui/react'
-import type { Tourney } from '../types/Tourney'
+import type { Tourney } from '../../types/Tourney'
 
 interface TourneyDetailsProps {
   tourney: Tourney | null

@@ -15,8 +15,7 @@ function App() {
         <Link to="/" style={{ marginRight: '1rem' }}>Home</Link>
         <Link to="/tourney/1" style={{ marginRight: '1rem' }}>Tourney Example (from DB)</Link>
         <Link to="/tourney/1234/round/1234/leaderboard" style={{ marginRight: '1rem' }}>Leaderboard Example (hard-coded)</Link>
-        <Link to="/tourney/1/round/5678" style={{ marginRight: "1rem" }}>Round Example</Link>
-        <Link to="/RoundPage" style={{ marginRight: '1rem' }}>RoundPage</Link>
+        <Link to="/tourney/1/round/1" style={{ marginRight: "1rem" }}>Round Example</Link>
         <Link to="/login">Login (will be secret path for beta)</Link>
       </nav>
 
