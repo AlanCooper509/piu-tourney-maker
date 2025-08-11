@@ -15,7 +15,7 @@ Pump It Up Tournament Builder/Leaderboard Web App
   ```bash
   npm install
   ```
-- Create .env file from .env.template reference, then open it in any text editor and fill in values:
+- Create .env file from .env.example reference, then open it in any text editor and fill in values:
   ```bash
   cp .env.example .env
   vi .env
