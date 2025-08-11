@@ -5,7 +5,7 @@ import { supabaseClient } from '../lib/supabaseClient';
 
 export function getAdminTourneyIds() {
   const { user } = useAuth();
-  const [adminTourneyIds, setAdminTourneyIds] = useState<string[]>([]);
+  const [adminTourneyIds, setAdminTourneyIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
