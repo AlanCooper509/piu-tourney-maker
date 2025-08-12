@@ -2,7 +2,7 @@
 Pump It Up Tournament Builder/Leaderboard Web App
 
 ## Tech Stack
-  - Backend Hosting: Supabase
+  - Backend Hosting: Supabase (PostgreSQL)
   - Frontend Hosting: Netlify/Vercel (React)
 
 ## Running Locally
@@ -49,6 +49,7 @@ Features/Considerations to implement as of 08/04/25:
     - buttons to start/end the tournament
       - Logic to automatically place all players in first round
     - edit existing tournament name
+    - add/delete rounds (prior to tourney start or prior to tourney end?)
     - edit existing round details
       - buttons to start/end round (and draw the confirmed charts?)
       - Override logic to be able to manually add/remove a tourney player into a round
