@@ -35,6 +35,7 @@ export function StagesList({ stages, loading, error, admin, loadingAdmin }: Stag
                 <Box key={pool.id} mb={1}>
                   <Text>Chart Pool ID: {pool.id}</Text>
                   <Text>Chart Name: {pool.charts?.name_en ?? 'No Chart Name'}</Text>
+                  <Text>{pool.charts?.type ?? 'No Chart Type'} {pool.charts?.level ?? '(No Chart Difficulty)'}</Text>
                 </Box>
               ))
             ) : (
