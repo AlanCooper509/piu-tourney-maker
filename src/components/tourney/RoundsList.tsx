@@ -1,5 +1,6 @@
 import { Box, Heading, Text } from '@chakra-ui/react';
 import type { Round } from '../../types/Round';
+import { Link } from 'react-router-dom';
 
 interface RoundListProps {
   rounds: Round[] | null;
@@ -29,7 +30,7 @@ export function RoundsList({ rounds, loading, error, admin, loadingAdmin }: Roun
       {!loading && !error && rounds?.length ? (
         rounds.map((round) => (
           <Box key={round.id} mb={2} borderWidth="1px" borderRadius="md" p={2}>
-            <Text fontWeight="bold">{round.name} (ID: {round.id})</Text>
+            <Text fontWeight="bold"><Link to={`/tourney/${round.tourney_id}/round/${round.id}`}>{round.name}</Link> (ID: {round.id})</Text>
             <Text>Status: {round.status ?? 'Unknown'}</Text>
             <Text>Players Advancing: {round.players_advancing}</Text>
             <Text>Previous Round ID: {round.previous_round_id ?? 'None'}</Text>
