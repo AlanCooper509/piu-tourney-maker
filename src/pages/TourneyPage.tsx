@@ -1,8 +1,10 @@
-import { VStack, StackSeparator } from "@chakra-ui/react"
+import { useEffect, useState } from "react";
+import { VStack, StackSeparator, Button, Input } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
 import { isAdminForTourney } from "../hooks/AdminTourneyHelpers";
+import { handleStartTourney } from "../handlers/handleStartTourney";
 
 import { TourneyDetails } from "../components/tourney/TourneyDetails";
 import { PlayersList } from "../components/tourney/PlayersList";
@@ -28,14 +30,32 @@ function TourneyPage() {
     { column: 'tourney_id', value: tourneyId }
   );
 
-  const tourney = (!loadingTourney && !errorTourney && tourneys?.length > 0) ? tourneys[0] : null;
+  // Stores tourney table details and sets isAdmin
+  const [tourney, setTourney] = useState<Tourney | null>(null);
+  useEffect(() => {
+    if (tourneys?.length) {
+      setTourney(tourneys[0]);
+    }
+  }, [tourneys]);
   const { isAdmin, loading: loadingAdmin } = isAdminForTourney(tourney && tourney.id ? tourney.id : 0);
+
+  // Start tourney logic
+  const handleStartClick = async () => {
+    if (!tourney) return;
+    try {
+      const updated = await handleStartTourney(tourney.id);
+      setTourney(updated[0]);
+    } catch (err) {
+      console.error("Failed to start tourney:", err);
+    }
+  };
 
   return (
     <>
       <VStack separator={<StackSeparator />}>
         <TourneyDetails
           tourney={tourney}
+          setTourney={setTourney}
           loading={loadingTourney}
           error={errorTourney}
           admin={isAdmin}
@@ -55,6 +75,11 @@ function TourneyPage() {
           admin={isAdmin}
           loadingAdmin={loadingAdmin}
         />
+        {isAdmin && tourney?.status !== "In Progress" && (
+          <Button colorPalette="green" onClick={handleStartClick}>
+            Start Tourney
+          </Button>
+        )}
       </VStack>
     </>
   );
