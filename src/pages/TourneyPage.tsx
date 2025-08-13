@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { VStack, StackSeparator, Button, Input } from "@chakra-ui/react"
+import { VStack, StackSeparator, Button } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
