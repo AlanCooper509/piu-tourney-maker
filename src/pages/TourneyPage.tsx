@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { VStack, StackSeparator, Button } from "@chakra-ui/react"
+import { VStack, StackSeparator } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
 import { isAdminForTourney } from "../hooks/AdminTourneyHelpers";
-import { handleStartTourney } from "../handlers/handleStartTourney";
 
 import { TourneyDetails } from "../components/tourney/TourneyDetails";
 import { PlayersList } from "../components/tourney/PlayersList";
 import { RoundsList } from "../components/tourney/RoundsList";
+import { Toaster } from "../components/ui/toaster";
 
 import type { Tourney } from '../types/Tourney';
 import type { PlayerTourney } from "../types/PlayerTourney";
@@ -17,11 +17,15 @@ import type { Round } from "../types/Round";
 function TourneyPage() {
   const { tourneyId } = useParams();
 
+  const [tourney, setTourney] = useState<Tourney | null>(null);
+  const [players, setPlayers] = useState<PlayerTourney[]>([]);
+
+
   const { data: tourneys, loading: loadingTourney, error: errorTourney } = getSupabaseTable<Tourney>(
     'tourneys',
     { column: 'id', value: tourneyId }
   );
-  const { data: players, loading: loadingPlayers, error: errorPlayers } = getSupabaseTable<PlayerTourney>(
+  const { data: playersData, loading: loadingPlayers, error: errorPlayers } = getSupabaseTable<PlayerTourney>(
     'player_tourneys',
     { column: 'tourney_id', value: tourneyId }
   );
@@ -31,7 +35,6 @@ function TourneyPage() {
   );
 
   // Stores tourney table details and sets isAdmin
-  const [tourney, setTourney] = useState<Tourney | null>(null);
   useEffect(() => {
     if (tourneys?.length) {
       setTourney(tourneys[0]);
@@ -39,33 +42,37 @@ function TourneyPage() {
   }, [tourneys]);
   const { isAdmin, loading: loadingAdmin } = isAdminForTourney(tourney && tourney.id ? tourney.id : 0);
 
-  // Start tourney logic
-  const handleStartClick = async () => {
-    if (!tourney) return;
-    try {
-      const updated = await handleStartTourney(tourney.id);
-      setTourney(updated[0]);
-    } catch (err) {
-      console.error("Failed to start tourney:", err);
+  // Sync players when playersData changes
+  useEffect(() => {
+    if (playersData) {
+      const sortedPlayers = [...playersData].sort(
+        (b, a) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setPlayers(sortedPlayers);
     }
-  };
+  }, [playersData]);
 
   return (
     <>
+      <Toaster />
       <VStack separator={<StackSeparator />}>
         <TourneyDetails
           tourney={tourney}
           setTourney={setTourney}
+          players={players}
+          rounds={rounds}
           loading={loadingTourney}
           error={errorTourney}
           admin={isAdmin}
           loadingAdmin={loadingAdmin}
         />
         <PlayersList
+          tourney={tourney}
           players={players}
+          setPlayers={setPlayers}
           loading={loadingPlayers}
           error={errorPlayers}
-          admin={isAdmin} 
+          admin={isAdmin}
           loadingAdmin={loadingAdmin}
         />
         <RoundsList
@@ -75,11 +82,6 @@ function TourneyPage() {
           admin={isAdmin}
           loadingAdmin={loadingAdmin}
         />
-        {isAdmin && tourney?.status !== "In Progress" && (
-          <Button colorPalette="green" onClick={handleStartClick}>
-            Start Tourney
-          </Button>
-        )}
       </VStack>
     </>
   );

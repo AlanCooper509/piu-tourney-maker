@@ -3,6 +3,7 @@ import { CiEdit } from "react-icons/ci";
 import { IoCloseSharp } from "react-icons/io5";
 import { FaCheck } from "react-icons/fa";
 import { useState } from "react";
+import { toaster } from "../ui/toaster";
 
 function EditableTourneyName({
   tourneyName,
@@ -20,8 +21,20 @@ function EditableTourneyName({
     try {
       await onRename(newName);
       setIsEditing(false);
-    } catch (err) {
+      toaster.create({
+        title: 'Tourney Renamed',
+        description: `Tourney name updated to "${newName}"`,
+        type: 'success',
+        closable: true,
+      });
+    } catch (err: any) {
       console.error(err);
+      toaster.create({
+        title: 'Failed to rename tourney',
+        description: err.message || 'An error occurred',
+        type: 'error',
+        closable: true,
+      });
     }
   };
 
@@ -48,7 +61,7 @@ function EditableTourneyName({
             onClick={handleSave}
             loading={isLoading}
             size="sm"
-            colorScheme="green"
+            colorPalette="green"
           >
             <FaCheck />
           </IconButton>
@@ -56,6 +69,7 @@ function EditableTourneyName({
             aria-label="Cancel edit"
             onClick={handleCancel}
             size="sm"
+            colorPalette="red"
           >
             <IoCloseSharp />
           </IconButton>
@@ -65,6 +79,7 @@ function EditableTourneyName({
           <Text>{tourneyName}</Text>
           <IconButton
             aria-label="Edit name"
+            colorPalette="blue"
             onClick={() => setIsEditing(true)}
             size="sm"
           >
