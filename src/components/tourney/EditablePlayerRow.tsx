@@ -8,7 +8,6 @@ import { IoCloseSharp } from 'react-icons/io5';
 import { handleRenamePlayerInTourney } from '../../handlers/handleRenamePlayerInTourney';
 import { toaster } from '../../components/ui/toaster';
 import type { PlayerTourney } from '../../types/PlayerTourney';
-import type { Tourney } from '../../types/Tourney';
 import { handleDeletePlayerFromTourney } from '../../handlers/handlerDeletePlayerFromTourney';
 
 interface EditablePlayerRowProps {
