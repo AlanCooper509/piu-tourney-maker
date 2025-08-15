@@ -45,6 +45,7 @@ function roundsToCards(rounds: Round[], onRenameRound: (roundId: number, newName
 export function RoundsList({ rounds, loading, error, admin, loadingAdmin }: RoundListProps) {
   const [updatingRoundId, setUpdatingRoundId] = useState<number | null>(null);
   const [roundsState, setRoundsState] = useState<Round[]>(rounds ?? []);
+  console.log(updatingRoundId) // TODO: remove after using (TS complaining)
 
   useEffect(() => {
     if (rounds) setRoundsState(rounds);

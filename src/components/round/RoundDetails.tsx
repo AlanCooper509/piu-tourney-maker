@@ -35,7 +35,6 @@ export function RoundDetails({ round, loading, error, admin, loadingAdmin }: Rou
             <Text>Status: {round.status}</Text>
             <Text>Players Advancing: {round.players_advancing}</Text>
             <Text>Current: (ID) {round.id}</Text>
-            <Text>Previous: (ID) {round.previous_round_id ? round.previous_round_id : "None"}</Text>
           </>
         )}
       </Box>
