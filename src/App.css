@@ -40,3 +40,14 @@
 .read-the-docs {
   color: #888;
 }
+
+@keyframes slide-in {
+  from {
+    transform: translate(800%, 0);
+  }
+  to {
+    transform: translate(0, 0);
+  }
+}
+
+

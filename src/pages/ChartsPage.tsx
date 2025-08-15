@@ -1,45 +1,37 @@
-import { Heading } from "@chakra-ui/react"
+import { Flex } from "@chakra-ui/react"
 import type { Chart } from "../types/Chart"
+import { ChartCard } from "../components/chart/ChartCard"
+import { ChartRow } from "../components/chart/ChartRow";
 
 const charts: Chart[] = [
-  { id: 1, created_at: "", name_en: "1950", level: 27, type: "Double" },
-  { id: 2, created_at: "", name_en: "1949", level: 28, type: "Double" },
-  { id: 3, created_at: "", name_en: "1948", level: 29, type: "Double" },
-  { id: 4, created_at: "", name_en: "1947", level: 30, type: "Double" },
-  { id: 5, created_at: "", name_en: "1946", level: 31, type: "Double" },
-  { id: 6, created_at: "", name_en: "1945", level: 32, type: "Double" },
-  { id: 7, created_at: "", name_en: "1944", level: 33, type: "Double" },
-  { id: 8, created_at: "", name_en: "1943", level: 34, type: "Double" },
-  { id: 9, created_at: "", name_en: "1942", level: 35, type: "Double" },
-  { id: 10, created_at: "", name_en: "1941", level: 36, type: "Double" },
-  { id: 11, created_at: "", name_en: "1940", level: 37, type: "Double" },
-  { id: 12, created_at: "", name_en: "1939", level: 38, type: "Double" },
-  { id: 13, created_at: "", name_en: "1938", level: 39, type: "Double" },
-  { id: 14, created_at: "", name_en: "1937", level: 40, type: "Double" },
-  { id: 15, created_at: "", name_en: "1936", level: 41, type: "Double" },
-  { id: 16, created_at: "", name_en: "1935", level: 42, type: "Double" },
-  { id: 17, created_at: "", name_en: "1934", level: 43, type: "Double" },
-  { id: 18, created_at: "", name_en: "1933", level: 44, type: "Double" },
-  { id: 19, created_at: "", name_en: "1932", level: 45, type: "Double" },
-  { id: 20, created_at: "", name_en: "1931", level: 46, type: "Double" },
+  { id: 1, created_at: "", name_en: "1948", name_kr: undefined, level: 29, type: "Double", image_url: "art/1948.png" },
+  { id: 2, created_at: "", name_en: "Appassionata", name_kr: undefined, level: 27, type: "Double", image_url: "art/appassionata.png" },
+  { id: 3, created_at: "", name_en: "BOOOM!!", name_kr: undefined, level: 22, type: "Double", image_url: "art/booom.png" },
+  { id: 4, created_at: "", name_en: "Crimson hood", name_kr: undefined, level: 26, type: "Double", image_url: "art/crimson-hood.png" },
+  { id: 5, created_at: "", name_en: "Doppelganger", name_kr: undefined, level: 26, type: "Double", image_url: "art/doppelganger.png" },
+  { id: 6, created_at: "", name_en: "Hercules", name_kr: undefined, level: 26, type: "Double", image_url: "art/hercules.png" },
+  { id: 7, created_at: "", name_en: "KUGUTSU", name_kr: undefined, level: 27, type: "Double", image_url: "art/kugutsu.png" },
+  { id: 8, created_at: "", name_en: "Murdoch", name_kr: undefined, level: 24, type: "Double", image_url: "art/murdoch.png" },
+  { id: 9, created_at: "", name_en: "Neo Catharsis", name_kr: undefined, level: 27, type: "Double", image_url: "art/neo-catharsis.png" },
+  { id: 10, created_at: "", name_en: "wither garden", name_kr: undefined, level: 22, type: "Double", image_url: "art/wither-garden.png" },
 ]
 
-function ChartsPage() {
-  // const { data: charts, loading, error } = getSupabaseTable<Chart>('charts');
+type Variant = "card" | "row";
+interface ChartPageProps {
+  variant: Variant,
+}
 
-  // if (loading) return <p>Loading...</p>;
-  // if (error) return <p>Error: {error.message}</p>;
-
+function ChartsPage({ variant }: ChartPageProps) {
   return (
     <>
-      <Heading size="2xl">All Charts</Heading>
-      <ul>
+      <Flex wrap="wrap" gap="4" justify="center">
         {charts.map((chart: Chart) => (
-          <li key={chart.id}>
-            {chart.id}: {chart.name_en} ({chart.type} {chart.level})
-          </li>
+          variant == "card" ?
+            <ChartCard chart={chart}></ChartCard>
+            :
+            <ChartRow chart={chart}></ChartRow>
         ))}
-      </ul>
+      </Flex>
     </>
   )
 }
