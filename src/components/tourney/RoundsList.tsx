@@ -1,6 +1,13 @@
-import { Box, Heading, Text } from '@chakra-ui/react';
+import { Box, Heading, Text, HStack, VStack } from '@chakra-ui/react';
+import { useEffect, useState } from 'react';
+
+import CustomCarousel from '../carousel/CustomCarousel';
+import { handleUpdateRoundName } from '../../handlers/handleUpdateRoundName'
+import { LiveIndicator } from '../ui/LiveIndicator'
+import EditableRoundName from './EditableRoundName';
+
 import type { Round } from '../../types/Round';
-import { Link } from 'react-router-dom';
+import type { CarouselCard } from '../../types/CarouselCard';
 
 interface RoundListProps {
   rounds: Round[] | null;
@@ -10,16 +17,69 @@ interface RoundListProps {
   loadingAdmin: boolean;
 }
 
+function roundsToCards(rounds: Round[], onRenameRound: (roundId: number, newName: string) => Promise<void>): CarouselCard[] {
+  return rounds
+    .slice()
+    .sort((a, b) => a.id - b.id)
+    .map((round) => ({
+      title: (
+        <EditableRoundName
+          roundId={round.id}
+          tourneyId={round.tourney_id}
+          roundName={round.name}
+          onRename={(newName) => onRenameRound(round.id, newName)}
+        />
+      ),
+      content: (
+          <VStack>
+            <Text fontSize={"md"}>Status: {round.status ?? 'Unknown'}</Text>
+            <HStack style={{gap: '0px'}}>
+              {round.status === 'In Progress' && <LiveIndicator />}
+            </HStack>
+            <Text fontSize={"md"}>Players Advancing: {round.players_advancing}</Text>
+          </VStack>
+      ),
+    }));
+}
+
 export function RoundsList({ rounds, loading, error, admin, loadingAdmin }: RoundListProps) {
+  const [updatingRoundId, setUpdatingRoundId] = useState<number | null>(null);
+  const [roundsState, setRoundsState] = useState<Round[]>(rounds ?? []);
+
+  useEffect(() => {
+    if (rounds) setRoundsState(rounds);
+  }, [rounds]);
+
+  const onRenameRound = async (roundId: number, newName: string) => {
+    const round = roundsState.find(r => r.id === roundId);
+    if (!round) return;
+
+    try {
+      setUpdatingRoundId(roundId);
+      const updatedRound = await handleUpdateRoundName(roundId, newName);
+      setRoundsState(prev =>
+        prev.map(r => (r.id === roundId ? updatedRound : r))
+      );
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setUpdatingRoundId(null);
+    }
+  };
+
   const adminText = (
     <>
       {loadingAdmin && <Text>Loading admin status...</Text>}
       {admin ?
         <Text>(You are an admin for this tournament, you can add/modify rounds)</Text> :
-        <Text>(You are not an admin for this tournament, you cannot add/modify rounds)</Text>
+        <></>
       }
     </>
   );
+
+  const carouselInput: CarouselCard[] = !loading && !error && rounds?.length
+    ? roundsToCards(rounds, onRenameRound)
+    : [];
 
   return (
     <Box>
@@ -28,14 +88,9 @@ export function RoundsList({ rounds, loading, error, admin, loadingAdmin }: Roun
       {error && <Text color="red">Error: {error.message}</Text>}
       {adminText}
       {!loading && !error && rounds?.length ? (
-        rounds.map((round) => (
-          <Box key={round.id} mb={2} borderWidth="1px" borderRadius="md" p={2}>
-            <Text fontWeight="bold"><Link to={`/tourney/${round.tourney_id}/round/${round.id}`}>{round.name}</Link> (ID: {round.id})</Text>
-            <Text>Status: {round.status ?? 'Unknown'}</Text>
-            <Text>Players Advancing: {round.players_advancing}</Text>
-            <Text>Previous Round ID: {round.previous_round_id ?? 'None'}</Text>
-          </Box>
-        ))
+        <>
+          <CustomCarousel cards={carouselInput} />
+        </>
       ) : (
         !loading && !error && <Text>No rounds found.</Text>
       )}
