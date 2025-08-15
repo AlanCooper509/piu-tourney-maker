@@ -1,5 +1,5 @@
 import React from 'react'
-import {Box, IconButton, useBreakpointValue, VStack, Heading, Text, Container} from '@chakra-ui/react'
+import {Box, IconButton, useBreakpointValue, VStack, Heading, Container} from '@chakra-ui/react'
 import { BiLeftArrowAlt, BiRightArrowAlt } from 'react-icons/bi'
 import Slider from 'react-slick'
 
