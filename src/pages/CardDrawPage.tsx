@@ -1,6 +1,5 @@
-import { Box, Button, Center, Flex, Heading } from "@chakra-ui/react"
+import { Box, Button, Center, Heading } from "@chakra-ui/react"
 import type { Chart } from "../types/Chart"
-import { ChartRow } from "../components/chart/ChartRow"
 import { useState } from "react"
 import { ChartCard } from "../components/chart/ChartCard"
 
