@@ -1,53 +1,58 @@
-import { Heading, Table } from "@chakra-ui/react"
-import { useParams } from "react-router-dom";
-
-const entries = [
-  { id: 1, name: "Peter", score: 999999 },
-  { id: 2, name: "Chad", score: 999999 },
-  { id: 3, name: "Neo Catholicism", score: 999999 },
-  { id: 4, name: "Fefemz", score: 999999 },
-  { id: 5, name: "Richard", score: 999999 },
-]
-
-const sortedEntries = [...entries]
-  .sort((a, b) => b.score - a.score)
-  .map((entry, index) => ({
-    ...entry,
-    displayRank: index + 1,
-  }));
+import { Table } from "@chakra-ui/react"
+import { Box, Collapsible } from "@chakra-ui/react"
 
 function Leaderboard() {
-  const { tourneyId, roundId } = useParams();
+    const playersInfo = {
+    songsList: "5",
+    playerNames: [
+      "Player 1",
+      "Player 2",
+      "Player 3"
+    ],
+    playerScores: [100, 200, 300]
+  };
 
-  return (
-    <>
-      <Heading size="2xl">Leaderboard</Heading>
-      <Heading size="lg" mb="6">(Tournament Name for {tourneyId}) | (Round Name for {roundId})</Heading>
-      <Table.Root size="lg" variant="outline" stickyHeader>
-        <Table.ColumnGroup>
-          <Table.Column htmlWidth="5%" />
-          <Table.Column htmlWidth="65%" />
-          <Table.Column htmlWidth="35%" />
-        </Table.ColumnGroup>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader>Rank</Table.ColumnHeader>
-            <Table.ColumnHeader>Player</Table.ColumnHeader>
-            <Table.ColumnHeader textAlign="end">Round Score</Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {sortedEntries.map((entry) => (
-            <Table.Row key={entry.id}>
-              <Table.Cell textStyle="xl" textAlign="center">{entry.displayRank}</Table.Cell>
-              <Table.Cell textStyle="xl">{entry.name}</Table.Cell>
-              <Table.Cell textStyle="xl" textAlign="end">{entry.score.toLocaleString()}</Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
+  const playersTotal = playersInfo.playerNames.length;
 
-    </>
+return (
+  <>
+    {Array.from({ length: playersTotal }).map((_: unknown, j: number) => (
+      // display a collapsible for each player
+      <Collapsible.Root key={j}>
+        <Collapsible.Trigger paddingY="3" style={{ width: "100%" }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+        {/* Left: Ranking number */}
+        <span style={{ minWidth: "2rem", textAlign: "left" }}>
+          {j + 1}.</span>
+
+        {/* Middle: Player name */}
+        <span style={{ flexGrow: 1, textAlign: "center" }}>
+          {playersInfo.playerNames[j] ?? `Player ${j + 1}`}</span>
+
+        {/* Right: Player score */}
+        <span style={{ minWidth: "2rem", textAlign: "right" }}>
+          {playersInfo.playerScores[j] ?? 0}</span>
+      </Box>
+        </Collapsible.Trigger>
+        <Collapsible.Content>
+          <Box padding="4" borderWidth="1px">
+            <Table.Root size="sm">
+              <Table.Body>
+                {/* display list of songs */}
+                {Array.from({ length: Number(playersInfo.songsList) }).map((_: unknown, i: number) => (
+                  <Table.Row key={i}>
+                    <Table.ColumnHeader>Image</Table.ColumnHeader>
+                    <Table.ColumnHeader>Song Name</Table.ColumnHeader>
+                    <Table.ColumnHeader textAlign="end">Score</Table.ColumnHeader>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          </Box>
+        </Collapsible.Content>
+      </Collapsible.Root>
+    ))}
+  </>
   )
 }
 
