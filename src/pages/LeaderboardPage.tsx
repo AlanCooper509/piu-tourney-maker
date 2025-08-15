@@ -1,31 +1,8 @@
-import { Heading, Table } from "@chakra-ui/react"
-import { useParams } from "react-router-dom";
+import { Table } from "@chakra-ui/react"
 import { Box, Collapsible } from "@chakra-ui/react"
 
-const entries = [
-  { id: 1, name: "Peter", score: 999999 },
-  { id: 2, name: "Alan", score: 999999 },
-  { id: 3, name: "Neo Catholicism", score: 999999 },
-  { id: 4, name: "Fefemz", score: 999999 },
-  { id: 5, name: "Richard", score: 999999 },
-]
-
-const sortedEntries = [...entries]
-  .sort((a, b) => b.score - a.score)
-  .map((entry, index) => ({
-    ...entry,
-    displayRank: index + 1,
-  }));
-
-interface PlayersInfo {
-  songsList: string;
-  playerNames: string[];
-}
-
 function Leaderboard() {
-  const { tourneyId, roundId } = useParams();
-
-  const playersInfo = {
+    const playersInfo = {
     songsList: "5",
     playerNames: [
       "Player 1",
