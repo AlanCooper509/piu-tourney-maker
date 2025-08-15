@@ -17,7 +17,7 @@ interface RoundListProps {
   loadingAdmin: boolean;
 }
 
-function roundsToCards(rounds: Round[], onRenameRound: (roundId: number, newName: string) => Promise<void>): CarouselCard[] {
+function roundsToCards(rounds: Round[], onRenameRound: (roundId: number, newName: string) => Promise<void>, updatingRoundId: number | null): CarouselCard[] {
   return rounds
     .slice()
     .sort((a, b) => a.id - b.id)
@@ -28,6 +28,7 @@ function roundsToCards(rounds: Round[], onRenameRound: (roundId: number, newName
           tourneyId={round.tourney_id}
           roundName={round.name}
           onRename={(newName) => onRenameRound(round.id, newName)}
+          isLoading={updatingRoundId === round.id}
         />
       ),
       content: (
@@ -45,10 +46,18 @@ function roundsToCards(rounds: Round[], onRenameRound: (roundId: number, newName
 export function RoundsList({ rounds, loading, error, admin, loadingAdmin }: RoundListProps) {
   const [updatingRoundId, setUpdatingRoundId] = useState<number | null>(null);
   const [roundsState, setRoundsState] = useState<Round[]>(rounds ?? []);
-  console.log(updatingRoundId) // TODO: remove after using (TS complaining)
 
   useEffect(() => {
-    if (rounds) setRoundsState(rounds);
+    if (!rounds) return;
+
+    setRoundsState(prev => {
+      const prevById = new Map(prev.map(r => [r.id, r]));
+      const merged = rounds.map(r => {
+        const existing = prevById.get(r.id);
+        return existing ? { ...existing, ...r } : r;
+      });
+      return merged.sort((a, b) => a.id - b.id);
+    });
   }, [rounds]);
 
   const onRenameRound = async (roundId: number, newName: string) => {
@@ -62,7 +71,7 @@ export function RoundsList({ rounds, loading, error, admin, loadingAdmin }: Roun
         prev.map(r => (r.id === roundId ? updatedRound : r))
       );
     } catch (error) {
-      console.error(error);
+      throw error;
     } finally {
       setUpdatingRoundId(null);
     }
@@ -78,8 +87,8 @@ export function RoundsList({ rounds, loading, error, admin, loadingAdmin }: Roun
     </>
   );
 
-  const carouselInput: CarouselCard[] = !loading && !error && rounds?.length
-    ? roundsToCards(rounds, onRenameRound)
+  const carouselInput: CarouselCard[] = !loading && !error && roundsState?.length
+    ? roundsToCards(roundsState, onRenameRound, updatingRoundId)
     : [];
 
   return (
@@ -88,7 +97,7 @@ export function RoundsList({ rounds, loading, error, admin, loadingAdmin }: Roun
       {loading && <Text>Loading rounds...</Text>}
       {error && <Text color="red">Error: {error.message}</Text>}
       {adminText}
-      {!loading && !error && rounds?.length ? (
+      {!loading && !error && roundsState?.length ? (
         <>
           <CustomCarousel cards={carouselInput} />
         </>
