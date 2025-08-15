@@ -5,6 +5,7 @@ import CustomCarousel from '../carousel/CustomCarousel';
 import { handleUpdateRoundName } from '../../handlers/handleUpdateRoundName'
 import { LiveIndicator } from '../ui/LiveIndicator'
 import EditableRoundName from './EditableRoundName';
+import RoundLink from './RoundLink';
 
 import type { Round } from '../../types/Round';
 import type { CarouselCard } from '../../types/CarouselCard';
@@ -17,12 +18,18 @@ interface RoundListProps {
   loadingAdmin: boolean;
 }
 
-function roundsToCards(rounds: Round[], onRenameRound: (roundId: number, newName: string) => Promise<void>, updatingRoundId: number | null): CarouselCard[] {
+function roundsToCards(
+  rounds: Round[],
+  onRenameRound: (roundId: number, newName: string) => Promise<void>,
+  updatingRoundId: number | null,
+  admin: boolean,
+  loadingAdmin: boolean
+): CarouselCard[] {
   return rounds
     .slice()
     .sort((a, b) => a.id - b.id)
     .map((round) => ({
-      title: (
+      title: !loadingAdmin && admin ? (
         <EditableRoundName
           roundId={round.id}
           tourneyId={round.tourney_id}
@@ -30,15 +37,21 @@ function roundsToCards(rounds: Round[], onRenameRound: (roundId: number, newName
           onRename={(newName) => onRenameRound(round.id, newName)}
           isLoading={updatingRoundId === round.id}
         />
+      ) : (
+        <RoundLink
+          tourneyId={round.tourney_id}
+          roundId={round.id}
+          roundName={round.name}
+        />
       ),
       content: (
-          <VStack>
-            <Text fontSize={"md"}>Status: {round.status ?? 'Unknown'}</Text>
-            <HStack style={{gap: '0px'}}>
-              {round.status === 'In Progress' && <LiveIndicator />}
-            </HStack>
-            <Text fontSize={"md"}>Players Advancing: {round.players_advancing}</Text>
-          </VStack>
+        <VStack>
+          <Text fontSize="md">Status: {round.status ?? 'Unknown'}</Text>
+          <HStack style={{ gap: '0px' }}>
+            {round.status === 'In Progress' && <LiveIndicator />}
+          </HStack>
+          <Text fontSize="md">Players Advancing: {round.players_advancing}</Text>
+        </VStack>
       ),
     }));
 }
@@ -88,7 +101,7 @@ export function RoundsList({ rounds, loading, error, admin, loadingAdmin }: Roun
   );
 
   const carouselInput: CarouselCard[] = !loading && !error && roundsState?.length
-    ? roundsToCards(roundsState, onRenameRound, updatingRoundId)
+    ? roundsToCards(roundsState, onRenameRound, updatingRoundId, admin, loadingAdmin)
     : [];
 
   return (

@@ -25,7 +25,7 @@ export default function CustomCarousel({ cards }: CaptionCarouselProps) {
     className: "center",
     centerMode: true,
     infinite: false,
-    centerPadding: "60px",
+    centerPadding: useBreakpointValue({ base: "0px", md: "60px" }),
     dots: true,
     arrows: false,
     fade: false,
@@ -82,21 +82,22 @@ export default function CustomCarousel({ cards }: CaptionCarouselProps) {
           <Slider {...settings} ref={(slider) => setSlider(slider)} className="my-slider">
             {cards.map((card, index) => (
               <Box
-              key={index}
-              borderColor="border.emphasized"
-              borderWidth="2px"
-              borderRadius="xl"
-              pb={20}
-              maxH="300px"
+                key={index}
+                borderColor="border.emphasized"
+                borderWidth="2px"
+                borderRadius="xl"
+                pb={20}
+                h="auto"
+                w="full"
               >
                 <Container>
                   <VStack gap={6} pt={10} w={'full'} maxW={'full'}>
                     <Heading fontSize={{ base: 'lg', md: 'xl', lg: '2xl' }}>
                       {card.title}
                     </Heading>
-                    <Text fontSize={{ base: 'sm', lg: 'md' }}>
+                    <Box fontSize={{ base: 'sm', lg: 'md' }}>
                       {card.content}
-                    </Text>
+                    </Box>
                   </VStack>
                 </Container>
               </Box>

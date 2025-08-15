@@ -1,9 +1,11 @@
-import { HStack, Input, IconButton, Text, Link } from "@chakra-ui/react";
+import { HStack, Input, IconButton, Text } from "@chakra-ui/react";
+import { useState } from "react";
 import { CiEdit } from "react-icons/ci";
 import { IoCloseSharp } from "react-icons/io5";
 import { FaCheck } from "react-icons/fa";
-import { useState } from "react";
+
 import { toaster } from "../ui/toaster";
+import RoundLink from "./RoundLink";
 
 interface EditableRoundNameProps {
   roundId: number;
@@ -80,15 +82,11 @@ export default function EditableRoundName({
       ) : (
         <>
           <Text fontWeight="bold">
-            <Link
-              href={`/tourney/${tourneyId}/round/${roundId}`}
-              color="cyan.solid"
-              variant="underline"
-              _hover={{ color: "cyan.focusRing" }}
-              _focus={{ color: "cyan.solid", boxShadow: "none" }}
-            >
-              {roundName}
-            </Link>
+            <RoundLink
+              tourneyId={tourneyId}
+              roundId={roundId}
+              roundName={roundName}
+            />
           </Text>
           <IconButton
             aria-label="Edit round name"
