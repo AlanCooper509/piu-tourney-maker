@@ -1,4 +1,4 @@
-import { Text, Link } from '@chakra-ui/react';
+import { Box, Link } from '@chakra-ui/react';
 import React from 'react';
 
 interface RoundLinkProps {
@@ -9,7 +9,7 @@ interface RoundLinkProps {
 
 const RoundLink: React.FC<RoundLinkProps> = ({ tourneyId, roundId, roundName }) => {
   return (
-    <Text fontWeight="bold">
+    <Box fontWeight="bold">
       <Link
         href={`/tourney/${tourneyId}/round/${roundId}`}
         color="cyan.solid"
@@ -19,7 +19,7 @@ const RoundLink: React.FC<RoundLinkProps> = ({ tourneyId, roundId, roundName }) 
       >
         {roundName}
       </Link>
-    </Text>
+    </Box>
   );
 };
 

@@ -76,6 +76,7 @@ function TourneyPage() {
           loadingAdmin={loadingAdmin}
         />
         <RoundsList
+          tourney={tourney}
           rounds={rounds}
           loading={loadingRounds}
           error={errorRounds}

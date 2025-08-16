@@ -1,4 +1,4 @@
-import { HStack, Input, IconButton, Text } from "@chakra-ui/react";
+import { HStack, Input, IconButton, Box } from "@chakra-ui/react";
 import { useState } from "react";
 import { CiEdit } from "react-icons/ci";
 import { IoCloseSharp } from "react-icons/io5";
@@ -81,13 +81,13 @@ export default function EditableRoundName({
         </>
       ) : (
         <>
-          <Text fontWeight="bold">
+          <Box fontWeight="bold">
             <RoundLink
               tourneyId={tourneyId}
               roundId={roundId}
               roundName={roundName}
             />
-          </Text>
+          </Box>
           <IconButton
             aria-label="Edit round name"
             onClick={() => setIsEditing(true)}

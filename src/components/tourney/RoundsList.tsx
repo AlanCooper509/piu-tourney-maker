@@ -3,14 +3,18 @@ import { useEffect, useState } from 'react';
 
 import CustomCarousel from '../carousel/CustomCarousel';
 import { handleUpdateRoundName } from '../../handlers/handleUpdateRoundName'
+import { handleAddRoundToTourney } from '../../handlers/handleAddRoundToTourney';
 import { LiveIndicator } from '../ui/LiveIndicator'
 import EditableRoundName from './EditableRoundName';
 import RoundLink from './RoundLink';
+import { toaster } from '../ui/toaster';
 
+import type { Tourney } from '../../types/Tourney';
 import type { Round } from '../../types/Round';
 import type { CarouselCard } from '../../types/CarouselCard';
 
 interface RoundListProps {
+  tourney: Tourney | null;
   rounds: Round[] | null;
   loading: boolean;
   error: Error | null;
@@ -56,9 +60,50 @@ function roundsToCards(
     }));
 }
 
-export function RoundsList({ rounds, loading, error, admin, loadingAdmin }: RoundListProps) {
+async function addRoundToTourney(
+  tourneyId: number,
+  name: string,
+  players_advancing: number,
+  setRoundsState: React.Dispatch<React.SetStateAction<Round[]>>,
+  setAddingRound: (val: boolean) => void
+) {
+  try {
+    setAddingRound(true);
+
+    const newRound = await handleAddRoundToTourney(
+      tourneyId,
+      name,
+      players_advancing
+    );
+
+    setRoundsState((prev: Round[]) => [...(prev ?? []), newRound]);
+
+    toaster.create({
+      title: "Round Added",
+      description: `Round "${newRound.name}" was added successfully.`,
+      type: "success",
+      closable: true,
+    });
+  } catch (err: any) {
+    toaster.create({
+      title: err.message.includes("already exists")
+        ? "Duplicate Round"
+        : "Failed to add round",
+      description: err.message,
+      type: "error",
+      closable: true,
+    });
+  } finally {
+    setAddingRound(false);
+  }
+}
+
+export function RoundsList({ tourney, rounds, loading, error, admin, loadingAdmin }: RoundListProps) {
   const [updatingRoundId, setUpdatingRoundId] = useState<number | null>(null);
   const [roundsState, setRoundsState] = useState<Round[]>(rounds ?? []);
+  const [newRoundName, setNewRoundName] = useState('');
+  const [newPlayersAdvancing, setNewPlayersAdvancing] = useState(0);
+  const [addingRound, setAddingRound] = useState(false);
 
   useEffect(() => {
     if (!rounds) return;
@@ -90,15 +135,16 @@ export function RoundsList({ rounds, loading, error, admin, loadingAdmin }: Roun
     }
   };
 
-  const adminText = (
-    <>
-      {loadingAdmin && <Text>Loading admin status...</Text>}
-      {admin ?
-        <Text>(You are an admin for this tournament, you can add/modify rounds)</Text> :
-        <></>
-      }
-    </>
-  );
+  const onAddRound = () => {
+    if (!tourney) return;
+    addRoundToTourney(
+      tourney.id,
+      newRoundName,
+      newPlayersAdvancing,
+      setRoundsState,
+      setAddingRound
+    );
+  };
 
   const carouselInput: CarouselCard[] = !loading && !error && roundsState?.length
     ? roundsToCards(roundsState, onRenameRound, updatingRoundId, admin, loadingAdmin)
@@ -109,13 +155,28 @@ export function RoundsList({ rounds, loading, error, admin, loadingAdmin }: Roun
       <Heading mb={2}>Rounds</Heading>
       {loading && <Text>Loading rounds...</Text>}
       {error && <Text color="red">Error: {error.message}</Text>}
-      {adminText}
-      {!loading && !error && roundsState?.length ? (
+      {!loading && !error && !roundsState?.length && (
+        <Text mb={4}>No rounds found.</Text>
+      )}
+      {!loading && !error ? (
         <>
+        {admin ? (
+          <CustomCarousel
+            cards={carouselInput}
+            isAdmin={true}
+            adminClick={onAddRound}
+            adminLoading={addingRound}
+            newRoundName={newRoundName}
+            setNewRoundName={setNewRoundName}
+            newPlayersAdvancing={newPlayersAdvancing}
+            setNewPlayersAdvancing={setNewPlayersAdvancing}
+          />
+        ) : (
           <CustomCarousel cards={carouselInput} />
+        )}
         </>
       ) : (
-        !loading && !error && <Text>No rounds found.</Text>
+        <></>
       )}
     </Box>
   );
