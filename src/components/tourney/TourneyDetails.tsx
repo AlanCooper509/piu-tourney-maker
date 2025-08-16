@@ -86,7 +86,7 @@ export function TourneyDetails({ tourney, setTourney, players, rounds, loading, 
   return (
     <>
       <title>{tourney && tourney.name ? tourney.name : 'Tournament Details'}</title>
-      <Heading size="2xl" mb={2}>
+      <Heading mb={2}>
         {tourneyNameText}
       </Heading>
       <Box>

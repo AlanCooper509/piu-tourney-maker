@@ -55,7 +55,7 @@ export function PlayersList({ tourney, players, setPlayers, loading, error, admi
   return (
     <>
       <Box>
-        <Heading size="2xl" mb={2}>Players</Heading>
+        <Heading mb={2}>Players</Heading>
         {loading && <Text>Loading players...</Text>}
         {error && <Text color="red">Error: {error.message}</Text>}
         <VStack align="center" justify="center" gap={0}>
