@@ -1,20 +1,25 @@
 import { VStack, StackSeparator } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
+import { isAdminForTourney } from "../hooks/AdminTourneyHelpers";
 import { RoundDetails } from "../components/round/RoundDetails";
 import { PlayersList } from "../components/round/PlayersList";
 import { StagesList } from "../components/round/StagesList";
-import { isAdminForTourney } from "../hooks/AdminTourneyHelpers";
+import { Toaster } from "../components/ui/toaster";
 
 import type { Round } from "../types/Round";
 import type { Stage } from "../types/Stage";
 import type { PlayerRound } from "../types/PlayerRound";
 import type { ChartPool } from "../types/ChartPool";
 
-const RoundPage: React.FC = () => {
+function RoundPage() {
   const { tourneyId, roundId } = useParams<{ tourneyId: string; roundId: string }>();
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
+  if (!roundId) return <div>Invalid Round ID</div>;
+
+  const [round, setRound] = useState<Round | null>(null);
 
   const { data: rounds, loading: loadingRound, error: errorRound } = getSupabaseTable<Round>(
     'rounds',
@@ -32,13 +37,19 @@ const RoundPage: React.FC = () => {
       '*, chart_pools(*, charts(*))'
     );
 
-  const round: Round | null = (!loadingRound && !errorRound && rounds?.length > 0) ? rounds[0] : null;
-  const { isAdmin, loading: loadingAdmin } = isAdminForTourney(Number(tourneyId));
+  // Stores round table details and sets isAdmin
+    useEffect(() => {
+      if (rounds?.length) {
+        setRound(rounds[0]);
+      }
+    }, [rounds]);
+    const { isAdmin, loading: loadingAdmin } = isAdminForTourney(Number(tourneyId));
 
   return (
     <>
+      <Toaster />
       <VStack separator={<StackSeparator />}>
-        <RoundDetails round={round} loading={loadingRound} error={errorRound} admin={isAdmin} loadingAdmin={loadingAdmin} />
+        <RoundDetails round={round} setRound={setRound} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
         <PlayersList players={players} loading={loadingPlayers} error={errorPlayers} admin={isAdmin} loadingAdmin={loadingAdmin} />
         <StagesList stages={stages} loading={loadingStages} error={errorStages} admin={isAdmin} loadingAdmin={loadingAdmin} />
       </VStack>

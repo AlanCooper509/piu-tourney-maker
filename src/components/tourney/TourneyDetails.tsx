@@ -1,14 +1,14 @@
 import { useState } from 'react'
-import { Box, Button, Heading, VStack, HStack, Text } from '@chakra-ui/react'
+import { Box, Button, Heading, VStack, Text } from '@chakra-ui/react'
 
 import EditableTourneyName from './EditableTourneyName'
 import { handleUpdateTourneyName } from '../../handlers/handleUpdateTourneyName'
 import type { Tourney } from '../../types/Tourney'
-import { LiveIndicator } from '../ui/LiveIndicator'
 import { handleStartTourney } from '../../handlers/handleStartTourney'
 import { toaster } from '../ui/toaster'
 import type { Round } from '../../types/Round'
 import type { PlayerTourney } from '../../types/PlayerTourney'
+import { StatusElement } from '../StatusElement'
 
 interface TourneyDetailsProps {
   tourney: Tourney | null
@@ -51,8 +51,8 @@ export function TourneyDetails({ tourney, setTourney, players, rounds, loading, 
     }
     try {
       setIsStarting(true);
-      const updated = await handleStartTourney(tourney.id);
-      setTourney(updated[0]);
+      const {updatedTourney} = await handleStartTourney(tourney.id);
+      setTourney(updatedTourney[0]);
       toaster.create({
         title: "Tournament Started",
         description: `Tournament "${tourney.name}" is now in progress.`,
@@ -86,21 +86,16 @@ export function TourneyDetails({ tourney, setTourney, players, rounds, loading, 
   return (
     <>
       <title>{tourney && tourney.name ? tourney.name : 'Tournament Details'}</title>
-      <Heading mb={2}>
-        {tourneyNameText}
-      </Heading>
+      <Heading mb={2}>{tourneyNameText}</Heading>
       <Box>
         <VStack style={{gap: '0px'}}>
-        {loading && <Text>Loading tournament...</Text>}
-        {error && <Text color="red">Error: {error.message}</Text>}
-        {!loading && !error && tourney && (
+          {loading && <Text>Loading tournament...</Text>}
+          {error && <Text color="red">Error: {error.message}</Text>}
+          {!loading && !error && tourney && (
           <>
             <Text>Type: {tourney.type}</Text>
-            <HStack style={{gap: '0px'}}>
-              <Text mr={2}>Status: {tourney.status}</Text>
-              {tourney.status === 'In Progress' && <LiveIndicator />}
-            </HStack>
-            {!loadingAdmin && admin && tourney?.status !== "In Progress" && (
+            <StatusElement element={tourney} />
+            {!loadingAdmin && admin && tourney?.status === "Not Started" && (
               <Button colorPalette="green" onClick={handleStartTourneyClick} mt={2} loading={isStarting}>
                 Start Tourney
               </Button>

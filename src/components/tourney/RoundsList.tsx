@@ -1,10 +1,9 @@
-import { Box, Heading, Text, HStack, VStack } from '@chakra-ui/react';
+import { Box, Heading, Text, VStack } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 
 import CustomCarousel from '../carousel/CustomCarousel';
 import { handleUpdateRoundName } from '../../handlers/handleUpdateRoundName'
 import { handleAddRoundToTourney } from '../../handlers/handleAddRoundToTourney';
-import { LiveIndicator } from '../ui/LiveIndicator'
 import EditableRoundName from './EditableRoundName';
 import RoundLink from './RoundLink';
 import { toaster } from '../ui/toaster';
@@ -12,6 +11,7 @@ import { toaster } from '../ui/toaster';
 import type { Tourney } from '../../types/Tourney';
 import type { Round } from '../../types/Round';
 import type { CarouselCard } from '../../types/CarouselCard';
+import { StatusElement } from '../StatusElement';
 
 interface RoundListProps {
   tourney: Tourney | null;
@@ -50,10 +50,7 @@ function roundsToCards(
       ),
       content: (
         <VStack>
-          <Text fontSize="md">Status: {round.status ?? 'Unknown'}</Text>
-          <HStack style={{ gap: '0px' }}>
-            {round.status === 'In Progress' && <LiveIndicator />}
-          </HStack>
+          <StatusElement element={round} />
           <Text fontSize="md">Players Advancing: {round.players_advancing}</Text>
         </VStack>
       ),
