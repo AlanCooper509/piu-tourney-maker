@@ -1,15 +1,20 @@
-import { Box, Heading, Text, Button, IconButton, HStack } from '@chakra-ui/react';
+import { Box, Heading, Text, HStack } from '@chakra-ui/react';
 
 import { handleAssignRandomChartToStage } from '../../handlers/handleAssignRandomChartToStage';
-import { handleDeleteChartFromPool } from '../../handlers/handleDeleteChartFromPool';
 import { toaster } from '../ui/toaster';
 
-import type { Stage } from '../../types/Stage';
 import { handleAddChartToPool } from '../../handlers/handleAddChartToPool';
-import { FaTrash } from 'react-icons/fa';
 import AddChartForm from '../charts/AddChartForm';
+import AddStageButton from '../stages/AddStageButton';
+import { RollChartButton } from '../stages/RollChartButton';
+
+import type { Round } from '../../types/Round';
+import type { Stage } from '../../types/Stage';
+import ChartPool from '../charts/ChartPool';
+import DeleteStageButton from '../stages/DeleteStageButton';
 
 interface StageListProps {
+  round: Round | null;
   stages: Stage[];
   setStages: React.Dispatch<React.SetStateAction<Stage[]>>;
   loading: boolean;
@@ -18,17 +23,7 @@ interface StageListProps {
   loadingAdmin: boolean;
 }
 
-export function StagesList({ stages, setStages, loading, error, admin, loadingAdmin }: StageListProps) {
-  const adminText = (
-    <>
-      {loadingAdmin && <Text>Loading admin status...</Text>}
-      {admin ?
-        <Text>(You are an admin for this tournament, you can add/modify stages)</Text> :
-        <Text>(You are not an admin for this tournament, you cannot add/modify stages)</Text>
-      }
-    </>
-  );
-
+export function StagesList({ round, stages, setStages, loading, error, admin, loadingAdmin }: StageListProps) {
   async function onRollChart(stageId: number) {
     const updatedStage = await handleAssignRandomChartToStage(stageId);
     if (!updatedStage) return;
@@ -88,61 +83,35 @@ export function StagesList({ stages, setStages, loading, error, admin, loadingAd
     }
   }
 
-  async function onDeleteChartFromPool(stageId: number, chartId: number) {
-    try {
-      await handleDeleteChartFromPool(stageId, chartId);
-      setStages(prevStages =>
-        prevStages?.map(stage =>
-          stage.id === stageId
-            ? {
-                ...stage,
-                chart_pools: stage.chart_pools?.filter(pool => pool.chart_id !== chartId) || [],
-              }
-            : stage
-        ) || []
-      );
-
-      toaster.create({
-        title: "Chart Removed",
-        description: `Chart ID "${chartId}" was removed successfully from Stage ${stageId}.`,
-        type: "success",
-        closable: true,
-      });
-    } catch (err: any) {
-      console.error("Error deleting chart from pool:", err.message);
-      toaster.create({
-        title: "Error Removing Chart",
-        description: err.message,
-        type: "error",
-        closable: true,
-      });
-    }
-  }
-
   const sortedStages = stages?.slice().sort((a, b) => a.id - b.id) ?? [];
   return (
     <Box>
-      <Heading mb={2}>Stages</Heading>
+      <HStack justifyContent="center" alignItems="center">
+        <Heading mb={2}>Stages</Heading>
+        {/* Add Stage Button */}
+        {!loadingAdmin && admin &&
+          <AddStageButton round={round} setStages={setStages} />
+        }
+      </HStack>
       {loading && <Text>Loading stages...</Text>}
       {error && <Text color="red">Error: {error.message}</Text>}
-      {adminText}
       {!loading && !error && sortedStages?.length ? (
         sortedStages.map((stage) => { 
           return (
             <Box key={stage.id} mb={2} borderWidth="1px" borderRadius="md" p={2}>
-              <Text fontWeight="bold">
-                (ID: {stage.id}) Chart ID: {stage.chart_id ?? 'Not Selected Yet'}
-              </Text>
+              <HStack justifyContent={"center"} alignItems="center">
+                {/* Delete Stage Button */}
+                <DeleteStageButton round={round} stageId={stage.id} setStages={setStages} />
+
+                {/* Stage Header */}
+                <Text fontWeight="bold">
+                  (ID: {stage.id}) Chart ID: {stage.chart_id ?? 'Not Selected Yet'}
+                </Text>
+              </HStack>
 
               {/* Roll Chart Button */}
-              {!loadingAdmin && admin && !stage.chart_id && (
-                <Button
-                  my={2}
-                  colorPalette="blue"
-                  onClick={() => onRollChart(stage.id)}
-                >
-                  Roll the Chart
-                </Button>
+              {!loadingAdmin && admin && !stage.chart_id && stage.chart_pools && stage.chart_pools.length !== 0 && (
+                <RollChartButton stageId={stage.id} onClick={onRollChart} />
               )}
 
               {/* Add Chart Form */}
@@ -155,34 +124,17 @@ export function StagesList({ stages, setStages, loading, error, admin, loadingAd
               )}
 
               {/* Charts in chart pool */}
-              {(stage.chart_pools?.length ? stage.chart_pools : [{ id: 0, charts: null }]).map(pool => (
-                <Box key={pool.id} mb={2} borderWidth="1px" borderRadius="sm" p={2}>
-                  {pool.charts ? (
-                    <HStack>
-                      <Text>
-                        (Chart ID: {pool.charts.id}) {pool.charts.name_en ?? 'No Chart Name'} — {pool.charts.type ?? 'No Chart Type'} {pool.charts.level ?? '(No Chart Difficulty)'}
-                      </Text>
-                      {!loadingAdmin && admin && (
-                        <IconButton
-                          aria-label="Delete Chart from Pool"
-                          size="sm"
-                          colorPalette="red"
-                          onClick={() => onDeleteChartFromPool(stage.id, pool.charts!.id)}
-                        >
-                          <FaTrash />
-                        </IconButton>
-                      )}
-                    </HStack>
-                  ) : (
-                    <Text>No Chart in this pool yet</Text>
-                  )}
-                </Box>
-              ))}
+              <ChartPool
+                stage={stage}
+                setStages={setStages}
+                admin={admin}
+                loadingAdmin={loadingAdmin}
+              />
             </Box>
           );
         })
       ) : (
-        !loading && !error && <Text>No stages found.</Text>
+        !loading && !error && <Text mt={2}>(No stages found)</Text>
       )}
     </Box>
   );

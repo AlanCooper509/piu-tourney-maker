@@ -53,7 +53,7 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
         placeholder="Lv."
         min={1}
         max={28}
-        maxWidth={"80px"}
+        maxWidth={"60px"}
       />
 
       {/* Submit button */}

@@ -24,7 +24,7 @@ export function ChartTypeSelect({ value, onChange }: ChartTypeSelectProps) {
     <Select.Root
       collection={chartTypes}
       size="sm"
-      width="200px"
+      width="100px"
       value={value ? [value] : []}
       onValueChange={(details) => {
         const val = details.value[0];

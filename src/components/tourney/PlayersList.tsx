@@ -1,4 +1,4 @@
-import { Box, Heading, Text, VStack } from '@chakra-ui/react';
+import { Box, Heading, HStack, Text, VStack } from '@chakra-ui/react';
 import { useState } from 'react';
 
 import AddPlayer from '../players/AddPlayer';
@@ -55,7 +55,10 @@ export function PlayersList({ tourney, players, setPlayers, loading, error, admi
   return (
     <>
       <Box>
-        <Heading mb={2}>Players</Heading>
+        <HStack mb={2}>
+          <Heading mb={2}>Players</Heading>
+          {!loadingAdmin && admin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
+        </HStack>
         {loading && <Text>Loading players...</Text>}
         {error && <Text color="red">Error: {error.message}</Text>}
         <VStack align="center" justify="center" gap={0}>
@@ -73,7 +76,6 @@ export function PlayersList({ tourney, players, setPlayers, loading, error, admi
             !loading && !error && <Text>No players found.</Text>
           )}
         </VStack>
-        {!loadingAdmin && admin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
       </Box>
     </>
   );
