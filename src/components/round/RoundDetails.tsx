@@ -1,15 +1,14 @@
 import { useState } from 'react'
-import { Box, Button, Heading, Text, VStack } from '@chakra-ui/react'
+import { Box, Heading, Text, VStack } from '@chakra-ui/react'
 
-import { handleStartRound } from '../../handlers/handleStartRound'
 import { StatusElement } from '../StatusElement'
-import { toaster } from '../ui/toaster'
 
 import type { Round } from '../../types/Round'
 import type { PlayerRound } from '../../types/PlayerRound'
 import type { Stage } from '../../types/Stage'
 import EditableRoundName from '../tourney/EditableRoundName'
 import { handleUpdateRoundName } from '../../handlers/handleUpdateRoundName'
+import StartRoundButton from './StartRoundButton'
 
 
 interface RoundDetailsProps {
@@ -23,8 +22,6 @@ interface RoundDetailsProps {
   admin: boolean
   loadingAdmin: boolean
 }
-
-const toasterErrorTitleText = 'Failed to Start Round';
 
 export function RoundDetails({ round, setRound, players, stages, loading, error, tourneyId, admin, loadingAdmin }: RoundDetailsProps) {
   // Rename round logic
@@ -41,47 +38,6 @@ export function RoundDetails({ round, setRound, players, stages, loading, error,
       setUpdatingName(false);
     }
   };
-
-  const [isStarting, setIsStarting] = useState(false);
-  const handleStartRoundClick = async () => {
-    if (!round) return;
-    if (!players || players.length < 2) {
-      toaster.create({ title: toasterErrorTitleText, description: 'Need at least 2 players', type: 'error', closable: true });
-      return;
-    }
-
-    if (!stages || stages.length < 1) {
-      toaster.create({ title: toasterErrorTitleText, description: 'Need at least 1 stage', type: 'error', closable: true });
-      return;
-    }
-
-    if (stages.every(stage => !stage.chart_pools || stage.chart_pools.length === 0)) {
-      toaster.create({ title: toasterErrorTitleText, description: 'Need at least 1 chart per stage', type: 'error', closable: true });
-      return;
-    }
-
-    try {
-      setIsStarting(true);
-      const {updatedRound} = await handleStartRound(round.id);
-      setRound({...updatedRound[0]});
-      toaster.create({
-        title: "Round Started",
-        description: `Round "${round.name}" is now in progress.`,
-        type: "success",
-        closable: true,
-      });
-    } catch (err: any) {
-      toaster.create({
-        title: toasterErrorTitleText,
-        description: err.message || "Unknown error",
-        type: "error",
-        closable: true,
-      });
-    } finally {
-      setIsStarting(false);
-    }
-  };
-
   const roundNameText = (
     <>
       {!loadingAdmin && admin ?
@@ -110,9 +66,12 @@ export function RoundDetails({ round, setRound, players, stages, loading, error,
             <StatusElement element={round} />
             <Text>Players Advancing: {round.players_advancing}</Text>
             {!loadingAdmin && admin && round?.status === "Not Started" && (
-              <Button colorPalette="green" onClick={handleStartRoundClick} mt={2} loading={isStarting}>
-                Start Round
-              </Button>
+              <StartRoundButton
+                round={round}
+                setRound={setRound}
+                players={players}
+                stages={stages}
+              />
             )}
           </>
         )}
