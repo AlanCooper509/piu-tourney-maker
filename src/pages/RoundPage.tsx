@@ -20,12 +20,13 @@ function RoundPage() {
   if (!roundId) return <div>Invalid Round ID</div>;
 
   const [round, setRound] = useState<Round | null>(null);
+  const [players, setPlayers] = useState<PlayerRound[]>([]);
 
   const { data: rounds, loading: loadingRound, error: errorRound } = getSupabaseTable<Round>(
     'rounds',
     { column: 'id', value: roundId }
   );
-  const { data: players, loading: loadingPlayers, error: errorPlayers } = getSupabaseTable<PlayerRound>(
+  const { data: playersData, loading: loadingPlayers, error: errorPlayers } = getSupabaseTable<PlayerRound>(
     'player_rounds',
     { column: 'round_id', value: roundId },
     '*, player_tourneys(player_name)'
@@ -36,6 +37,16 @@ function RoundPage() {
       { column: 'round_id', value: roundId },
       '*, chart_pools(*, charts(*))'
     );
+
+    // Sync players when playersData changes
+    useEffect(() => {
+      if (playersData) {
+        const sortedPlayers = [...playersData].sort(
+          (b, a) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setPlayers(sortedPlayers);
+      }
+    }, [playersData]);
 
   // Stores round table details and sets isAdmin
     useEffect(() => {
@@ -50,7 +61,7 @@ function RoundPage() {
       <Toaster />
       <VStack separator={<StackSeparator />}>
         <RoundDetails round={round} setRound={setRound} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
-        <PlayersList players={players} loading={loadingPlayers} error={errorPlayers} admin={isAdmin} loadingAdmin={loadingAdmin} />
+        <PlayersList round={round} players={players} setPlayers={setPlayers} tourneyId={Number(tourneyId)} loading={loadingPlayers} error={errorPlayers} admin={isAdmin} loadingAdmin={loadingAdmin} />
         <StagesList stages={stages} loading={loadingStages} error={errorStages} admin={isAdmin} loadingAdmin={loadingAdmin} />
       </VStack>
     </>

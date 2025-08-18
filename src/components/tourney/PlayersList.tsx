@@ -1,7 +1,7 @@
 import { Box, Heading, Text, VStack } from '@chakra-ui/react';
 import { useState } from 'react';
 
-import AddPlayer from './AddPlayer';
+import AddPlayer from '../players/AddPlayer';
 import EditablePlayerRow from './EditablePlayerRow';
 import { handleAddPlayerToTourney } from '../../handlers/handleAddPlayerToTourney';
 import { toaster } from "../../components/ui/toaster";

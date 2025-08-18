@@ -5,7 +5,7 @@ import { IoAddCircleSharp } from "react-icons/io5";
 import { IoCloseSharp } from "react-icons/io5";
 
 interface AddPlayerProps {
-  onAdd: (name: string) => Promise<void>;
+  onAdd: (name: string) => Promise<any>;
   loading?: boolean;
 }
 
