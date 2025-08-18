@@ -5,10 +5,11 @@ import { FaCheck } from 'react-icons/fa';
 import { FaTrash } from "react-icons/fa";
 import { IoCloseSharp } from 'react-icons/io5';
 
+import { handleDeletePlayerFromTourney } from '../../handlers/handleDeletePlayerFromTourney';
 import { handleRenamePlayerInTourney } from '../../handlers/handleRenamePlayerInTourney';
 import { toaster } from '../../components/ui/toaster';
+
 import type { PlayerTourney } from '../../types/PlayerTourney';
-import { handleDeletePlayerFromTourney } from '../../handlers/handlerDeletePlayerFromTourney';
 
 interface EditablePlayerRowProps {
   player: PlayerTourney;
