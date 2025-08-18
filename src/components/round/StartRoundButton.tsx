@@ -60,7 +60,7 @@ export default function StartRoundButton({ round, setRound, players, stages }: S
     
 
     return (
-        <Button colorPalette="green" onClick={handleStartRoundClick} mt={2} loading={isStarting}>
+        <Button colorPalette="green" onClick={handleStartRoundClick} loading={isStarting}>
             Start Round
         </Button>
     );

@@ -1,15 +1,15 @@
-import { useState } from 'react'
-import { Box, Heading, Text, VStack } from '@chakra-ui/react'
+import { useEffect, useState } from 'react'
+import { Box, Heading, HStack, Text, VStack } from '@chakra-ui/react'
 
+import StartRoundButton from './StartRoundButton'
+import EditRoundDetailsButton from './EditRoundDetailsButton'
 import { StatusElement } from '../StatusElement'
+import EditableRoundName from '../tourney/EditableRoundName'
+import { handleUpdateRoundName } from '../../handlers/handleUpdateRoundName'
 
 import type { Round } from '../../types/Round'
 import type { PlayerRound } from '../../types/PlayerRound'
 import type { Stage } from '../../types/Stage'
-import EditableRoundName from '../tourney/EditableRoundName'
-import { handleUpdateRoundName } from '../../handlers/handleUpdateRoundName'
-import StartRoundButton from './StartRoundButton'
-
 
 interface RoundDetailsProps {
   round: Round | null
@@ -24,6 +24,10 @@ interface RoundDetailsProps {
 }
 
 export function RoundDetails({ round, setRound, players, stages, loading, error, tourneyId, admin, loadingAdmin }: RoundDetailsProps) {
+  // Edit round logic
+  const [roundName, setRoundName] = useState(round?.name ?? '');
+  const [playersAdvancing, setPlayersAdvancing] = useState(round?.players_advancing ?? -1);
+
   // Rename round logic
   const [updatingName, setUpdatingName] = useState(false);
   const onRenameRound = async (newName: string) => {
@@ -52,9 +56,15 @@ export function RoundDetails({ round, setRound, players, stages, loading, error,
       }
     </>
   );
+
+  useEffect(() => {
+    setPlayersAdvancing(round?.players_advancing ?? -1);
+    setRoundName(round?.name ?? '');
+  }, [round]);
+
   return (
     <>
-      <title>{round && round.name ? round.name : 'Round Details'}</title>
+      <title>{roundName}</title>
       <Heading mb={2}>{roundNameText}</Heading>
       <Box>
         <VStack style={{gap: '0px'}}>
@@ -63,16 +73,28 @@ export function RoundDetails({ round, setRound, players, stages, loading, error,
         {!loading && !error && !round && <Text>Round ID not found.</Text>}
         {!loading && !error && round && (
           <>
-            <StatusElement element={round} />
-            <Text>Players Advancing: {round.players_advancing}</Text>
+          <StatusElement element={round} />
+          <Text>Players Advancing: {playersAdvancing}</Text>
+          <HStack mt={2}>
+            <EditRoundDetailsButton
+              round={round}
+              setRound={setRound}
+              roundName={roundName}
+              setRoundName={setRoundName}
+              playersAdvancing={playersAdvancing}
+              setPlayersAdvancing={setPlayersAdvancing}
+              admin={admin}
+              loadingAdmin={loadingAdmin}
+            />
             {!loadingAdmin && admin && round?.status === "Not Started" && (
               <StartRoundButton
-                round={round}
-                setRound={setRound}
-                players={players}
-                stages={stages}
+              round={round}
+              setRound={setRound}
+              players={players}
+              stages={stages}
               />
             )}
+          </HStack>
           </>
         )}
         </VStack>

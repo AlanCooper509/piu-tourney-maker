@@ -1,13 +1,14 @@
 import React from 'react'
-import {Box, IconButton, useBreakpointValue, VStack, Heading, Container, Input, Field} from '@chakra-ui/react'
+import {Box, IconButton, useBreakpointValue, VStack, Heading, Container} from '@chakra-ui/react'
 import { BiLeftArrowAlt, BiRightArrowAlt } from 'react-icons/bi'
 import { IoAddCircleSharp } from "react-icons/io5";
 import Slider from 'react-slick'
 
-import DialogForm from "../ui/DialogForm";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "./CustomCarousel.css"
+
+import RoundModal from '../round/RoundModal';
 
 import type { CarouselCard } from '../../types/CarouselCard';
 
@@ -17,8 +18,8 @@ interface CaptionCarouselBaseProps {
 
 interface CaptionCarouselAdminProps extends CaptionCarouselBaseProps {
   isAdmin: true;
-  adminClick: () => void;
   adminLoading: boolean;
+  adminClick: () => void;
   newRoundName: string;
   setNewRoundName: (name: string) => void;
   newPlayersAdvancing: number;
@@ -27,8 +28,8 @@ interface CaptionCarouselAdminProps extends CaptionCarouselBaseProps {
 
 interface CaptionCarouselNonAdminProps extends CaptionCarouselBaseProps {
   isAdmin?: false;
-  adminClick?: never;
   adminLoading?: never;
+  adminClick?: never;
   newRoundName?: never;
   setNewRoundName?: never;
   newPlayersAdvancing?: never;
@@ -38,7 +39,7 @@ interface CaptionCarouselNonAdminProps extends CaptionCarouselBaseProps {
 type CaptionCarouselProps = CaptionCarouselAdminProps | CaptionCarouselNonAdminProps;
 
 // inspired from https://chakra-templates.vercel.app/page-sections/carousels
-export default function CustomCarousel({ cards, isAdmin, adminClick, adminLoading, newRoundName, setNewRoundName, newPlayersAdvancing, setNewPlayersAdvancing }: CaptionCarouselProps) {
+export default function CustomCarousel({ cards, isAdmin, adminLoading, adminClick, newRoundName, setNewRoundName, newPlayersAdvancing, setNewPlayersAdvancing }: CaptionCarouselProps) {
   const [slider, setSlider] = React.useState<Slider | null>(null)
   const [currentIndex, setCurrentIndex] = React.useState(0) // track current slide index
 
@@ -63,63 +64,39 @@ export default function CustomCarousel({ cards, isAdmin, adminClick, adminLoadin
     }
   }
 
-  const adminOnlyModal = isAdmin ? (
-    <DialogForm
-      title="Add Round"
-      trigger={
-        <IconButton
-          aria-label="add-round"
-          variant="ghost"
-          loading={adminLoading}
-          disabled={adminLoading}
-          borderColor="green.solid"
-          borderWidth="2px"
-          bg="green.600"
-          _hover={{ bg: "green.700", borderColor: "green.700" }}
-          _active={{ bg: "green.700", borderColor: "green.700" }}
-          _focus={{ boxShadow: "outline", bg: "green.600" }}
-          {...(cards.length > 0 ? {
-            position: "absolute",
-            top: top,
-            right: side,
-            transform: "translate(0%, -50%)",
-            zIndex: 2
-          } : {})}
-        >
-          <IoAddCircleSharp />
-        </IconButton>
-      }
-      onSubmit={adminClick}
-    >
-      {/* Form fields as children */}
-      <VStack gap={4} align="stretch">
-        <Field.Root>
-          <Field.Label>Round Name</Field.Label>
-          <Input
-            value={newRoundName}
-            onChange={(e) => setNewRoundName(e.target.value)}
-            placeholder="Enter round name"
-          />
-        </Field.Root>
+  // input component for RoundModal
+  const addRoundButton = <IconButton
+    aria-label="add-round"
+    variant="ghost"
+    loading={adminLoading}
+    disabled={adminLoading}
+    borderColor="green.solid"
+    borderWidth="2px"
+    bg="green.600"
+    _hover={{ bg: "green.700", borderColor: "green.700" }}
+    _active={{ bg: "green.700", borderColor: "green.700" }}
+    _focus={{ boxShadow: "outline", bg: "green.600" }}
+    {...(cards.length > 0 ? {
+      position: "absolute",
+      top: top,
+      right: side,
+      transform: "translate(0%, -50%)",
+      zIndex: 2
+    } : {})}
+  >
+    <IoAddCircleSharp />
+  </IconButton>
 
-        <Field.Root>
-          <Field.Label>Players Advancing</Field.Label>
-          <Input
-            type="number"
-            value={newPlayersAdvancing}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              if (value >= 1) {
-                setNewPlayersAdvancing(value);
-              }
-            }}
-            placeholder="Enter number of players advancing"
-            min={1}
-          />
-        </Field.Root>
-      </VStack>
-    </DialogForm>
-  ) : null;
+  const adminOnlyModal = isAdmin ? <RoundModal
+    roundName={newRoundName}
+    setRoundName={setNewRoundName}
+    playersAdvancing={newPlayersAdvancing}
+    setPlayersAdvancing={setNewPlayersAdvancing}
+    trigger={addRoundButton}
+    admin={isAdmin}
+    adminLoading={adminLoading}
+    onSubmitForm={adminClick}
+  /> : null;
 
   return (
     <Container centerContent>

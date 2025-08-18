@@ -22,15 +22,6 @@ interface PlayersListProps {
 
 export function PlayersList({ round, players, setPlayers, tourneyId, loading, error, admin, loadingAdmin }: PlayersListProps) {
   const [addingPlayer, setAddingPlayer] = useState(false);
-  const adminText = (
-    <>
-      {loadingAdmin && <Text>Loading admin status...</Text>}
-      {admin ?
-        <Text>(You are an admin for this tournament, you can add/modify players)</Text> :
-        <Text>(You are not an admin for this tournament, you cannot add/modify players)</Text>
-      }
-    </>
-  );
 
   const onAddPlayer = async (name: string) => {
     if (!round) return;
@@ -62,19 +53,18 @@ export function PlayersList({ round, players, setPlayers, tourneyId, loading, er
       {loading && <Text>Loading players...</Text>}
       {error && <Text color="red">Error: {error.message}</Text>}
       <VStack align="center" justify="center" gap={0}>
-        {adminText}
-          {!loading && !error && players?.length ? (
-            players.map(p => (
-              <EditablePlayerRow
-                key={p.id}
-                player={p}
-                admin={admin}
-                removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
-              />
-            ))
-          ) : (
-            !loading && !error && <Text>No players found.</Text>
-          )}
+        {!loading && !error && players?.length ? (
+          players.map(p => (
+            <EditablePlayerRow
+              key={p.id}
+              player={p}
+              admin={admin}
+              removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
+            />
+          ))
+        ) : (
+          !loading && !error && <Text>No players found.</Text>
+        )}
       </VStack>
       {!loadingAdmin && admin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
     </Box>

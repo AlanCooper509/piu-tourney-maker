@@ -21,6 +21,7 @@ function RoundPage() {
 
   const [round, setRound] = useState<Round | null>(null);
   const [players, setPlayers] = useState<PlayerRound[]>([]);
+  const [stages, setStages] = useState<Stage[]>([]);
 
   const { data: rounds, loading: loadingRound, error: errorRound } = getSupabaseTable<Round>(
     'rounds',
@@ -31,22 +32,30 @@ function RoundPage() {
     { column: 'round_id', value: roundId },
     '*, player_tourneys(player_name)'
   );
-  const { data: stages, loading: loadingStages, error: errorStages } =
+  const { data: stagesData, loading: loadingStages, error: errorStages } =
     getSupabaseTable<Stage & { chart_pools: ChartPool[] }>(
       'stages',
       { column: 'round_id', value: roundId },
       '*, chart_pools(*, charts(*))'
     );
 
-    // Sync players when playersData changes
-    useEffect(() => {
-      if (playersData) {
-        const sortedPlayers = [...playersData].sort(
-          (b, a) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-        setPlayers(sortedPlayers);
-      }
-    }, [playersData]);
+  // Sync players when playersData changes
+  useEffect(() => {
+    if (playersData) {
+      const sortedPlayers = [...playersData].sort(
+        (b, a) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setPlayers(sortedPlayers);
+    }
+  }, [playersData]);
+
+  // Sync stages when stagesData changes
+  useEffect(() => {
+    if (stagesData) {
+      const sortedStages = [...stagesData].sort((a, b) => a.id - b.id);
+      setStages(sortedStages);
+    }
+  }, [stagesData]);
 
   // Stores round table details and sets isAdmin
     useEffect(() => {
@@ -62,7 +71,7 @@ function RoundPage() {
       <VStack separator={<StackSeparator />}>
         <RoundDetails round={round} setRound={setRound} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
         <PlayersList round={round} players={players} setPlayers={setPlayers} tourneyId={Number(tourneyId)} loading={loadingPlayers} error={errorPlayers} admin={isAdmin} loadingAdmin={loadingAdmin} />
-        <StagesList stages={stages} loading={loadingStages} error={errorStages} admin={isAdmin} loadingAdmin={loadingAdmin} />
+        <StagesList stages={stages} setStages={setStages} loading={loadingStages} error={errorStages} admin={isAdmin} loadingAdmin={loadingAdmin} />
       </VStack>
     </>
   );
