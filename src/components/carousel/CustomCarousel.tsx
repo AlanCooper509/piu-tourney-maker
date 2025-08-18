@@ -161,7 +161,7 @@ export default function CustomCarousel({ cards, isAdmin, adminClick, adminLoadin
           isAdmin && adminOnlyModal
         )}
 
-        <Box position="relative" maxW="xl" w="4xl" overflow="hidden">
+        <Box position="relative" overflow="hidden">
           {cards.length === 0 && isAdmin ? (
             // Display a centered admin-only Add button when no cards exist
             <Box display="flex" justifyContent="center">
@@ -169,30 +169,32 @@ export default function CustomCarousel({ cards, isAdmin, adminClick, adminLoadin
           ) :
             <>
             {/* Slider */}
-            <Slider {...settings} ref={(slider) => setSlider(slider)} className="my-slider">
-              {cards.map((card, index) => (
-                <Box
-                  key={index}
-                  borderColor="border.emphasized"
-                  borderWidth="2px"
-                  borderRadius="xl"
-                  pb={20}
-                  h="auto"
-                  w="full"
-                >
-                  <Container>
-                    <VStack gap={6} pt={10} w={'full'} maxW={'full'}>
-                      <Heading fontSize={{ base: 'md', md: 'lg', lg: 'xl' }}>
-                        {card.title}
-                      </Heading>
-                      <Box fontSize={{ base: 'sm', lg: 'md' }}>
-                        {card.content}
-                      </Box>
-                    </VStack>
-                  </Container>
-                </Box>
-              ))}
-            </Slider>
+            <Box w="full" overflow="hidden">
+              <Slider {...settings} ref={(slider) => setSlider(slider)} className="my-slider">
+                {cards.map((card, index) => (
+                  <Box
+                    key={index}
+                    borderColor="border.emphasized"
+                    borderWidth="2px"
+                    borderRadius="xl"
+                    pb={20}
+                    h="auto"
+                    w="full"
+                  >
+                    <Container>
+                      <VStack gap={6} pt={10} w={'full'} maxW={'full'}>
+                        <Heading fontSize={{ base: 'md', md: 'lg', lg: 'xl' }}>
+                          {card.title}
+                        </Heading>
+                        <Box fontSize={{ base: 'sm', lg: 'md' }}>
+                          {card.content}
+                        </Box>
+                      </VStack>
+                    </Container>
+                  </Box>
+                ))}
+              </Slider>
+            </Box>
             {/* Current Index Display — bottom center */}
             <Box position="absolute" bottom="10px" left="50%" transform="translateX(-50%)" color="white" px={2} py={1}
               backgroundColor="bg.panel"
