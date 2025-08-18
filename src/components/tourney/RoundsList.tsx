@@ -134,6 +134,24 @@ export function RoundsList({ tourney, rounds, loading, error, admin, loadingAdmi
 
   const onAddRound = () => {
     if (!tourney) return;
+    if (!newRoundName.trim()) {
+      toaster.create({
+        title: "Invalid Round Name",
+        description: "Round name cannot be empty.",
+        type: "error",
+        closable: true,
+      });
+      return;
+    }
+    if (newPlayersAdvancing < 1) {
+      toaster.create({
+        title: "Invalid Players Advancing",
+        description: "Players advancing must be at least 1.",
+        type: "error",
+        closable: true,
+      });
+      return;
+    }
     addRoundToTourney(
       tourney.id,
       newRoundName,
