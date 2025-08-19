@@ -31,11 +31,11 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
   };
 
   return (
-    <HStack my={2} gap={2} alignContent="center" justifyContent="center">
+    <HStack my={2} gap={2} alignContent="center" justifyContent="center" borderWidth="2px" borderRadius="md" borderColor="gray.600">
       {/* Chart name */}
       <Input
         size="sm"
-        placeholder="Chart Name (e.g. Halcyon)"
+        placeholder="Chart Name"
         value={chartName}
         onChange={(e) => setChartName(e.target.value)}
         width="180px"
