@@ -34,49 +34,52 @@ function HomePage() {
       w={{ base: '90%', md: '60%' }}
       mx="auto"
     >
-      <HStack align="center" w="100%">
-        <Box minW={{ base: '60px', sm: '80px', md: '90px' }} minH={{ base: '60px', sm: '80px', md: '90px' }}>
-          <Image
-            src={row.image_url || `https://images.start.gg/images/tournament/776306/image-ac1496a2e656e00a6a57aa025a87b0b3.jpg`}
-            alt={`${row.name} image`}
-            boxSize={{ base: '60px', sm: '80px', md: '90px' }}
-            objectFit="cover"
-            borderRadius="md"
-          />
-        </Box>
+      {/* Entire card is clickable */}
+      <Link to={`/tourney/${row.id}`}>
+        <LinkOverlay>
+          <HStack align="center" w="100%">
+            <Box minW={{ base: '60px', sm: '80px', md: '90px' }} minH={{ base: '60px', sm: '80px', md: '90px' }}>
+              <Image
+                src={'https://images.start.gg/images/tournament/776306/image-ac1496a2e656e00a6a57aa025a87b0b3.jpg'}
+                alt={`${row.name} image`}
+                boxSize={{ base: '60px', sm: '80px', md: '90px' }}
+                objectFit="cover"
+                borderRadius="md"
+              />
+            </Box>
 
-        <Flex direction="column" flex="1" justify="space-between" minH={{ base: '70px', sm: '90px' }}>
-          <HStack justify="space-between" w="100%" align="start">
-            <LinkOverlay as={Link} to={`/tourney/${row.id}`}>
-              <Heading as="h3" fontSize={{ base: 'xl', sm: '2xl', md: '3xl' }}>
-                {row.name}
-              </Heading>
-            </LinkOverlay>
+            <Flex direction="column" flex="1" justify="space-between" minH={{ base: '70px', sm: '90px' }}>
+              <HStack justify="space-between" w="100%" align="start">
+                <Heading as="h3" fontSize={{ base: 'xl', sm: '2xl', md: '3xl' }}>
+                  {row.name}
+                </Heading>
 
-            {keyPrefix === 'my' && (
-              <HStack>
-                {adminLoading ? (
-                  <Text fontSize={{ base: 'md', sm: 'lg' }} color="gray.300">(Loading...)</Text>
-                ) : adminTourneyIds.includes(row.id) ? (
-                  <Text fontSize={{ base: 'md', sm: 'lg' }} color="green.400">(Admin)</Text>
-                ) : null}
+                {keyPrefix === 'my' && (
+                  <HStack>
+                    {adminLoading ? (
+                      <Text fontSize={{ base: 'md', sm: 'lg' }} color="gray.300">(Loading...)</Text>
+                    ) : adminTourneyIds.includes(row.id) ? (
+                      <Text fontSize={{ base: 'md', sm: 'lg' }} color="green.400">(Admin)</Text>
+                    ) : null}
+                  </HStack>
+                )}
               </HStack>
-            )}
+
+              <Box w="100%" mt={2}>
+                <Text fontSize={{ base: 'md', sm: 'lg' }} color="gray.300" textAlign="left">
+                  Date: {/* Add logic here */}
+                </Text>
+              </Box>
+
+              <Flex justify="flex-end" mt={2}>
+                <Text fontSize={{ base: 'md', sm: 'lg' }} color="gray.300">
+                  ID: {row.id}
+                </Text>
+              </Flex>
+            </Flex>
           </HStack>
-
-          <Box w="100%" mt={2}>
-            <Text fontSize={{ base: 'md', sm: 'lg' }} color="gray.300" textAlign="left">
-              Date: {/* Add logic here */}
-            </Text>
-          </Box>
-
-          <Flex justify="flex-end" mt={2}>
-            <Text fontSize={{ base: 'md', sm: 'lg' }} color="gray.300">
-              ID: {row.id}
-            </Text>
-          </Flex>
-        </Flex>
-      </HStack>
+        </LinkOverlay>
+      </Link>
     </LinkBox>
   );
 
