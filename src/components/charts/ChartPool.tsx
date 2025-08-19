@@ -45,16 +45,16 @@ export default function ChartPool({ stage, setStages, admin, loadingAdmin }: Cha
   }
   
   return (
-    stage.chart_pools?.length ? stage.chart_pools : [{ id: 0, charts: null }]).map(pool => (
-      <Box key={pool.id} borderWidth="1px" borderRadius="sm" pl={4}>
-        {pool.charts ? (
+    stage.chart_pools?.length ? stage.chart_pools : [{ id: 0, charts: null }]).map(chartInPool => (
+      <Box key={chartInPool.id} borderWidth="1px" borderRadius="sm" pl={4}>
+        {chartInPool.charts ? (
           <HStack mb={2} width="100%" align="center">
               <Text>
-                {pool.charts.name_en ?? 'No Chart Name'}
+                {chartInPool.charts.name_en ?? 'No Chart Name'}
               </Text>
               <Spacer />
               <Text>
-                {pool.charts.type ?? 'No Chart Type'} {pool.charts.level ?? '(No Chart Difficulty)'}
+                {chartInPool.charts.type ?? 'No Chart Type'} {chartInPool.charts.level ?? '(No Chart Difficulty)'}
               </Text>
               {!loadingAdmin && admin && (
                 <IconButton
@@ -62,7 +62,7 @@ export default function ChartPool({ stage, setStages, admin, loadingAdmin }: Cha
                 size="sm"
                 colorPalette="red"
                 px={2}
-                onClick={() => onDeleteChartFromPool(stage.id, pool.charts!.id)}
+                onClick={() => onDeleteChartFromPool(stage.id, chartInPool.charts!.id)}
                 >
                   Remove Chart<FaTrash />
                 </IconButton>
