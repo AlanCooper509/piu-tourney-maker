@@ -55,7 +55,7 @@ function HomePage() {
                 </Heading>
 
                 {keyPrefix === 'my' && (
-                  <HStack>
+                  <HStack flexShrink={0}>
                     {adminLoading ? (
                       <Text fontSize={{ base: 'md', sm: 'lg' }} color="gray.300">(Loading...)</Text>
                     ) : adminTourneyIds.includes(row.id) ? (
@@ -125,7 +125,7 @@ function HomePage() {
       <Flex justify="center" w="100%">{renderSectionHeader("My Tourneys")}</Flex>
       <VStack align="stretch" w="100%" maxW="100%" mb={8}>
         {tourneys.map((row) => renderTourneyCard(row, 'my'))}
-        {renderAddTourneyCard()}
+        {adminTourneyIds.length > 0 && renderAddTourneyCard()}
       </VStack>
 
       <Flex justify="center" w="100%">{renderSectionHeader("Active Tourneys")}</Flex>
