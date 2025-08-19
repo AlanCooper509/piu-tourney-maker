@@ -2,7 +2,7 @@ import { HStack, Text, IconButton } from '@chakra-ui/react';
 import { FaTrash } from "react-icons/fa";
 
 import { handleDeletePlayerFromRound } from '../../handlers/handleDeletePlayerFromRound';
-import { toaster } from '../../components/ui/toaster';
+import { toaster } from '../ui/toaster';
 
 import type { PlayerRound } from '../../types/PlayerRound';
 

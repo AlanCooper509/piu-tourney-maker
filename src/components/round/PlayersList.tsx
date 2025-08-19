@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Box, Heading, HStack, Text, VStack } from '@chakra-ui/react'
 
 import { handleAddPlayerToRound } from '../../handlers/handleAddPlayerToRound'
-import EditablePlayerRow from './EditablePlayerRow'
+import DeletablePlayerRow from './DeletablePlayerRow'
 import AddPlayer from '../players/AddPlayer'
 import { toaster } from '../ui/toaster'
 
@@ -58,7 +58,7 @@ export function PlayersList({ round, players, setPlayers, tourneyId, loading, er
       <VStack align="center" justify="center" gap={0}>
         {!loading && !error && players?.length ? (
           players.map(p => (
-            <EditablePlayerRow
+            <DeletablePlayerRow
               key={p.id}
               player={p}
               admin={admin}
