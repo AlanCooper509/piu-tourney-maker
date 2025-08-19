@@ -1,26 +1,33 @@
 import { VStack, StackSeparator } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
+import { isAdminForTourney } from "../hooks/AdminTourneyHelpers";
 import { RoundDetails } from "../components/round/RoundDetails";
 import { PlayersList } from "../components/round/PlayersList";
 import { StagesList } from "../components/round/StagesList";
-import { isAdminForTourney } from "../hooks/AdminTourneyHelpers";
+import { Toaster } from "../components/ui/toaster";
+import { HeroTitle } from "../components/ui/HeroTitle"; // <-- Added import
 
 import type { Round } from "../types/Round";
 import type { Stage } from "../types/Stage";
 import type { PlayerRound } from "../types/PlayerRound";
 import type { ChartPool } from "../types/ChartPool";
 
-const RoundPage: React.FC = () => {
+function RoundPage() {
   const { tourneyId, roundId } = useParams<{ tourneyId: string; roundId: string }>();
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
+  if (!roundId) return <div>Invalid Round ID</div>;
+
+  const [round, setRound] = useState<Round | null>(null);
+  const [players, setPlayers] = useState<PlayerRound[]>([]);
 
   const { data: rounds, loading: loadingRound, error: errorRound } = getSupabaseTable<Round>(
     'rounds',
     { column: 'id', value: roundId }
   );
-  const { data: players, loading: loadingPlayers, error: errorPlayers } = getSupabaseTable<PlayerRound>(
+  const { data: playersData, loading: loadingPlayers, error: errorPlayers } = getSupabaseTable<PlayerRound>(
     'player_rounds',
     { column: 'round_id', value: roundId },
     '*, player_tourneys(player_name)'
@@ -32,14 +39,33 @@ const RoundPage: React.FC = () => {
       '*, chart_pools(*, charts(*))'
     );
 
-  const round: Round | null = (!loadingRound && !errorRound && rounds?.length > 0) ? rounds[0] : null;
-  const { isAdmin, loading: loadingAdmin } = isAdminForTourney(Number(tourneyId));
+    // Sync players when playersData changes
+    useEffect(() => {
+      if (playersData) {
+        const sortedPlayers = [...playersData].sort(
+          (b, a) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setPlayers(sortedPlayers);
+      }
+    }, [playersData]);
+
+  // Stores round table details and sets isAdmin
+    useEffect(() => {
+      if (rounds?.length) {
+        setRound(rounds[0]);
+      }
+    }, [rounds]);
+    const { isAdmin, loading: loadingAdmin } = isAdminForTourney(Number(tourneyId));
 
   return (
     <>
+      {/* Hero Title at top of page */}
+      <HeroTitle />
+
+      <Toaster />
       <VStack separator={<StackSeparator />}>
-        <RoundDetails round={round} loading={loadingRound} error={errorRound} admin={isAdmin} loadingAdmin={loadingAdmin} />
-        <PlayersList players={players} loading={loadingPlayers} error={errorPlayers} admin={isAdmin} loadingAdmin={loadingAdmin} />
+        <RoundDetails round={round} setRound={setRound} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
+        <PlayersList round={round} players={players} setPlayers={setPlayers} tourneyId={Number(tourneyId)} loading={loadingPlayers} error={errorPlayers} admin={isAdmin} loadingAdmin={loadingAdmin} />
         <StagesList stages={stages} loading={loadingStages} error={errorStages} admin={isAdmin} loadingAdmin={loadingAdmin} />
       </VStack>
     </>

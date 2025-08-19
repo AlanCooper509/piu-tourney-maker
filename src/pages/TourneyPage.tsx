@@ -9,6 +9,7 @@ import { TourneyDetails } from "../components/tourney/TourneyDetails";
 import { PlayersList } from "../components/tourney/PlayersList";
 import { RoundsList } from "../components/tourney/RoundsList";
 import { Toaster } from "../components/ui/toaster";
+import { HeroTitle } from "../components/ui/HeroTitle"; // <-- added import
 
 import type { Tourney } from '../types/Tourney';
 import type { PlayerTourney } from "../types/PlayerTourney";
@@ -54,6 +55,8 @@ function TourneyPage() {
 
   return (
     <>
+      <HeroTitle /> {/* <-- added hero title */}
+
       <Toaster />
       <VStack separator={<StackSeparator />}>
         <TourneyDetails

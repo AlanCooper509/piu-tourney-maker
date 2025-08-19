@@ -2,6 +2,7 @@ import { Box, Button, Input, Stack, Text } from '@chakra-ui/react';
 import { useState } from 'react';
 
 import { useAuth } from '../context/AuthContext';
+import { HeroTitle } from "../components/ui/HeroTitle"; // <-- added import
 
 export default function LoginForm() {
   const { user, signIn, signUp, signOut } = useAuth();
@@ -51,67 +52,71 @@ export default function LoginForm() {
   };
 
   return (
-    <Box maxW="sm" mx="auto" p={4} borderWidth={1} borderRadius="md">
-      <form onSubmit={handleSubmit}>
-        <Stack gap={3}>
-          {!user && (
-            <>
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-                required
-              />
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-                required
-              />
+    <>
+      <HeroTitle /> {/* <-- added hero title */}
 
-              {errorMsg && <Text color="red.500">{errorMsg}</Text>}
+      <Box maxW="sm" mx="auto" p={4} borderWidth={1} borderRadius="md">
+        <form onSubmit={handleSubmit}>
+          <Stack gap={3}>
+            {!user && (
+              <>
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                  required
+                />
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                  required
+                />
 
-              <Button
-                colorPalette="blue"
-                type="submit"
-                loading={loading}
-                disabled={loading}
-              >
-                Sign In
-              </Button>
+                {errorMsg && <Text color="red.500">{errorMsg}</Text>}
 
-              <Button
-                colorPalette="green"
-                onClick={handleSignUp}
-                loading={loading}
-                disabled={loading}
-                type="button"
-              >
-                Sign Up
-              </Button>
-            </>
-          )}
+                <Button
+                  colorPalette="blue"
+                  type="submit"
+                  loading={loading}
+                  disabled={loading}
+                >
+                  Sign In
+                </Button>
 
-          {user && (
-            <>
-              <Text>Signed in as: {user.email}</Text>
-              <Button
-                colorPalette="red"
-                onClick={handleSignOut}
-                loading={loading}
-                disabled={loading}
-                type="button"
-              >
-                Sign Out
-              </Button>
-            </>
-          )}
-        </Stack>
-      </form>
-    </Box>
+                <Button
+                  colorPalette="green"
+                  onClick={handleSignUp}
+                  loading={loading}
+                  disabled={loading}
+                  type="button"
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
+
+            {user && (
+              <>
+                <Text>Signed in as: {user.email}</Text>
+                <Button
+                  colorPalette="red"
+                  onClick={handleSignOut}
+                  loading={loading}
+                  disabled={loading}
+                  type="button"
+                >
+                  Sign Out
+                </Button>
+              </>
+            )}
+          </Stack>
+        </form>
+      </Box>
+    </>
   );
 }
