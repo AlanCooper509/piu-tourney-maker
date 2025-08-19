@@ -17,6 +17,12 @@ function HomePage() {
 
   tourneys.sort((a, b) => a.id - b.id);
 
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return 'TBD';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
   const renderTourneyCard = (row: Tourney, keyPrefix: string) => (
     <LinkBox
       as="article"
@@ -56,20 +62,15 @@ function HomePage() {
                   {row.name}
                 </Heading>
 
-                {keyPrefix === 'my' && (
-                  <HStack>
-                    {adminLoading ? (
-                      <Text fontSize={{ base: 'md', sm: 'lg' }} color="gray.300">(Loading...)</Text>
-                    ) : adminTourneyIds.includes(row.id) ? (
-                      <Text fontSize={{ base: 'md', sm: 'lg' }} color="green.400">(Admin)</Text>
-                    ) : null}
-                  </HStack>
+                {/* Show admin badge only if user is an admin */}
+                {keyPrefix === 'active' && !adminLoading && adminTourneyIds.includes(row.id) && (
+                  <Text fontSize={{ base: 'md', sm: 'lg' }} color="green.400">(Admin)</Text>
                 )}
               </HStack>
 
               <Box w="100%" mt={2}>
                 <Text fontSize={{ base: 'md', sm: 'lg' }} color="gray.300" textAlign="left">
-                  Date: {/* Add logic here */}
+                  Dates: {formatDate(row.start_date)}{row.end_date ? ` - ${formatDate(row.end_date)}` : ''}
                 </Text>
               </Box>
 
@@ -135,9 +136,7 @@ function HomePage() {
 
   return (
     <>
-      {/* =======================
-          My Tourneys section hidden for now
-          ======================= */}
+      {/* My Tourneys section hidden */}
       {false && (
         <>
           <Flex justify="center" w="100%">{renderSectionHeader("My Tourneys")}</Flex>
@@ -152,17 +151,20 @@ function HomePage() {
       <Flex justify="center" w="100%">{renderSectionHeader("Active Tourneys")}</Flex>
       <VStack align="stretch" w="100%" mb={8}>
         {activeTourneys.map(row => renderTourneyCard(row, 'active'))}
+
+        {/* Add Tourney card only if user is logged in AND is an admin */}
+        {!adminLoading && adminTourneyIds && adminTourneyIds.length > 0 && renderAddTourneyCard()}
       </VStack>
 
       {/* Archived Tourneys */}
-      <Flex justify="center" w="100%">{renderSectionHeader("Archived Tourneys")}</Flex>
+      <Flex justify="center" w="100%">{renderSectionHeader("Completed Tourneys")}</Flex>
       <VStack align="stretch" w="100%">
         {archivedTourneys.map(row => renderTourneyCard(row, 'archived'))}
       </VStack>
 
       <Box mt={12} w="100%">
         <hr style={{ borderColor: 'grey', borderWidth: '1px' }} />
-        <Text textAlign="center" py={4} fontSize="lg">yo mama</Text>
+        <Text textAlign="center" py={4} fontSize="lg">Welcome to Beast in the East 8!</Text>
       </Box>
     </>
   );
