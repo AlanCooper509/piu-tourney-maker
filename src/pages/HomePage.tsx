@@ -31,8 +31,10 @@ function HomePage() {
         transform: 'scale(1.02)',
         cursor: 'pointer',
       }}
+      w={{ base: '90%', md: '60%' }}
+      mx="auto"
     >
-      <HStack align="center">
+      <HStack align="center" w="100%">
         <Box minW={{ base: '60px', sm: '80px', md: '90px' }} minH={{ base: '60px', sm: '80px', md: '90px' }}>
           <Image
             src={row.image_url || `https://images.start.gg/images/tournament/776306/image-ac1496a2e656e00a6a57aa025a87b0b3.jpg`}
@@ -98,6 +100,8 @@ function HomePage() {
       }}
       align="center"
       justify="center"
+      w={{ base: '90%', md: '60%' }}
+      mx="auto"
     >
       <Text fontSize={{ base: '3xl', sm: '4xl' }} color="gray.400">
         +
@@ -107,7 +111,7 @@ function HomePage() {
 
   const renderSectionHeader = (title: string) => (
     <Box display="inline-block" bg="gray.900" px={4} py={2} borderRadius="md" mb={4}>
-      <Heading as="h2" fontSize={{ base: '2xl', sm: '3xl', md: '4xl' }} textAlign="center">
+      <Heading as="h2" fontSize="32px" textAlign="center">
         {title}
       </Heading>
     </Box>
@@ -115,19 +119,19 @@ function HomePage() {
 
   return (
     <>
-      <Flex justify="center">{renderSectionHeader("My Tourneys")}</Flex>
-      <VStack align="stretch" maxW="100%" mx="auto" mb={8}>
+      <Flex justify="center" w="100%">{renderSectionHeader("My Tourneys")}</Flex>
+      <VStack align="stretch" w="100%" maxW="100%" mb={8}>
         {tourneys.map((row) => renderTourneyCard(row, 'my'))}
         {renderAddTourneyCard()}
       </VStack>
 
-      <Flex justify="center">{renderSectionHeader("Active Tourneys")}</Flex>
-      <VStack align="stretch" maxW="100%" mx="auto" mb={8}>
+      <Flex justify="center" w="100%">{renderSectionHeader("Active Tourneys")}</Flex>
+      <VStack align="stretch" w="100%" maxW="100%" mb={8}>
         {tourneys.map((row) => renderTourneyCard(row, 'active'))}
       </VStack>
 
-      <Flex justify="center">{renderSectionHeader("Archived Tourneys")}</Flex>
-      <VStack align="stretch" maxW="100%" mx="auto">
+      <Flex justify="center" w="100%">{renderSectionHeader("Archived Tourneys")}</Flex>
+      <VStack align="stretch" w="100%" maxW="100%">
         {tourneys.map((row) => renderTourneyCard(row, 'archived'))}
       </VStack>
 
