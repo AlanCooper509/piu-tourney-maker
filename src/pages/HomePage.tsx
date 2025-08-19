@@ -4,14 +4,13 @@ import { Heading, Text, Box, VStack, HStack, Image, Flex, LinkBox, LinkOverlay }
 import getSupabaseTable from '../hooks/getSupabaseTable';
 import type { Tourney } from '../types/Tourney';
 import { getAdminTourneyIds } from '../hooks/AdminTourneyHelpers';
-import { HeroTitle } from '../components/ui/HeroTitle';
 
 function HomePage() {
   const { data: tourneys, loading, error } = getSupabaseTable<Tourney>('tourneys');
   const { adminTourneyIds, loading: adminLoading } = getAdminTourneyIds();
 
-  if (loading) return <Text>Loading...</Text>;
-  if (error) return <Text>Error: {error.message}</Text>;
+  if (loading) return <Text fontSize="xl">Loading...</Text>;
+  if (error) return <Text fontSize="xl">Error: {error.message}</Text>;
 
   tourneys.sort((a, b) => a.id - b.id);
 
@@ -21,7 +20,7 @@ function HomePage() {
       key={`${keyPrefix}-${row.id}`}
       borderWidth="1px"
       borderRadius="lg"
-      p={{ base: 3, sm: 4 }}
+      p={{ base: 4, sm: 5 }}
       bg="gray.900"
       color="white"
       shadow="sm"
@@ -34,20 +33,20 @@ function HomePage() {
       }}
     >
       <HStack align="center">
-        <Box minW={{ base: '50px', sm: '70px', md: '80px' }} minH={{ base: '50px', sm: '70px', md: '80px' }}>
+        <Box minW={{ base: '60px', sm: '80px', md: '90px' }} minH={{ base: '60px', sm: '80px', md: '90px' }}>
           <Image
-            src={`https://images.start.gg/images/tournament/776306/image-ac1496a2e656e00a6a57aa025a87b0b3.jpg`}
+            src={row.image_url || `https://images.start.gg/images/tournament/776306/image-ac1496a2e656e00a6a57aa025a87b0b3.jpg`}
             alt={`${row.name} image`}
-            boxSize={{ base: '50px', sm: '70px', md: '80px' }}
+            boxSize={{ base: '60px', sm: '80px', md: '90px' }}
             objectFit="cover"
             borderRadius="md"
           />
         </Box>
 
-        <Flex direction="column" flex="1" justify="space-between" minH={{ base: '60px', sm: '80px' }}>
+        <Flex direction="column" flex="1" justify="space-between" minH={{ base: '70px', sm: '90px' }}>
           <HStack justify="space-between" w="100%" align="start">
             <LinkOverlay as={Link} to={`/tourney/${row.id}`}>
-              <Heading as="h3" fontSize={{ base: 'lg', sm: 'xl', md: '2xl' }}>
+              <Heading as="h3" fontSize={{ base: 'xl', sm: '2xl', md: '3xl' }}>
                 {row.name}
               </Heading>
             </LinkOverlay>
@@ -55,24 +54,22 @@ function HomePage() {
             {keyPrefix === 'my' && (
               <HStack>
                 {adminLoading ? (
-                  <Text fontSize={{ base: 'sm', sm: 'md' }} color="gray.300">(Loading...)</Text>
+                  <Text fontSize={{ base: 'md', sm: 'lg' }} color="gray.300">(Loading...)</Text>
                 ) : adminTourneyIds.includes(row.id) ? (
-                  <Text fontSize={{ base: 'sm', sm: 'md' }} color="green.400">(Admin)</Text>
-                ) : (
-                  <Text fontSize={{ base: 'sm', sm: 'md' }} color="red.400">(Not Admin)</Text>
-                )}
+                  <Text fontSize={{ base: 'md', sm: 'lg' }} color="green.400">(Admin)</Text>
+                ) : null}
               </HStack>
             )}
           </HStack>
 
-          <Box w="100%" mt={1}>
-            <Text fontSize={{ base: 'sm', sm: 'md' }} color="gray.300" textAlign="left">
+          <Box w="100%" mt={2}>
+            <Text fontSize={{ base: 'md', sm: 'lg' }} color="gray.300" textAlign="left">
               Date: {/* Add logic here */}
             </Text>
           </Box>
 
           <Flex justify="flex-end" mt={2}>
-            <Text fontSize={{ base: 'sm', sm: 'md' }} color="gray.300">
+            <Text fontSize={{ base: 'md', sm: 'lg' }} color="gray.300">
               ID: {row.id}
             </Text>
           </Flex>
@@ -87,8 +84,8 @@ function HomePage() {
       borderStyle="dashed"
       borderColor="gray.400"
       borderRadius="lg"
-      p={{ base: 3, sm: 4 }}
-      minH={{ base: '100px', sm: '120px' }}
+      p={{ base: 4, sm: 5 }}
+      minH={{ base: '110px', sm: '130px' }}
       shadow="sm"
       bg="gray.900"
       color="white"
@@ -102,35 +99,41 @@ function HomePage() {
       align="center"
       justify="center"
     >
-      <Text fontSize={{ base: '2xl', sm: '3xl' }} color="gray.400">
+      <Text fontSize={{ base: '3xl', sm: '4xl' }} color="gray.400">
         +
       </Text>
     </Flex>
   );
 
+  const renderSectionHeader = (title: string) => (
+    <Box display="inline-block" bg="gray.900" px={4} py={2} borderRadius="md" mb={4}>
+      <Heading as="h2" fontSize={{ base: '2xl', sm: '3xl', md: '4xl' }} textAlign="center">
+        {title}
+      </Heading>
+    </Box>
+  );
+
   return (
     <>
-      <HeroTitle />
-
-      <Heading as="h2" size="xl" mb={4}>My Tourneys</Heading>
-      <VStack align="stretch" maxW="800px" mx="auto" mb={8}>
+      <Flex justify="center">{renderSectionHeader("My Tourneys")}</Flex>
+      <VStack align="stretch" maxW="100%" mx="auto" mb={8}>
         {tourneys.map((row) => renderTourneyCard(row, 'my'))}
         {renderAddTourneyCard()}
       </VStack>
 
-      <Heading as="h2" size="lg" mb={4}>Active Tourneys</Heading>
-      <VStack align="stretch" maxW="800px" mx="auto" mb={8}>
+      <Flex justify="center">{renderSectionHeader("Active Tourneys")}</Flex>
+      <VStack align="stretch" maxW="100%" mx="auto" mb={8}>
         {tourneys.map((row) => renderTourneyCard(row, 'active'))}
       </VStack>
 
-      <Heading as="h2" size="lg" mb={4}>Archived Tourneys</Heading>
-      <VStack align="stretch" maxW="800px" mx="auto">
+      <Flex justify="center">{renderSectionHeader("Archived Tourneys")}</Flex>
+      <VStack align="stretch" maxW="100%" mx="auto">
         {tourneys.map((row) => renderTourneyCard(row, 'archived'))}
       </VStack>
 
       <Box mt={12} w="100%">
         <hr style={{ borderColor: 'grey', borderWidth: '1px' }} />
-        <Text textAlign="center" py={4}>yo mama</Text>
+        <Text textAlign="center" py={4} fontSize="lg">yo mama</Text>
       </Box>
     </>
   );

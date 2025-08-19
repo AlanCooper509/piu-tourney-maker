@@ -8,7 +8,6 @@ import { RoundDetails } from "../components/round/RoundDetails";
 import { PlayersList } from "../components/round/PlayersList";
 import { StagesList } from "../components/round/StagesList";
 import { Toaster } from "../components/ui/toaster";
-import { HeroTitle } from "../components/ui/HeroTitle"; // <-- Added import
 
 import type { Round } from "../types/Round";
 import type { Stage } from "../types/Stage";
@@ -59,8 +58,6 @@ function RoundPage() {
 
   return (
     <>
-      {/* Hero Title at top of page */}
-      <HeroTitle />
 
       <Toaster />
       <VStack separator={<StackSeparator />}>

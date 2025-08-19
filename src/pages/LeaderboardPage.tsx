@@ -1,6 +1,5 @@
 import { Table } from "@chakra-ui/react"
 import { Box, Collapsible } from "@chakra-ui/react"
-import { HeroTitle } from "../components/ui/HeroTitle"; // <-- Added import for Hero Title
 
 function Leaderboard() {
     const playersInfo = {
@@ -17,8 +16,6 @@ function Leaderboard() {
 
 return (
   <>
-    {/* Hero Title at top of page */}
-    <HeroTitle />
 
     {Array.from({ length: playersTotal }).map((_: unknown, j: number) => (
       // display a collapsible for each player

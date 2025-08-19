@@ -2,7 +2,6 @@ import { Box, Button, Input, Stack, Text } from '@chakra-ui/react';
 import { useState } from 'react';
 
 import { useAuth } from '../context/AuthContext';
-import { HeroTitle } from "../components/ui/HeroTitle"; // <-- added import
 
 export default function LoginForm() {
   const { user, signIn, signUp, signOut } = useAuth();
@@ -52,8 +51,7 @@ export default function LoginForm() {
   };
 
   return (
-    <>
-      <HeroTitle /> {/* <-- added hero title */}
+    <> {/* <-- added hero title */}
 
       <Box maxW="sm" mx="auto" p={4} borderWidth={1} borderRadius="md">
         <form onSubmit={handleSubmit}>
