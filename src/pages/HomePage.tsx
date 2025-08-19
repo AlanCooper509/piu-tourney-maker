@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Heading, Text, Box, VStack, HStack, Image, Flex, LinkBox, LinkOverlay } from '@chakra-ui/react';
+import {
+  Heading, Text, Box, VStack, HStack, Image, Flex,
+  LinkBox, LinkOverlay
+} from '@chakra-ui/react';
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
 import type { Tourney } from '../types/Tourney';
@@ -34,9 +37,8 @@ function HomePage() {
       w={{ base: '90%', md: '60%' }}
       mx="auto"
     >
-      {/* Entire card is clickable */}
-      <Link to={`/tourney/${row.id}`}>
-        <LinkOverlay>
+      <LinkOverlay asChild>
+        <Link to={`/tourney/${row.id}`}>
           <HStack align="center" w="100%">
             <Box minW={{ base: '60px', sm: '80px', md: '90px' }} minH={{ base: '60px', sm: '80px', md: '90px' }}>
               <Image
@@ -55,7 +57,7 @@ function HomePage() {
                 </Heading>
 
                 {keyPrefix === 'my' && (
-                  <HStack flexShrink={0}>
+                  <HStack>
                     {adminLoading ? (
                       <Text fontSize={{ base: 'md', sm: 'lg' }} color="gray.300">(Loading...)</Text>
                     ) : adminTourneyIds.includes(row.id) ? (
@@ -78,8 +80,8 @@ function HomePage() {
               </Flex>
             </Flex>
           </HStack>
-        </LinkOverlay>
-      </Link>
+        </Link>
+      </LinkOverlay>
     </LinkBox>
   );
 
@@ -120,22 +122,42 @@ function HomePage() {
     </Box>
   );
 
+  // --- Filtering logic ---
+  const activeTourneys = tourneys.filter(t => {
+    const status = t.status?.toLowerCase() ?? '';
+    return status === 'in progress' || status === 'active';
+  });
+
+  const archivedTourneys = tourneys.filter(t => {
+    const status = t.status?.toLowerCase() ?? '';
+    return status === 'archived' || status === 'completed';
+  });
+
   return (
     <>
-      <Flex justify="center" w="100%">{renderSectionHeader("My Tourneys")}</Flex>
-      <VStack align="stretch" w="100%" maxW="100%" mb={8}>
-        {tourneys.map((row) => renderTourneyCard(row, 'my'))}
-        {adminTourneyIds.length > 0 && renderAddTourneyCard()}
-      </VStack>
+      {/* =======================
+          My Tourneys section hidden for now
+          ======================= */}
+      {false && (
+        <>
+          <Flex justify="center" w="100%">{renderSectionHeader("My Tourneys")}</Flex>
+          <VStack align="stretch" w="100%" maxW="100%" mb={8}>
+            {tourneys.map(row => renderTourneyCard(row, 'my'))}
+            {!adminLoading && adminTourneyIds.length > 0 && renderAddTourneyCard()}
+          </VStack>
+        </>
+      )}
 
+      {/* Active Tourneys */}
       <Flex justify="center" w="100%">{renderSectionHeader("Active Tourneys")}</Flex>
-      <VStack align="stretch" w="100%" maxW="100%" mb={8}>
-        {tourneys.map((row) => renderTourneyCard(row, 'active'))}
+      <VStack align="stretch" w="100%" mb={8}>
+        {activeTourneys.map(row => renderTourneyCard(row, 'active'))}
       </VStack>
 
+      {/* Archived Tourneys */}
       <Flex justify="center" w="100%">{renderSectionHeader("Archived Tourneys")}</Flex>
-      <VStack align="stretch" w="100%" maxW="100%">
-        {tourneys.map((row) => renderTourneyCard(row, 'archived'))}
+      <VStack align="stretch" w="100%">
+        {archivedTourneys.map(row => renderTourneyCard(row, 'archived'))}
       </VStack>
 
       <Box mt={12} w="100%">
