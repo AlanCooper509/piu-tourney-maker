@@ -69,7 +69,7 @@ function RoundPage() {
       <Toaster />
       <VStack separator={<StackSeparator />}>
         <RoundDetails round={round} setRound={setRound} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
-        <PlayersList round={round} players={players} setPlayers={setPlayers} tourneyId={Number(tourneyId)} loading={loadingPlayers} error={errorPlayers} admin={isAdmin} loadingAdmin={loadingAdmin} />
+        <PlayersList round={round} players={players} setPlayers={setPlayers} stages={stages} tourneyId={Number(tourneyId)} loading={loadingPlayers} error={errorPlayers} admin={isAdmin} loadingAdmin={loadingAdmin} />
         <StagesList round={round} stages={stages} setStages={setStages} loading={loadingStages} error={errorStages} admin={isAdmin} loadingAdmin={loadingAdmin} />
       </VStack>
     </>

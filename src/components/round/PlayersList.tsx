@@ -8,11 +8,13 @@ import { toaster } from '../ui/toaster'
 
 import type { PlayerRound } from '../../types/PlayerRound'
 import type { Round } from '../../types/Round'
+import type { Stage } from '../../types/Stage'
 
 interface PlayersListProps {
   round: Round | null
   players: PlayerRound[] | null
   setPlayers: React.Dispatch<React.SetStateAction<PlayerRound[]>>
+  stages: Stage[] | null
   tourneyId: number
   loading: boolean
   error: Error | null
@@ -20,7 +22,7 @@ interface PlayersListProps {
   loadingAdmin: boolean
 }
 
-export function PlayersList({ round, players, setPlayers, tourneyId, loading, error, admin, loadingAdmin }: PlayersListProps) {
+export function PlayersList({ round, players, setPlayers, stages, tourneyId, loading, error, admin, loadingAdmin }: PlayersListProps) {
   const [addingPlayer, setAddingPlayer] = useState(false);
 
   const onAddPlayer = async (name: string) => {
@@ -61,6 +63,7 @@ export function PlayersList({ round, players, setPlayers, tourneyId, loading, er
             <DeletablePlayerRow
               key={p.id}
               player={p}
+              stages={stages}
               admin={admin}
               removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
             />

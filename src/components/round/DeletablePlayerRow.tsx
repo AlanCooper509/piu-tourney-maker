@@ -1,18 +1,21 @@
-import { HStack, Text, IconButton } from '@chakra-ui/react';
+import { HStack, IconButton } from '@chakra-ui/react';
 import { FaTrash } from "react-icons/fa";
 
+import PlayerRoundStats from './PlayerRoundStats';
 import { handleDeletePlayerFromRound } from '../../handlers/handleDeletePlayerFromRound';
 import { toaster } from '../ui/toaster';
 
 import type { PlayerRound } from '../../types/PlayerRound';
+import type { Stage } from '../../types/Stage';
 
 interface DeletablePlayerRowProps {
   player: PlayerRound;
+  stages: Stage[] | null; 
   admin: boolean;
   removePlayer: (playerId: number) => void;
 }
 
-export default function DeletablePlayerRow({ player, admin, removePlayer }: DeletablePlayerRowProps) {
+export default function DeletablePlayerRow({ player, stages, admin, removePlayer }: DeletablePlayerRowProps) {
   const handleDeletePlayer = async () => {
     if (!confirm(`Delete player "${player.player_tourneys.player_name}"?`)) return;
     try {
@@ -36,7 +39,7 @@ export default function DeletablePlayerRow({ player, admin, removePlayer }: Dele
 
   return (
     <HStack justify={admin ? "space-between" : "center"} width="100%">
-        <Text>{player.player_tourneys.player_name}</Text>
+        <PlayerRoundStats player={player} stages={stages} admin={admin} />
         {admin && (
           <>
             <IconButton
