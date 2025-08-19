@@ -87,8 +87,8 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
   const sortedStages = stages?.slice().sort((a, b) => a.id - b.id) ?? [];
   return (
     <Box>
-      <HStack justifyContent="center" alignItems="center">
-        <Heading mb={2}>Stages</Heading>
+      <HStack mb={2} justifyContent="center" alignItems="center">
+        <Heading>Stages</Heading>
         {/* Add Stage Button */}
         {!loadingAdmin && admin &&
           <AddStageButton round={round} setStages={setStages} />
@@ -99,11 +99,11 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
       {!loading && !error && sortedStages?.length ? (
         sortedStages.map((stage) => { 
           return (
-            <Box key={stage.id} mb={2} borderWidth="1px" borderRadius="md" p={2}>
+            <Box key={stage.id} mb={2} p={2} background="gray.800" borderWidth="2px" borderRadius="md" borderColor="gray.600">
               <HStack justifyContent={"center"} alignItems="center">
                 {/* Stage Header */}
                 <Text fontWeight="bold">
-                  {stage.charts?.name_en ?? <>Selected Chart<Span fontWeight="normal">: ???</Span></>} {stage.charts?.type ?? ""} {stage.charts?.level ?? ""}
+                  Selected: {stage.charts?.name_en ?? <><Span fontWeight="normal">: ???</Span></>} {stage.charts?.type?.charAt(0) ?? ""}{stage.charts?.level ?? ""}
                 </Text>
  
                 {/* Delete Stage Button */}
