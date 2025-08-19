@@ -5,8 +5,8 @@ import {
 } from '@chakra-ui/react';
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
-import type { Tourney } from '../types/Tourney';
 import { getAdminTourneyIds } from '../hooks/AdminTourneyHelpers';
+import type { Tourney } from '../types/Tourney';
 
 function HomePage() {
   const { data: tourneys, loading, error } = getSupabaseTable<Tourney>('tourneys');
@@ -125,13 +125,11 @@ function HomePage() {
 
   // --- Filtering logic ---
   const activeTourneys = tourneys.filter(t => {
-    const status = t.status?.toLowerCase() ?? '';
-    return status === 'in progress' || status === 'active';
+    return t.status === 'In Progress' && new Date(t.end_date) >= new Date();
   });
 
   const archivedTourneys = tourneys.filter(t => {
-    const status = t.status?.toLowerCase() ?? '';
-    return status === 'archived' || status === 'completed';
+    return t.status === 'Complete' || new Date(t.end_date) < new Date();
   });
 
   return (
