@@ -1,4 +1,4 @@
-import { HStack, Text, Input, IconButton } from '@chakra-ui/react';
+import { HStack, Text, Input, IconButton, Spacer } from '@chakra-ui/react';
 import { useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { FaCheck } from 'react-icons/fa';
@@ -74,7 +74,7 @@ export default function EditablePlayerRow({ player, admin, updatePlayer, removeP
   };
 
   return (
-    <HStack justify="center" width="100%">
+    <HStack justify={admin ? "space-between" : "center"} width="100%">
       {isEditing ? (
         <>
           <Input
@@ -107,6 +107,7 @@ export default function EditablePlayerRow({ player, admin, updatePlayer, removeP
           <Text>{player.player_name}</Text>
           {admin && (
             <>
+              <Spacer />
               <IconButton
                 aria-label="Edit player name"
                 size="sm"

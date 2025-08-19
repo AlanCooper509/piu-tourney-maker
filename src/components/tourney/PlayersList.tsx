@@ -55,7 +55,7 @@ export function PlayersList({ tourney, players, setPlayers, loading, error, admi
   return (
     <>
       <Box>
-        <HStack mb={2}>
+        <HStack mb={2} justifyContent={!loadingAdmin && admin ? 'space-between' : 'center'}>
           <Heading mb={2}>Players</Heading>
           {!loadingAdmin && admin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
         </HStack>
