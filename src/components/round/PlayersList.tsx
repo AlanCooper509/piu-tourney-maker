@@ -49,7 +49,7 @@ export function PlayersList({ round, players, setPlayers, tourneyId, loading, er
 
   return (
     <Box>
-      <HStack mb={2}>
+      <HStack mb={2} justifyContent={!loadingAdmin && admin ? 'space-between' : 'center'}>
         <Heading mb={2}>Players</Heading>
         {!loadingAdmin && admin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
       </HStack>

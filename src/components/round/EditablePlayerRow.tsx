@@ -35,7 +35,7 @@ export default function DeletablePlayerRow({ player, admin, removePlayer }: Dele
   }
 
   return (
-    <HStack justify="center" width="100%">
+    <HStack justify={admin ? "space-between" : "center"} width="100%">
         <Text>{player.player_tourneys.player_name}</Text>
         {admin && (
           <>

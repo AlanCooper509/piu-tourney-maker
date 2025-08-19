@@ -1,5 +1,5 @@
 import { Portal, Select, createListCollection } from "@chakra-ui/react";
-import type { ChartQuery } from "./AddChartForm";
+import type { ChartQuery } from "../../types/ChartQuery";
 
 const chartTypes = createListCollection({
   items: [
@@ -25,12 +25,10 @@ export function ChartTypeSelect({ value, onChange }: ChartTypeSelectProps) {
       collection={chartTypes}
       size="sm"
       width="100px"
-      value={value ? [value] : []}
+      value={value === "" ? [] : [value]}
       onValueChange={(details) => {
-        const val = details.value[0];
-        if (!val) {
-          onChange("");
-        } else if (isChartType(val)) {
+        const val = details.value[0] ?? "";
+        if (isChartType(val) || val === "") {
           onChange(val);
         }
       }}

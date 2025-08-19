@@ -33,10 +33,10 @@ function RoundPage() {
     '*, player_tourneys(player_name)'
   );
   const { data: stagesData, loading: loadingStages, error: errorStages } =
-    getSupabaseTable<Stage & { chart_pools: ChartPool[] }>(
+    getSupabaseTable<Stage>(
       'stages',
       { column: 'round_id', value: roundId },
-      '*, chart_pools(*, charts(*))'
+      '*, chart_pools(*, charts(*)), charts:chart_id(*)'
     );
 
   // Sync players when playersData changes

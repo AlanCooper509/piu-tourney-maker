@@ -1,4 +1,4 @@
-import { Box, Heading, Text, HStack } from '@chakra-ui/react';
+import { Box, Heading, Text, HStack, Span } from '@chakra-ui/react';
 
 import { handleAssignRandomChartToStage } from '../../handlers/handleAssignRandomChartToStage';
 import { toaster } from '../ui/toaster';
@@ -7,11 +7,12 @@ import { handleAddChartToPool } from '../../handlers/handleAddChartToPool';
 import AddChartForm from '../charts/AddChartForm';
 import AddStageButton from '../stages/AddStageButton';
 import { RollChartButton } from '../stages/RollChartButton';
+import ChartPool from '../charts/ChartPool';
+import DeleteStageButton from '../stages/DeleteStageButton';
 
 import type { Round } from '../../types/Round';
 import type { Stage } from '../../types/Stage';
-import ChartPool from '../charts/ChartPool';
-import DeleteStageButton from '../stages/DeleteStageButton';
+import type { ChartQuery } from '../../types/ChartQuery';
 
 interface StageListProps {
   round: Round | null;
@@ -100,13 +101,15 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
           return (
             <Box key={stage.id} mb={2} borderWidth="1px" borderRadius="md" p={2}>
               <HStack justifyContent={"center"} alignItems="center">
-                {/* Delete Stage Button */}
-                <DeleteStageButton round={round} stageId={stage.id} setStages={setStages} />
-
                 {/* Stage Header */}
                 <Text fontWeight="bold">
-                  (ID: {stage.id}) Chart ID: {stage.chart_id ?? 'Not Selected Yet'}
+                  {stage.charts?.name_en ?? <>Selected Chart<Span fontWeight="normal">: ???</Span></>} {stage.charts?.type ?? ""} {stage.charts?.level ?? ""}
                 </Text>
+ 
+                {/* Delete Stage Button */}
+                {!loadingAdmin && admin && 
+                  <DeleteStageButton round={round} stageId={stage.id} setStages={setStages} />
+                }
               </HStack>
 
               {/* Roll Chart Button */}
@@ -117,7 +120,7 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
               {/* Add Chart Form */}
               {!loadingAdmin && admin && (
                 <AddChartForm
-                  onSubmit={(chartQuery: { name: string; level: number; type: 'Single' | 'Double' | 'Co-Op' | 'UCS' }) =>
+                  onSubmit={(chartQuery: ChartQuery) =>
                     onAddChartToPool(stage.id, chartQuery.name, chartQuery.level, chartQuery.type)
                   }
                 />
