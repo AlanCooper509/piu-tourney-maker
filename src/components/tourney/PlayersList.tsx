@@ -1,7 +1,7 @@
-import { Box, Heading, Text, VStack } from '@chakra-ui/react';
+import { Box, Heading, HStack, Text, VStack } from '@chakra-ui/react';
 import { useState } from 'react';
 
-import AddPlayer from './AddPlayer';
+import AddPlayer from '../players/AddPlayer';
 import EditablePlayerRow from './EditablePlayerRow';
 import { handleAddPlayerToTourney } from '../../handlers/handleAddPlayerToTourney';
 import { toaster } from "../../components/ui/toaster";
@@ -55,7 +55,10 @@ export function PlayersList({ tourney, players, setPlayers, loading, error, admi
   return (
     <>
       <Box>
-        <Heading size="2xl" mb={2}>Players</Heading>
+        <HStack mb={2} justifyContent={!loadingAdmin && admin ? 'space-between' : 'center'}>
+          <Heading mb={2}>Players</Heading>
+          {!loadingAdmin && admin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
+        </HStack>
         {loading && <Text>Loading players...</Text>}
         {error && <Text color="red">Error: {error.message}</Text>}
         <VStack align="center" justify="center" gap={0}>
@@ -73,7 +76,6 @@ export function PlayersList({ tourney, players, setPlayers, loading, error, admi
             !loading && !error && <Text>No players found.</Text>
           )}
         </VStack>
-        {!loadingAdmin && admin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
       </Box>
     </>
   );

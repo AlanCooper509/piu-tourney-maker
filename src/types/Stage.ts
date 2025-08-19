@@ -1,3 +1,4 @@
+import type { Chart } from "./Chart";
 import type { ChartPool } from "./ChartPool";
 
 export interface Stage {
@@ -6,4 +7,5 @@ export interface Stage {
   chart_id?: number | null;  // bigint -> number
   created_at: string;        // ISO timestamp string
   chart_pools?: ChartPool[];
+  charts?: Chart | null;
 }

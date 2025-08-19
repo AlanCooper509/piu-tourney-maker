@@ -39,7 +39,7 @@ function TourneyPage() {
       setTourney(tourneys[0]);
     }
   }, [tourneys]);
-  const { isAdmin, loading: loadingAdmin } = isAdminForTourney(tourney && tourney.id ? tourney.id : 0);
+  const { isAdmin, loading: loadingAdmin } = isAdminForTourney(Number(tourneyId));
 
   // Sync players when playersData changes
   useEffect(() => {
@@ -75,6 +75,7 @@ function TourneyPage() {
           loadingAdmin={loadingAdmin}
         />
         <RoundsList
+          tourney={tourney}
           rounds={rounds}
           loading={loadingRounds}
           error={errorRounds}

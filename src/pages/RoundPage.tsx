@@ -12,7 +12,6 @@ import { Toaster } from "../components/ui/toaster";
 import type { Round } from "../types/Round";
 import type { Stage } from "../types/Stage";
 import type { PlayerRound } from "../types/PlayerRound";
-import type { ChartPool } from "../types/ChartPool";
 
 function RoundPage() {
   const { tourneyId, roundId } = useParams<{ tourneyId: string; roundId: string }>();
@@ -21,6 +20,10 @@ function RoundPage() {
 
   const [round, setRound] = useState<Round | null>(null);
   const [players, setPlayers] = useState<PlayerRound[]>([]);
+<<<<<<< HEAD
+=======
+  const [stages, setStages] = useState<Stage[]>([]);
+>>>>>>> c9c683994ce135183f043b9a02d9e6d7e4056317
 
   const { data: rounds, loading: loadingRound, error: errorRound } = getSupabaseTable<Round>(
     'rounds',
@@ -31,13 +34,14 @@ function RoundPage() {
     { column: 'round_id', value: roundId },
     '*, player_tourneys(player_name)'
   );
-  const { data: stages, loading: loadingStages, error: errorStages } =
-    getSupabaseTable<Stage & { chart_pools: ChartPool[] }>(
+  const { data: stagesData, loading: loadingStages, error: errorStages } =
+    getSupabaseTable<Stage>(
       'stages',
       { column: 'round_id', value: roundId },
-      '*, chart_pools(*, charts(*))'
+      '*, chart_pools(*, charts(*)), charts:chart_id(*)'
     );
 
+<<<<<<< HEAD
     // Sync players when playersData changes
     useEffect(() => {
       if (playersData) {
@@ -47,6 +51,25 @@ function RoundPage() {
         setPlayers(sortedPlayers);
       }
     }, [playersData]);
+=======
+  // Sync players when playersData changes
+  useEffect(() => {
+    if (playersData) {
+      const sortedPlayers = [...playersData].sort(
+        (b, a) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setPlayers(sortedPlayers);
+    }
+  }, [playersData]);
+
+  // Sync stages when stagesData changes
+  useEffect(() => {
+    if (stagesData) {
+      const sortedStages = [...stagesData].sort((a, b) => a.id - b.id);
+      setStages(sortedStages);
+    }
+  }, [stagesData]);
+>>>>>>> c9c683994ce135183f043b9a02d9e6d7e4056317
 
   // Stores round table details and sets isAdmin
     useEffect(() => {
@@ -58,12 +81,19 @@ function RoundPage() {
 
   return (
     <>
+<<<<<<< HEAD
 
+=======
+>>>>>>> c9c683994ce135183f043b9a02d9e6d7e4056317
       <Toaster />
       <VStack separator={<StackSeparator />}>
         <RoundDetails round={round} setRound={setRound} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
         <PlayersList round={round} players={players} setPlayers={setPlayers} tourneyId={Number(tourneyId)} loading={loadingPlayers} error={errorPlayers} admin={isAdmin} loadingAdmin={loadingAdmin} />
+<<<<<<< HEAD
         <StagesList stages={stages} loading={loadingStages} error={errorStages} admin={isAdmin} loadingAdmin={loadingAdmin} />
+=======
+        <StagesList round={round} stages={stages} setStages={setStages} loading={loadingStages} error={errorStages} admin={isAdmin} loadingAdmin={loadingAdmin} />
+>>>>>>> c9c683994ce135183f043b9a02d9e6d7e4056317
       </VStack>
     </>
   );

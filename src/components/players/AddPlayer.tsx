@@ -5,7 +5,7 @@ import { IoAddCircleSharp } from "react-icons/io5";
 import { IoCloseSharp } from "react-icons/io5";
 
 interface AddPlayerProps {
-  onAdd: (name: string) => Promise<void>;
+  onAdd: (name: string) => Promise<any>;
   loading?: boolean;
 }
 
@@ -26,7 +26,7 @@ function AddPlayer({ onAdd, loading }: AddPlayerProps) {
   };
 
   return (
-    <HStack align="center" justify="center" mt={4}>
+    <HStack align="center" justify="center">
       {isAdding ? (
         <>
           <Input
@@ -58,10 +58,11 @@ function AddPlayer({ onAdd, loading }: AddPlayerProps) {
         <IconButton
           aria-label="Add player"
           size="sm"
+          px={2}
           colorPalette="green"
           onClick={() => setIsAdding(true)}
         >
-            <IoAddCircleSharp />
+            Add Player<IoAddCircleSharp />
         </IconButton>
       )}
     </HStack>
