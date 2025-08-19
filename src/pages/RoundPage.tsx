@@ -12,7 +12,6 @@ import { Toaster } from "../components/ui/toaster";
 import type { Round } from "../types/Round";
 import type { Stage } from "../types/Stage";
 import type { PlayerRound } from "../types/PlayerRound";
-import type { ChartPool } from "../types/ChartPool";
 
 function RoundPage() {
   const { tourneyId, roundId } = useParams<{ tourneyId: string; roundId: string }>();
