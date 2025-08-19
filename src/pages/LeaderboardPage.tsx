@@ -16,10 +16,6 @@ function Leaderboard() {
 
 return (
   <>
-<<<<<<< HEAD
-
-=======
->>>>>>> c9c683994ce135183f043b9a02d9e6d7e4056317
     {Array.from({ length: playersTotal }).map((_: unknown, j: number) => (
       // display a collapsible for each player
       <Collapsible.Root key={j}>

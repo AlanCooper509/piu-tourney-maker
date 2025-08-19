@@ -20,6 +20,7 @@ function TourneyPage() {
   const [tourney, setTourney] = useState<Tourney | null>(null);
   const [players, setPlayers] = useState<PlayerTourney[]>([]);
 
+
   const { data: tourneys, loading: loadingTourney, error: errorTourney } = getSupabaseTable<Tourney>(
     'tourneys',
     { column: 'id', value: tourneyId }
