@@ -35,7 +35,7 @@ function RoundPage() {
     getSupabaseTable<Stage>(
       'stages',
       { column: 'round_id', value: roundId },
-      '*, chart_pools(*, charts(*)), charts:chart_id(*)'
+      '*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)'
     );
 
   // Sync players when playersData changes
@@ -57,12 +57,12 @@ function RoundPage() {
   }, [stagesData]);
 
   // Stores round table details and sets isAdmin
-    useEffect(() => {
-      if (rounds?.length) {
-        setRound(rounds[0]);
-      }
-    }, [rounds]);
-    const { isAdmin, loading: loadingAdmin } = isAdminForTourney(Number(tourneyId));
+  useEffect(() => {
+    if (rounds?.length) {
+      setRound(rounds[0]);
+    }
+  }, [rounds]);
+  const { isAdmin, loading: loadingAdmin } = isAdminForTourney(Number(tourneyId));
 
   return (
     <>

@@ -21,7 +21,7 @@ export async function handleAssignRandomChartToStage(stageId: number) {
     .from('stages')
     .update({ chart_id: chosenChartId })
     .eq('id', stageId)
-    .select('*, chart_pools(*, charts(*)), charts:chart_id(*)');
+    .select('*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)');
 
   if (updateError) throw updateError;
 
