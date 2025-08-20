@@ -1,5 +1,4 @@
-import { HStack, IconButton } from '@chakra-ui/react';
-import { FaTrash } from "react-icons/fa";
+import { HStack } from '@chakra-ui/react';
 
 import PlayerRoundStats from './PlayerRoundStats';
 import { handleDeletePlayerFromRound } from '../../handlers/handleDeletePlayerFromRound';
