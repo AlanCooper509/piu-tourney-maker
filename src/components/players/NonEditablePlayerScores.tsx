@@ -1,6 +1,4 @@
-import { Text, HStack, IconButton, Input, Tag } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
-import { IoMdSend } from 'react-icons/io';
+import { Text, HStack, Tag } from '@chakra-ui/react';
 
 import { getScoresForPlayer } from '../../helpers/getScoresForPlayer';
 

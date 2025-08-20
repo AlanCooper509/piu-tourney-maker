@@ -7,7 +7,6 @@ import { handleUpdateScoreOnStage } from '../../handlers/handleUpdateScoreOnStag
 import { toaster } from '../ui/toaster';
 
 import type { Stage } from '../../types/Stage';
-import type { Score } from '../../types/Score';
 import type { PlayerRound } from '../../types/PlayerRound';
 
 interface EditablePlayerScoresProps {
