@@ -88,10 +88,10 @@ export function RoundDetails({ round, setRound, players, stages, loading, error,
             />
             {!loadingAdmin && admin && round?.status === "Not Started" && (
               <StartRoundButton
-              round={round}
-              setRound={setRound}
-              players={players}
-              stages={stages}
+                round={round}
+                setRound={setRound}
+                players={players}
+                stages={stages}
               />
             )}
           </HStack>
