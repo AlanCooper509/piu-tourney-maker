@@ -1,6 +1,7 @@
-import { Box, Checkbox, Collapsible, HStack, Text } from '@chakra-ui/react';
+import { Box, Checkbox, Collapsible, HStack, IconButton, Spacer, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { IoChevronForward } from 'react-icons/io5';
+import { FaTrash } from 'react-icons/fa';
 
 import EditablePlayerScores from '../players/EditablePlayerScores';
 
@@ -13,9 +14,10 @@ interface PlayerRoundStatsProps {
   player: PlayerRound;
   stages: Stage[] | null;
   admin: boolean;
+  handleDeletePlayer: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export default function PlayerRoundStats({ player, stages, admin }: PlayerRoundStatsProps) {
+export default function PlayerRoundStats({ player, stages, admin, handleDeletePlayer }: PlayerRoundStatsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const toggleOpen = () => setIsOpen(prev => !prev);
   const [stagesPlayed, setStagesPlayed] = useState(0);
@@ -55,6 +57,19 @@ export default function PlayerRoundStats({ player, stages, admin }: PlayerRoundS
             <Text fontWeight={isOpen ? "bold" : "normal"}>
               {player.player_tourneys.player_name}
             </Text>
+            <Spacer/>
+            {admin && (
+              <>
+                <IconButton
+                  aria-label="Delete player"
+                  size="sm"
+                  colorPalette="red"
+                  onClick={handleDeletePlayer}
+                >
+                  <FaTrash />
+                </IconButton>
+              </>
+            )}
           </HStack>
         </Collapsible.Trigger>
         <Collapsible.Content w="xs">

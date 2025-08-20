@@ -38,20 +38,8 @@ export default function DeletablePlayerRow({ player, stages, admin, removePlayer
   }
 
   return (
-    <HStack justify={admin ? "space-between" : "center"} width="100%">
-        <PlayerRoundStats player={player} stages={stages} admin={admin} />
-        {admin && (
-          <>
-            <IconButton
-              aria-label="Delete player"
-              size="sm"
-              colorPalette="red"
-              onClick={handleDeletePlayer}
-            >
-              <FaTrash />
-            </IconButton>
-          </>
-        )}
+    <HStack justify={admin ? "space-between" : "center"}>
+        <PlayerRoundStats player={player} stages={stages} admin={admin} handleDeletePlayer={handleDeletePlayer} />
     </HStack>
   );
 }
