@@ -14,9 +14,17 @@ interface DeletablePlayerRowProps {
   removePlayer: (playerId: number) => void;
 }
 
+function alertText(playerName: string) {
+  const lines = [
+    `Delete player "${playerName}"?`,
+    "This will remove ALL of their scores on this round!!"
+  ]
+  return lines.join('\n')
+}
+
 export default function DeletablePlayerRow({ player, stages, admin, removePlayer }: DeletablePlayerRowProps) {
   const handleDeletePlayer = async () => {
-    if (!confirm(`Delete player "${player.player_tourneys.player_name}"?`)) return;
+    if (!confirm(alertText(player.player_tourneys.player_name))) return;
     try {
       await handleDeletePlayerFromRound(player.id);
       removePlayer(player.id);
