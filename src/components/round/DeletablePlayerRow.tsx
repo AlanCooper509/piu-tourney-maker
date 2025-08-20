@@ -10,7 +10,7 @@ import type { Stage } from '../../types/Stage';
 
 interface DeletablePlayerRowProps {
   player: PlayerRound;
-  stages: Stage[] | null; 
+  stages: Stage[] | null;
   admin: boolean;
   removePlayer: (playerId: number) => void;
 }
