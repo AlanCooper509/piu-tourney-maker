@@ -7,10 +7,12 @@ import {
 import getSupabaseTable from '../hooks/getSupabaseTable';
 import { getAdminTourneyIds } from '../hooks/AdminTourneyHelpers';
 import type { Tourney } from '../types/Tourney';
+import { useAuth } from '../context/AuthContext';
 
 function HomePage() {
   const { data: tourneys, loading, error } = getSupabaseTable<Tourney>('tourneys');
   const { adminTourneyIds, loading: adminLoading } = getAdminTourneyIds();
+  const { user } = useAuth();
 
   if (loading) return <Text fontSize="xl">Loading...</Text>;
   if (error) return <Text fontSize="xl">Error: {error.message}</Text>;
@@ -150,8 +152,12 @@ function HomePage() {
       <VStack align="stretch" w="100%" mb={8}>
         {activeTourneys.map(row => renderTourneyCard(row, 'active'))}
 
-        {/* Add Tourney card only if user is logged in AND is an admin */}
-        {!adminLoading && adminTourneyIds && adminTourneyIds.length > 0 && renderAddTourneyCard()}
+        {/* Add Tourney card only if user is logged in ('user' exists) */}
+        {/* Temporary: ALSO ensure they are already is assigned manually as a tourney admin somewhere*/}
+        {/* - for BITE8 timeline; just to prevent any potential spammers for now */}
+        {!adminLoading && adminTourneyIds && adminTourneyIds.length > 0 && user && 
+          renderAddTourneyCard()
+        }
       </VStack>
 
       {/* Archived Tourneys */}
