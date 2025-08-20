@@ -1,4 +1,4 @@
-import { Box, Heading, Text, HStack, Span } from '@chakra-ui/react';
+import { Box, Heading, Text, HStack, Span, Separator } from '@chakra-ui/react';
 
 import { handleAssignRandomChartToStage } from '../../handlers/handleAssignRandomChartToStage';
 import { toaster } from '../ui/toaster';
@@ -105,7 +105,6 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
                 <Text fontWeight="bold">
                   Selected: {stage.charts?.name_en ?? <><Span fontWeight="normal">: ???</Span></>} {stage.charts?.type?.charAt(0) ?? ""}{stage.charts?.level ?? ""}
                 </Text>
- 
                 {/* Delete Stage Button */}
                 {!loadingAdmin && admin && 
                   <DeleteStageButton round={round} stageId={stage.id} setStages={setStages} />
@@ -116,6 +115,8 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
               {!loadingAdmin && admin && !stage.chart_id && stage.chart_pools && stage.chart_pools.length !== 0 && (
                 <RollChartButton stageId={stage.id} onClick={onRollChart} />
               )}
+
+              <Separator size="lg" borderColor="gray.700" borderWidth="1px" mt={2} />
 
               {/* Add Chart Form */}
               {!loadingAdmin && admin && (
