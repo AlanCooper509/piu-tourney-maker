@@ -181,7 +181,7 @@ export default function EditablePlayerScores({ player, stages, incrementStagesPl
               <Input
                 size="xs"
                 borderColor="white"
-                minWidth="43px"
+                minWidth="69px"
                 value={inputValues[stage.id] ?? playerScore?.score?.toString() ?? ''}
                 onChange={e => handleChange(stage.id, e.target.value)}
               />
