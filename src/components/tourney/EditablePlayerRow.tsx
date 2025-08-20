@@ -2,7 +2,6 @@ import { HStack, Text, Input, IconButton, Spacer } from '@chakra-ui/react';
 import { useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { FaCheck } from 'react-icons/fa';
-import { FaTrash } from "react-icons/fa";
 import { IoCloseSharp } from 'react-icons/io5';
 import { MdOutlinePersonRemoveAlt1 } from "react-icons/md"
 
