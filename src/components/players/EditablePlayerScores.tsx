@@ -158,7 +158,7 @@ export default function EditablePlayerScores({ player, stages, incrementStagesPl
       const isAdding = !playerScore;
 
       return (
-        <HStack key={stage.id}>
+        <HStack key={stage.id} my={1}>
           <Tag.Root
             colorPalette={chartType === 'D' ? 'green' : chartType === 'S' ? 'red' : chartType === 'C' ? 'yellow' : 'blue'}
           >
@@ -190,7 +190,9 @@ export default function EditablePlayerScores({ player, stages, incrementStagesPl
 
           <IconButton
             colorPalette={isAdding ? 'green' : 'blue'}
-            size="sm"
+            variant="outline"
+            borderRadius={5}
+            size="xs"
             onClick={() => (isAdding ? handleSubmitAddScore(stage.id) : handleSubmitEditScore(stage.id))}
             px={2}
           >

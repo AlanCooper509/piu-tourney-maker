@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Box, Button, Heading, VStack, Text } from '@chakra-ui/react'
+import { Box, Heading, VStack, Text, IconButton } from '@chakra-ui/react'
 
 import EditableTourneyName from './EditableTourneyName'
 import { handleUpdateTourneyName } from '../../handlers/handleUpdateTourneyName'
@@ -96,9 +96,18 @@ export function TourneyDetails({ tourney, setTourney, players, rounds, loading, 
             <Text>Type: {tourney.type}</Text>
             <StatusElement element={tourney} />
             {!loadingAdmin && admin && tourney?.status === "Not Started" && (
-              <Button colorPalette="green" onClick={handleStartTourneyClick} mt={2} loading={isStarting}>
+              <IconButton 
+                colorPalette="green"
+                variant="outline"
+                borderWidth={2}
+                size="sm"
+                onClick={handleStartTourneyClick}
+                mt={2}
+                px={2}
+                loading={isStarting}
+              >
                 Start Tourney
-              </Button>
+              </IconButton>
             )}
           </>
         )}

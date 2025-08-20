@@ -62,7 +62,8 @@ export default function PlayerRoundStats({ player, stages, admin, handleDeletePl
               <>
                 <IconButton
                   aria-label="Delete player"
-                  size="sm"
+                  variant="outline"
+                  size="xs"
                   colorPalette="red"
                   onClick={handleDeletePlayer}
                 >

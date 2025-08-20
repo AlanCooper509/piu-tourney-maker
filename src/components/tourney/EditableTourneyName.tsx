@@ -60,6 +60,8 @@ function EditableTourneyName({
             aria-label="Save name"
             onClick={handleSave}
             loading={isLoading}
+            variant="outline"
+            borderWidth={2}
             size="sm"
             colorPalette="green"
           >
@@ -68,6 +70,8 @@ function EditableTourneyName({
           <IconButton
             aria-label="Cancel edit"
             onClick={handleCancel}
+            variant="outline"
+            borderWidth={2}
             size="sm"
             colorPalette="red"
           >
@@ -81,6 +85,8 @@ function EditableTourneyName({
             aria-label="Edit name"
             colorPalette="blue"
             onClick={() => setIsEditing(true)}
+            variant="outline"
+            borderWidth={2}
             size="sm"
           >
             <CiEdit />
