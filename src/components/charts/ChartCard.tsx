@@ -21,7 +21,7 @@ export function ChartCard({ chart, width = "300px" }: ChartCardProps) {
     <Card.Root width={width} size="sm" variant="elevated">
       {chart.image_url && <Image src={chart.image_url} alt={chart.name_en} filter="auto" />}
       <Card.Body>
-        <Card.Title>
+        <Card.Title truncate>
           {chart.name_en}
         </Card.Title>
         <Card.Description>
