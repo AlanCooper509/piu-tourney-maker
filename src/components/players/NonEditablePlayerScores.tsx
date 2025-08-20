@@ -25,9 +25,9 @@ export default function ({player, stages}: NonEditablePlayerScores) {
 
   return (
     stages?.map((stage) => {
-      const chartName = stage.charts ? stage.charts.name_en ?? "No Name" : "No chart selected";
+      const chartName = stage.charts ? stage.charts.name_en ?? "No Name" : <Text fontStyle="italic" color="fg.subtle">awaiting chart selection...</Text>;
       const chartType = stage.charts ? stage.charts.type?.charAt(0) ?? "" : '';
-      const chartLevel = stage.charts ? stage.charts.level ?? "" : '';
+      const chartLevel = stage.charts ? stage.charts.level ?? "" : '??';
 
       const scoreEntry = scoreMapping?.find((fs: ScoreMappingEntry) =>
         fs.chart?.name_en === stage.charts?.name_en

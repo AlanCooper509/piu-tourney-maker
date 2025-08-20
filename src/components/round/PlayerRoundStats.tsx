@@ -42,8 +42,8 @@ export default function PlayerRoundStats({ player, stages, admin, handleDeletePl
         py={isOpen ? 2 : 0}
         px={isOpen ? 4 : 0}
         mb={isOpen ? 2 : 0}
-        borderColor="blue.900"
-        borderWidth={isOpen ? 2 : 0}
+        borderColor="border.emphasized"
+        borderWidth={isOpen ? 1 : 0}
       >
         <Collapsible.Trigger onClick={toggleOpen} mb={isOpen ? 2 : 0} cursor="pointer" w="full">
           <HStack>
