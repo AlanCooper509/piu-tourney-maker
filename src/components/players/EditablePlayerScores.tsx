@@ -4,35 +4,25 @@ import { IoMdSend } from 'react-icons/io';
 
 import { handleAddScoreToStage } from '../../handlers/handleAddScoreToStage';
 import { handleUpdateScoreOnStage } from '../../handlers/handleUpdateScoreOnStage';
-import { getScoresForPlayer } from '../../helpers/getScoresForPlayer';
 import { toaster } from '../ui/toaster';
 
 import type { Stage } from '../../types/Stage';
 import type { Score } from '../../types/Score';
-import type { Chart } from '../../types/Chart';
 import type { PlayerRound } from '../../types/PlayerRound';
 
-interface ScoreMappingEntry {
-  stage: Stage;
-  score: Score | null;
-  chart: Chart | null;
-};
-
-interface EditablePlayerScores {
+interface EditablePlayerScoresProps {
   player: PlayerRound;
   stages: Stage[] | null;
-  incrementStagesPlayed: Function
-};
+  incrementStagesPlayed: () => void;
+}
 
 function isValidScore(score: number) {
   return !Number.isNaN(score) && score >= 0 && score <= 1000000;
 }
 
-export default function ({player, stages, incrementStagesPlayed}: EditablePlayerScores) {
-  // store input values keyed by stage ID
+export default function EditablePlayerScores({ player, stages, incrementStagesPlayed }: EditablePlayerScoresProps) {
   const [inputValues, setInputValues] = useState<Record<number, string>>({});
   const [localStages, setLocalStages] = useState<Stage[] | null>(stages);
-  const scoreMapping = getScoresForPlayer(player, localStages);
 
   useEffect(() => {
     if (!stages) return;
@@ -40,64 +30,83 @@ export default function ({player, stages, incrementStagesPlayed}: EditablePlayer
     const initialValues: Record<number, string> = {};
     stages.forEach(stage => {
       const score = stage.scores?.find(s => s.player_round_id === player.id);
-      if (score) initialValues[stage.id] = score.score?.toString() ?? "";
+      if (score) initialValues[stage.id] = score.score?.toString() ?? '';
     });
     setInputValues(initialValues);
+    setLocalStages(stages);
   }, [stages, player.id]);
 
   const handleChange = (stageId: number, value: string) => {
-    setInputValues((prev: any) => ({ ...prev, [stageId]: value }));
+    setInputValues(prev => ({ ...prev, [stageId]: value }));
   };
 
   async function makeInsertSupabaseCall(score: number, stageId: number) {
     try {
-      let newScore = await handleAddScoreToStage(score, stageId, player.id, player.player_tourneys.player_name);
-      setLocalStages(prev => 
+      const newScore = await handleAddScoreToStage(score, stageId, player.id, player.player_tourneys.player_name);
+
+      setLocalStages(prev =>
         prev
-          ? prev.map(stage => 
+          ? prev.map(stage =>
               stage.id === stageId
                 ? { ...stage, scores: [...(stage.scores ?? []), newScore] }
                 : stage
             )
           : null
       );
+
       setInputValues(prev => ({ ...prev, [stageId]: newScore.score.toString() }));
       incrementStagesPlayed();
+
       toaster.create({
-        title: "Score Added",
+        title: 'Score Added',
         description: `Score "${score}" was added successfully for ${player.player_tourneys.player_name}!`,
-        type: "success",
+        type: 'success',
         closable: true,
       });
-      
     } catch (err: any) {
-      setInputValues(prev => ({ ...prev, [stageId]: "" }));
+      setInputValues(prev => ({ ...prev, [stageId]: '' }));
       toaster.create({
         title: `Error Adding Score for ${player.player_tourneys.player_name}`,
-        description: `${err.message}`,
-        type: "error",
+        description: err.message,
+        type: 'error',
         closable: true,
       });
     }
   }
 
-  async function makeUpdateSupabasecall(score: number, stageId: number) {
+  async function makeUpdateSupabaseCall(score: number, stageId: number) {
     try {
-      let newScore = await handleUpdateScoreOnStage(score, stageId, player.id, player.player_tourneys.player_name);
-      setInputValues(prev => ({ ...prev, [stageId]: newScore.score.toString() }));
+      const updatedScore = await handleUpdateScoreOnStage(score, stageId, player.id, player.player_tourneys.player_name);
+
+      setLocalStages(prev =>
+        prev
+          ? prev.map(stage =>
+              stage.id === stageId
+                ? {
+                    ...stage,
+                    scores: stage.scores?.map(s =>
+                      s.player_round_id === player.id ? updatedScore : s
+                    ),
+                  }
+                : stage
+            )
+          : null
+      );
+
+      setInputValues(prev => ({ ...prev, [stageId]: updatedScore.score.toString() }));
+
       toaster.create({
-        title: "Score Updated",
+        title: 'Score Updated',
         description: `Score "${score}" was updated successfully for ${player.player_tourneys.player_name}!`,
-        type: "success",
+        type: 'success',
         closable: true,
       });
-      
     } catch (err: any) {
-      setInputValues(prev => ({ ...prev, [stageId]: "" }));
+      setInputValues(prev => ({ ...prev, [stageId]: '' }));
       toaster.create({
         title: `Error Updating Score for ${player.player_tourneys.player_name}`,
-        description: `${err.message}`,
-        type: "error",
+        description: err.message,
+        type: 'error',
         closable: true,
       });
     }
@@ -110,13 +119,14 @@ export default function ({player, stages, incrementStagesPlayed}: EditablePlayer
     const score = Number(value);
     if (!isValidScore(score)) {
       toaster.create({
-        title: "Invalid score",
+        title: 'Invalid score',
         description: `Invalid score submitted for ${player.player_tourneys.player_name}`,
-        type: "error",
+        type: 'error',
         closable: true,
       });
       return;
     }
+
     makeInsertSupabaseCall(score, stageId);
   };
 
@@ -127,72 +137,65 @@ export default function ({player, stages, incrementStagesPlayed}: EditablePlayer
     const score = Number(value);
     if (!isValidScore(score)) {
       toaster.create({
-        title: "Invalid score",
+        title: 'Invalid score',
         description: `Invalid score submitted for ${player.player_tourneys.player_name}`,
-        type: "error",
+        type: 'error',
         closable: true,
       });
       return;
     }
 
-    makeUpdateSupabasecall(score, stageId);
+    makeUpdateSupabaseCall(score, stageId);
   };
 
   return (
-    stages?.map((stage) => {
-      const chartName = stage.charts ? stage.charts.name_en ?? "No Name" : "No chart selected";
-      const chartType = stage.charts ? stage.charts.type?.charAt(0) ?? "" : '';
-      const chartLevel = stage.charts ? stage.charts.level ?? "" : '';
+    localStages?.map(stage => {
+      const chartName = stage.charts?.name_en ?? 'No Name';
+      const chartType = stage.charts?.type?.charAt(0) ?? '';
+      const chartLevel = stage.charts?.level ?? '';
 
-      const scoreEntry = scoreMapping?.find((fs: ScoreMappingEntry) =>
-        fs.chart?.name_en === stage.charts?.name_en
-      );
+      const playerScore = stage.scores?.find(s => s.player_round_id === player.id);
 
-      return scoreEntry?.score === null ? (
-        /* Render form to add score */
+      const isAdding = !playerScore;
+
+      return (
         <HStack key={stage.id}>
-          <Tag.Root colorPalette={chartType === "D" ? "green" : chartType === "S" ? "red" : chartType === "C" ? "yellow" : "blue"}>
+          <Tag.Root
+            colorPalette={chartType === 'D' ? 'green' : chartType === 'S' ? 'red' : chartType === 'C' ? 'yellow' : 'blue'}
+          >
             <Tag.Label>{chartLevel}</Tag.Label>
           </Tag.Root>
-          <Input
-            placeholder={`${chartName}`}
-            borderColor="white"
-            size="xs"
-            value={inputValues[stage.id] ?? ""}
-            onChange={(e) => handleChange(stage.id, e.target.value)}
-          />
+
+          {isAdding ? (
+            <Input
+              placeholder={chartName}
+              borderColor="white"
+              size="xs"
+              value={inputValues[stage.id] ?? ''}
+              onChange={e => handleChange(stage.id, e.target.value)}
+            />
+          ) : (
+            <>
+              <Text w="5xl" truncate>
+                {chartName}
+              </Text>
+              <Input
+                size="xs"
+                borderColor="white"
+                minWidth="43px"
+                value={inputValues[stage.id] ?? playerScore?.score?.toString() ?? ''}
+                onChange={e => handleChange(stage.id, e.target.value)}
+              />
+            </>
+          )}
+
           <IconButton
-            colorPalette="green"
+            colorPalette={isAdding ? 'green' : 'blue'}
             size="sm"
-            onClick={() => handleSubmitAddScore(stage.id)}
+            onClick={() => (isAdding ? handleSubmitAddScore(stage.id) : handleSubmitEditScore(stage.id))}
             px={2}
           >
-            Add <IoMdSend />
-          </IconButton>
-        </HStack>
-      ) : (
-        /* Render form to edit existing score */
-        <HStack key={stage.id}>
-          <Tag.Root colorPalette={chartType === "D" ? "green" : chartType === "S" ? "red" : chartType === "C" ? "yellow" : "blue"}>
-            <Tag.Label>{chartLevel}</Tag.Label>
-          </Tag.Root>
-          <Text w="5xl" truncate>{chartName}</Text>
-          <Input
-            size="xs"
-            borderColor="white"
-            minWidth="43px"
-            value={inputValues[stage.id] ?? scoreEntry?.score.score?.toString() ?? ""}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              handleChange(stage.id, e.target.value)
-            }
-          />
-          <IconButton
-            colorPalette="blue"
-            size="sm"
-            onClick={() => handleSubmitEditScore(stage.id)}
-            px={2}
-          >
-            Edit <IoMdSend />
+            {isAdding ? 'Add' : 'Edit'} <IoMdSend />
           </IconButton>
         </HStack>
       );
