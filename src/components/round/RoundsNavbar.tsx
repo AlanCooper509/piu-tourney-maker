@@ -12,6 +12,7 @@ export default function RoundsNavbar({ tourneyId, rounds }: RoundsNavbarProps) {
       {rounds.map((round, index) => (
         <span key={round.id}>
           <Link
+            fontSize={["md", "md", "lg", "xl"]}
             href={`/tourney/${tourneyId}/round/${round.id}`}
             style={{ marginRight: "0.5rem" }}
           >

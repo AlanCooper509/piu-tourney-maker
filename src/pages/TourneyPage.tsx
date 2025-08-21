@@ -59,7 +59,7 @@ function TourneyPage() {
   return (
     <>
       <Toaster />
-      <Heading fontSize="4xl">
+      <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]}>
         <Link
           href={`/tourney/${tourneyId}`}
           color="cyan.solid"

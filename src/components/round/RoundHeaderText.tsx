@@ -17,7 +17,7 @@ export default function RoundHeaderText({ tourneyName, tourneyId, roundName }: R
         direction="column"
         gap={2}
       >
-        <Heading fontSize="4xl">
+        <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]}>
           <Link
             href={`/tourney/${tourneyId}`}
             color="cyan.solid"
@@ -45,7 +45,7 @@ export default function RoundHeaderText({ tourneyName, tourneyId, roundName }: R
     >
       {/* Left */}
       <Flex flex="1" justify="flex-end" pr={3}>
-        <Heading fontSize="4xl" textAlign="right">
+        <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]} textAlign="right">
           <Link
             href={`/tourney/${tourneyId}`}
             color="cyan.solid"
@@ -60,14 +60,14 @@ export default function RoundHeaderText({ tourneyName, tourneyId, roundName }: R
 
       {/* Separator */}
       <Box px={3}>
-        <Heading fontSize="4xl" textAlign="center">
+        <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]} textAlign="center">
           |
         </Heading>
       </Box>
 
       {/* Right */}
       <Flex flex="1" justify="flex-start" pl={3}>
-        <Heading fontSize="3xl" textAlign="left">
+        <Heading fontSize={["2xl", "2xl", "2xl", "3xl"]} textAlign="left">
           <Text as="span">{roundName}</Text>
         </Heading>
       </Flex>
