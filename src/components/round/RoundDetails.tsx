@@ -75,6 +75,7 @@ export function RoundDetails({ round, setRound, players, stages, loading, error,
           <>
           <StatusElement element={round} />
           <Text>Players Advancing: {playersAdvancing}</Text>
+          <Text>Scoring: Cumulative</Text> {/* TODO: eventually make this a db param, etc.*/}
           <HStack mt={2}>
             <EditRoundDetailsButton
               round={round}
