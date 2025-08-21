@@ -21,7 +21,6 @@ interface NonEditablePlayerScores {
 export default function ({player, stages}: NonEditablePlayerScores) {
   // store input values keyed by stage ID
   const scoreMapping = getScoresForPlayer(player, stages);
-  console.log(stages);
 
   return (
     stages?.map((stage) => {
