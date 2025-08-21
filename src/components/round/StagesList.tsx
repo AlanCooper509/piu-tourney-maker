@@ -93,7 +93,7 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
 
   const sortedStages = stages?.slice().sort((a, b) => a.id - b.id) ?? [];
   return (
-    <Box>
+    <Box maxWidth="100vw">
       <HStack mb={2} justifyContent="center" alignItems="center">
         <Heading>Stages</Heading>
         {/* Add Stage Button */}
