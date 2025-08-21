@@ -1,0 +1,44 @@
+.bg-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9998;
+}
+
+.spinner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translate(45%, 0);
+  }
+  to {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes fade-in-50 {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 0.5;
+  }
+}
+
+@keyframes fade-in-100 {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}

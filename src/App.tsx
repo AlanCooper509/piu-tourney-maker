@@ -6,6 +6,7 @@ import TourneyPage from './pages/TourneyPage.tsx';
 import LeaderboardPage from './pages/LeaderboardPage.tsx';
 import RoundPage from './pages/RoundPage.tsx';
 import LoginPage from './pages/LoginPage.tsx';
+import ChartRollPage from './pages/ChartRollPage.tsx';
 
 import { HeroTitle } from './components/ui/HeroTitle';
 import { ColorModeProvider } from './components/ui/color-mode';
@@ -35,6 +36,7 @@ function App() {
               <Route path="/tourney/:tourneyId" element={<TourneyPage />} />
               <Route path="/tourney/:tourneyId/round/:roundId" element={<RoundPage />} />
               <Route path="/tourney/:tourneyId/round/:roundId/leaderboard" element={<LeaderboardPage />} />
+              <Route path="/tourney/:tourneyId/round/:roundId/stage/:stageId/roll" element={<ChartRollPage />} />
               <Route path="/login" element={<LoginPage />} />
             </Routes>
           </BrowserRouter>
