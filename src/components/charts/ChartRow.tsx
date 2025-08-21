@@ -23,7 +23,7 @@ export function ChartRow({ chart }: ChartRowProps) {
           <Badge colorPalette={color(chart.type)} variant="surface" size="lg" fontSize="lg">
             {chart.level}
           </Badge>
-          <Text fontSize="xl" fontWeight="bold" truncate>
+          <Text fontSize="md" fontWeight="bold" truncate>
             {chart.name_en}
           </Text>
         </HStack>

@@ -1,4 +1,5 @@
-import { Button } from "@chakra-ui/react";
+import { IconButton } from "@chakra-ui/react";
+import { GiRollingDices } from "react-icons/gi";
 
 interface RollChartButtonProps {
   stageId: number;
@@ -7,8 +8,16 @@ interface RollChartButtonProps {
 
 export function RollChartButton({ stageId, onClick }: RollChartButtonProps) {
   return (
-    <Button my={2} colorPalette="blue" onClick={() => onClick(stageId)}>
-      Roll the Chart
-    </Button>
+    <IconButton 
+        px={2}
+        mx={1}
+        variant={"surface"}
+        borderWidth={2}
+        size="sm"
+        colorPalette="blue"
+        onClick={() => onClick(stageId)}
+    >
+      Roll the Chart<GiRollingDices/>
+    </IconButton>
   );
 }
