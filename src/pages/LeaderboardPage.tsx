@@ -1,4 +1,4 @@
-import { Box, VStack, HStack, Link, Text, useBreakpointValue, Button, Spacer, Tag, IconButton } from "@chakra-ui/react";
+import { Box, VStack, HStack, Link, Text, useBreakpointValue, Button, Spacer, Tag, IconButton, Heading } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
 import { keyframes } from "@emotion/react";
 import type { PlayerRound } from "../types/PlayerRound";
@@ -321,7 +321,9 @@ function Leaderboard() {
           />
         </HStack>
       </Box>
-
+      <Heading size="2xl" mb={5}>
+        Players Advancing: {advancingThreshold}
+      </Heading>
       <Box
         w={cardWidth}
         borderRadius="2xl"
