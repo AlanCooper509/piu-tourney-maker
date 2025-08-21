@@ -6,6 +6,7 @@ import EditRoundDetailsButton from './EditRoundDetailsButton'
 import { StatusElement } from '../StatusElement'
 import EditableRoundName from '../tourney/EditableRoundName'
 import { handleUpdateRoundName } from '../../handlers/handleUpdateRoundName'
+import LeaderboardLinkButton from './LeaderboardLinkButton'
 
 import type { Round } from '../../types/Round'
 import type { PlayerRound } from '../../types/PlayerRound'
@@ -77,6 +78,7 @@ export function RoundDetails({ round, setRound, players, stages, loading, error,
           <Text>Players Advancing: {playersAdvancing}</Text>
           <Text>Scoring: Cumulative</Text> {/* TODO: eventually make this a db param, etc.*/}
           <HStack mt={2}>
+            <LeaderboardLinkButton tourneyId={tourneyId} roundId={round?.id ?? 0} />
             <EditRoundDetailsButton
               round={round}
               setRound={setRound}
