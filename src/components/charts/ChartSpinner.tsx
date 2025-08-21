@@ -28,16 +28,25 @@ function ChartSpinner({ charts, pick }: ChartSpinnerProps) {
         <div className="bg-img">
             {pick.image_url && <Image height="100%" src={pick.image_url} alt={pick.name_en} filter="auto" blur="2xl"
                 opacity="0.5"
-                data-state="open" _open={{ animation: "fade-in-50 10000ms cubic-bezier( 0.9, 0, 0.9, 0 )" }}
+                data-state="open" _open={{ animation: "fade-in-50 10s cubic-bezier(0.9, 0, 0.9, 0)" }}
             />}
         </div>
         <div className="spinner">
-            <AbsoluteCenter overflow="visible" data-state="open" _open={{ animation: "slide-in 10000ms cubic-bezier( 0.3, 0.2, 0.3, 1 ), fade-in-100 1000ms ease-out" }}>
-                {rollOrder.map((chart: Chart) => {
-                    return <Box display="inline-block">
-                        <ChartCard width="500px" chart={chart} />
+            <AbsoluteCenter overflow="visible" data-state="open"
+                _open={{ animation: "slide-in 10s cubic-bezier(0.3, 0.2, 0.3, 1), fade-in-100 1s ease-out" }}>
+
+                {rollOrder.map((chart: Chart, index: number) => {
+                    const offset = index - numSide;
+                    const isPick = offset === 0;
+                    return <Box width="30vw" data-state="open" zIndex={isPick ? 10001 : 10000} _open={
+                        isPick ?
+                            { animation: "grow 2s ease-in-out forwards", animationDelay: "10s" } :
+                            { animation: "fade-out 2s ease-in-out forwards", animationDelay: "10s" }
+                    }>
+                        <ChartCard chart={chart} />
                     </Box>
                 })}
+
             </AbsoluteCenter >
         </div>
     </>
