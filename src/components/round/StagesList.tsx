@@ -1,20 +1,12 @@
-import { Box, Heading, Text, HStack, Span, Separator, Button, Link, Collapsible } from '@chakra-ui/react';
-import { IoArrowForward, IoChevronForward } from 'react-icons/io5';
-import { useState } from 'react';
+import { Box, Heading, Text, HStack } from '@chakra-ui/react';
 
 import { handleAssignRandomChartToStage } from '../../handlers/handleAssignRandomChartToStage';
 import { handleAddChartToPool } from '../../handlers/handleAddChartToPool';
-import AddChartForm from '../charts/AddChartForm';
 import AddStageButton from '../stages/AddStageButton';
-import { RollChartButton } from '../stages/RollChartButton';
-import ChartPool from '../charts/ChartPool';
-import DeleteStageButton from '../stages/DeleteStageButton';
-import { ChartRow } from '../charts/ChartRow';
 import { toaster } from '../ui/toaster';
 
 import type { Round } from '../../types/Round';
 import type { Stage } from '../../types/Stage';
-import type { ChartQuery } from '../../types/ChartQuery';
 import StageRow from './StageRow';
 
 interface StageListProps {
