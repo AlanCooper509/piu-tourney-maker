@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { VStack, StackSeparator, Heading, Link } from "@chakra-ui/react"
+import { VStack, StackSeparator, Heading, Link, Separator } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
@@ -13,6 +13,7 @@ import { Toaster } from "../components/ui/toaster";
 import type { Tourney } from '../types/Tourney';
 import type { PlayerTourney } from "../types/PlayerTourney";
 import type { Round } from "../types/Round";
+import RoundsNavbar from "../components/round/RoundsNavbar";
 
 function TourneyPage() {
   const { tourneyId } = useParams();
@@ -55,7 +56,7 @@ function TourneyPage() {
   return (
     <>
       <Toaster />
-      <Heading fontSize="4xl" mb={7}>
+      <Heading fontSize="4xl">
         <Link
           href={`/tourney/${tourneyId}`}
           color="cyan.solid"
@@ -66,6 +67,8 @@ function TourneyPage() {
           {tourney?.name}
         </Link>
       </Heading>
+      <RoundsNavbar tourneyId={Number(tourneyId)} rounds={rounds}></RoundsNavbar>
+      <Separator mt={2} mb={4} />
       <VStack separator={<StackSeparator />}>
         <TourneyDetails
           tourney={tourney}

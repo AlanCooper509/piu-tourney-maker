@@ -1,4 +1,4 @@
-import { Flex, Link, Box, Container, Separator } from "@chakra-ui/react"
+import { Flex, Box, Container, Separator } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -79,7 +79,7 @@ function RoundPage() {
     <>
       <Toaster />
       <RoundHeaderText tourneyName={tourney[0]?.name} tourneyId={Number(tourneyId)} roundName={rounds[0]?.name}></RoundHeaderText>
-      <RoundsNavbar rounds={allRoundsInTourney}></RoundsNavbar>
+      <RoundsNavbar tourneyId={tourneyId} rounds={allRoundsInTourney}></RoundsNavbar>
       <Separator mt={2} mb={4} />
       <RoundDetails round={round} setRound={setRound} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
       <Separator mt={4} />

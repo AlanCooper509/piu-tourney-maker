@@ -2,16 +2,17 @@ import { Link } from '@chakra-ui/react';
 import type { Round } from "../../types/Round";
 
 type RoundsNavbarProps = {
+  tourneyId: number;
   rounds: Round[];
 };
 
-export default function RoundsNavbar({ rounds }: RoundsNavbarProps) {
+export default function RoundsNavbar({ tourneyId, rounds }: RoundsNavbarProps) {
   return (
     <nav style={{ padding: "1rem" }}>
       {rounds.map((round, index) => (
         <span key={round.id}>
           <Link
-            href={`/tourney/${round.id}`}
+            href={`/tourney/${tourneyId}/round/${round.id}`}
             style={{ marginRight: "0.5rem" }}
           >
             {round.name}
