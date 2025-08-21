@@ -1,4 +1,4 @@
-import { Flex, Box, Container } from "@chakra-ui/react"
+import { Flex, Link, Box, Container, Separator } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -7,13 +7,14 @@ import { isAdminForTourney } from "../hooks/AdminTourneyHelpers";
 import { RoundDetails } from "../components/round/RoundDetails";
 import { PlayersList } from "../components/round/PlayersList";
 import { StagesList } from "../components/round/StagesList";
+import RoundHeaderText from "../components/round/RoundHeaderText";
+import RoundsNavbar from "../components/round/RoundsNavbar";
 import { Toaster } from "../components/ui/toaster";
 
 import type { Tourney } from "../types/Tourney";
 import type { Round } from "../types/Round";
 import type { Stage } from "../types/Stage";
 import type { PlayerRound } from "../types/PlayerRound";
-import RoundHeaderText from "../components/round/RoundHeaderText";
 
 function RoundPage() {
   const { tourneyId, roundId } = useParams<{ tourneyId: string; roundId: string }>();
@@ -43,6 +44,10 @@ function RoundPage() {
       { column: 'round_id', value: roundId },
       '*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)'
     );
+  const { data: allRoundsInTourney } = getSupabaseTable<Round>(
+    'rounds',
+    { column: 'tourney_id', value: tourneyId }
+  );
 
   // Sync players when playersData changes
   useEffect(() => {
@@ -74,7 +79,10 @@ function RoundPage() {
     <>
       <Toaster />
       <RoundHeaderText tourneyName={tourney[0]?.name} tourneyId={Number(tourneyId)} roundName={rounds[0]?.name}></RoundHeaderText>
+      <RoundsNavbar rounds={allRoundsInTourney}></RoundsNavbar>
+      <Separator mt={2} mb={4} />
       <RoundDetails round={round} setRound={setRound} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
+      <Separator mt={4} />
       <Container maxW="4xl" py={6}>
         <Flex direction={['column', 'column', 'column', 'row']} gap={4}>
           <Box flex="1" width={['100%', '100%', '100%', '50%']} display="flex" justifyContent="center">

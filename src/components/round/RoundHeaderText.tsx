@@ -39,7 +39,6 @@ export default function RoundHeaderText({ tourneyName, tourneyId, roundName }: R
     <Flex
       align="baseline"
       justify="center"
-      mb={5}
       width="100%"
       maxWidth="container.lg"
       mx="auto"

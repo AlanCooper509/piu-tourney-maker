@@ -1,4 +1,4 @@
-import { Box, Heading, HStack, Text, VStack } from '@chakra-ui/react';
+import { Box, Heading, HStack, SimpleGrid, Text } from '@chakra-ui/react';
 import { useState } from 'react';
 
 import AddPlayer from '../players/AddPlayer';
@@ -61,21 +61,21 @@ export function PlayersList({ tourney, players, setPlayers, loading, error, admi
         </HStack>
         {loading && <Text>Loading players...</Text>}
         {error && <Text color="red">Error: {error.message}</Text>}
-        <VStack align="center" justify="center" gap={0}>
-          {!loading && !error && players?.length ? (
-            players.map(p => (
-              <EditablePlayerRow
-                key={p.id}
-                player={p}
-                admin={admin}
-                updatePlayer={updatePlayer}
-                removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
-              />
-            ))
-          ) : (
-            !loading && !error && <Text>No players found.</Text>
-          )}
-        </VStack>
+        <SimpleGrid columns={[2,1,2,4]} gap={[0, 0, 3, 5]} mb={2}>
+            {!loading && !error && players?.length ? (
+              players.map(p => (
+                <EditablePlayerRow
+                  key={p.id}
+                  player={p}
+                  admin={admin}
+                  updatePlayer={updatePlayer}
+                  removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
+                />
+              ))
+            ) : (
+              !loading && !error && <Text>No players found.</Text>
+            )}
+        </SimpleGrid>
       </Box>
     </>
   );
