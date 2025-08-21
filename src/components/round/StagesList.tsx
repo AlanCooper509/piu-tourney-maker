@@ -103,89 +103,85 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
           const [isOpen, setIsOpen] = useState(!stage.charts);
           const toggleOpen = () => setIsOpen(prev => !prev);
           return (
-            <>
-              <Box key={stage.id} mb={2} p={2} borderWidth="2px" borderRadius="md" borderColor="gray.400">
-                <Collapsible.Root defaultOpen={!stage.chart_id}>
-                  <Collapsible.Trigger onClick={toggleOpen} cursor="pointer" w="full">
-                      {/* Stage Header */}
-                      <Text w="full" fontWeight="bold" textAlign="start">
-                        <HStack>
-                          <IoChevronForward
-                            style={{
-                              transform: isOpen ? 'rotate(90deg)' : 'rotate(0)',
-                              transition: 'transform 0.2s ease',
-                            }}
-                          />
-                          Chosen: {!stage.charts && <Span fontWeight="normal">???</Span>}
-                        </HStack>
-                      </Text>
-                      {stage.charts && (
-                        <Box mt={1}>
-                          <ChartRow chart={stage.charts} />
-                        </Box>
+            <Box key={stage.id} mb={2} p={2} borderWidth="2px" borderRadius="md" borderColor="gray.400">
+              <Collapsible.Root defaultOpen={!stage.chart_id}>
+                <Collapsible.Trigger onClick={toggleOpen} cursor="pointer" w="full">
+                  {/* Stage Header */}
+                  <Box w="full" fontWeight="bold" textAlign="start">
+                    <HStack>
+                      <IoChevronForward
+                        style={{
+                          transform: isOpen ? 'rotate(90deg)' : 'rotate(0)',
+                          transition: 'transform 0.2s ease',
+                        }}
+                      />
+                      Chosen: {!stage.charts && <Span fontWeight="normal">???</Span>}
+                    </HStack>
+                  </Box>
+                  {stage.charts && (
+                    <Box mt={1}>
+                      <ChartRow chart={stage.charts} />
+                    </Box>
+                  )}
+
+                  {/* Admin Buttons */}
+                  {!loadingAdmin && admin &&
+                    <HStack alignContent={"center"} justify={"center"} mt={2}>
+                      {/* Delete Stage Button */}
+                      <DeleteStageButton round={round} stageId={stage.id} setStages={setStages} />
+
+                      {/* Roll Chart Button */}
+                      {!stage.chart_id && stage.chart_pools && stage.chart_pools.length !== 0 && (
+                        <RollChartButton stageId={stage.id} onClick={onRollChart} />
                       )}
 
-                    {/* Admin Buttons */}
-                    {!loadingAdmin && admin &&
-                      <HStack alignContent={"center"} justify={"center"} mt={2}>
-                        {/* Delete Stage Button */}
-                        <DeleteStageButton round={round} stageId={stage.id} setStages={setStages} />
+                      {/* Play Animation Button */}
+                      {stage.chart_id && stage.chart_pools && stage.chart_pools.length !== 0 && stage.charts && (
+                        <Button
+                        asChild
+                        variant="surface"
+                        borderWidth="2"
+                        size="sm"
+                        px={2}
+                        mx={1}
+                        colorPalette="purple"
+                        >
+                          <Link
+                            href={`/tourney/${round?.tourney_id}/round/${round?.id}/stage/${stage.id}/roll`}
+                            color={"purple.fg"}
+                            >
+                            Open Animation <IoArrowForward />
+                          </Link>
+                        </Button>
+                      )}
+                    </HStack>
+                  }
+                </Collapsible.Trigger>
+                <Collapsible.Content>
+                  <Separator size="lg" borderColor="gray.800" borderWidth="1px" mt={2} />
 
-                        {/* Roll Chart Button */}
-                        {!stage.chart_id && stage.chart_pools && stage.chart_pools.length !== 0 && (
-                          <RollChartButton stageId={stage.id} onClick={onRollChart} />
-                        )}
-
-                        {/* Play Animation Button */}
-                        {stage.chart_id && stage.chart_pools && stage.chart_pools.length !== 0 && stage.charts && (
-                          <Button
-                          asChild
-                          variant="surface"
-                          borderWidth="2"
-                          size="sm"
-                          px={2}
-                          mx={1}
-                          colorPalette="purple"
-                          >
-                            <Link
-                              href={`/tourney/${round?.tourney_id}/round/${round?.id}/stage/${stage.id}/roll`}
-                              color={"purple.fg"}
-                              >
-                              Open Animation <IoArrowForward />
-                            </Link>
-                          </Button>
-                        )}
-                      </HStack>
-                    }
-                  </Collapsible.Trigger>
-                  <Collapsible.Content>
-                    <Separator size="lg" borderColor="gray.800" borderWidth="1px" mt={2} />
-
-                    {/* Add Chart Form */}
-                    {!loadingAdmin && admin && (
-                      <AddChartForm
-                        onSubmit={(chartQuery: ChartQuery) =>
-                          onAddChartToPool(stage.id, chartQuery.name, chartQuery.level, chartQuery.type)
-                        }
-                      />
-                    )}
-
-                    {/* Charts in chart pool */}
-                    <Text fontSize="md" my={2} fontWeight={"bold"}>
-                      Chart Pool
-                    </Text>
-                    <ChartPool
-                      stage={stage}
-                      setStages={setStages}
-                      admin={admin}
-                      loadingAdmin={loadingAdmin}
+                  {/* Add Chart Form */}
+                  {!loadingAdmin && admin && (
+                    <AddChartForm
+                      onSubmit={(chartQuery: ChartQuery) =>
+                        onAddChartToPool(stage.id, chartQuery.name, chartQuery.level, chartQuery.type)
+                      }
                     />
+                  )}
+
+                  {/* Charts in chart pool */}
+                  <Text fontSize="md" my={2} fontWeight={"bold"}>
+                    Chart Pool
+                  </Text>
+                  <ChartPool
+                    stage={stage}
+                    setStages={setStages}
+                    admin={admin}
+                    loadingAdmin={loadingAdmin}
+                  />
                 </Collapsible.Content>
               </Collapsible.Root>
-              </Box>
-              <Separator mb={4}/>
-            </>
-
+            </Box>
           );
         })
       ) : (
