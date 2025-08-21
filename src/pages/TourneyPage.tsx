@@ -53,6 +53,9 @@ function TourneyPage() {
     }
   }, [playersData]);
 
+  // sort rounds
+  const sortedRounds = rounds?.slice().sort((a, b) => a.id - b.id);
+
   return (
     <>
       <Toaster />
@@ -67,14 +70,14 @@ function TourneyPage() {
           {tourney?.name}
         </Link>
       </Heading>
-      <RoundsNavbar tourneyId={Number(tourneyId)} rounds={rounds}></RoundsNavbar>
+      <RoundsNavbar tourneyId={Number(tourneyId)} rounds={sortedRounds}></RoundsNavbar>
       <Separator mt={2} mb={4} />
       <VStack separator={<StackSeparator />}>
         <TourneyDetails
           tourney={tourney}
           setTourney={setTourney}
           players={players}
-          rounds={rounds}
+          rounds={sortedRounds}
           loading={loadingTourney}
           error={errorTourney}
           admin={isAdmin}
@@ -91,7 +94,7 @@ function TourneyPage() {
         />
         <RoundsList
           tourney={tourney}
-          rounds={rounds}
+          rounds={sortedRounds}
           loading={loadingRounds}
           error={errorRounds}
           admin={isAdmin}
