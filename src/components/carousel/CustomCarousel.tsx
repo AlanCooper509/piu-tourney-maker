@@ -95,7 +95,7 @@ export default function CustomCarousel({ cards, isAdmin, adminLoading, adminClic
     trigger={addRoundButton}
     admin={isAdmin}
     adminLoading={adminLoading}
-    onSubmitForm={adminClick}
+    onSubmit={adminClick}
   /> : null;
 
   return (
