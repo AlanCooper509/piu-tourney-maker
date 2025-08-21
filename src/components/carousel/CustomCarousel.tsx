@@ -173,9 +173,10 @@ export default function CustomCarousel({ cards, isAdmin, adminLoading, adminClic
               </Slider>
             </Box>
             {/* Current Index Display — bottom center */}
-            <Box position="absolute" bottom="10px" left="50%" transform="translateX(-50%)" color="white" px={2} py={1}
-              backgroundColor="bg.panel"
+            <Box position="absolute" bottom="10px" left="50%" transform="translateX(-50%)" px={2} py={1}
+              backgroundColor="gray.950"
               borderColor="border.muted"
+              color="white"
               borderWidth="1px"
               borderRadius="xl"
               fontSize="sm"
