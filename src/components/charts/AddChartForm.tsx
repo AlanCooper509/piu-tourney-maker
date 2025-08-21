@@ -18,6 +18,7 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
     if (chartName && chartLevel && chartType) {
       onSubmit({ name: chartName, level: Number(chartLevel), type: chartType });
     } else {
+      setChartLevel(""); // not sure why this field persists on UI when submitting successfully
       toaster.create({
         title: "Error Adding Chart",
         description: "Please ensure all fields are correct.",
@@ -26,7 +27,6 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
       });
     };
     setChartName("");
-    setChartLevel("");
     setChartType("");
   };
 
