@@ -5,9 +5,10 @@ interface RoundLinkProps {
   tourneyId: number | string;
   roundId: number | string;
   roundName: string;
+  fontSize?: string | null;
 }
 
-const RoundLink: React.FC<RoundLinkProps> = ({ tourneyId, roundId, roundName }) => {
+const RoundLink: React.FC<RoundLinkProps> = ({ tourneyId, roundId, roundName, fontSize}) => {
   return (
     <Box fontWeight="bold">
       <Link
@@ -16,6 +17,7 @@ const RoundLink: React.FC<RoundLinkProps> = ({ tourneyId, roundId, roundName }) 
         variant="underline"
         _hover={{ color: 'cyan.focusRing' }}
         _focus={{ color: 'cyan.solid', boxShadow: 'none' }}
+        fontSize={fontSize ?? "2xl"}
       >
         {roundName}
       </Link>
