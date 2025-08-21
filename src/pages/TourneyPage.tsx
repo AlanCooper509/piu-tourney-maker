@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { VStack, StackSeparator } from "@chakra-ui/react"
+import { VStack, StackSeparator, Heading, Link } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
@@ -55,6 +55,17 @@ function TourneyPage() {
   return (
     <>
       <Toaster />
+      <Heading fontSize="4xl" mb={7}>
+        <Link
+          href={`/tourney/${tourneyId}`}
+          color="cyan.solid"
+          variant="underline"
+          _hover={{ color: 'cyan.focusRing' }}
+          _focus={{ color: 'cyan.solid', boxShadow: 'none' }}
+        >
+          {tourney?.name}
+        </Link>
+      </Heading>
       <VStack separator={<StackSeparator />}>
         <TourneyDetails
           tourney={tourney}

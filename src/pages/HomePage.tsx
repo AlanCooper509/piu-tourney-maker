@@ -165,11 +165,6 @@ function HomePage() {
       <VStack align="stretch" w="100%">
         {archivedTourneys.map(row => renderTourneyCard(row, 'archived'))}
       </VStack>
-
-      <Box mt={12} w="100%">
-        <hr style={{ borderColor: 'grey', borderWidth: '1px' }} />
-        <Text textAlign="center" py={4} fontSize="lg">Welcome to Beast in the East 8!</Text>
-      </Box>
     </>
   );
 }

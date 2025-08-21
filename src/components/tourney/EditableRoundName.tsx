@@ -52,7 +52,7 @@ export default function EditableRoundName({
   };
 
   return (
-    <HStack>
+    <HStack justifyContent={"center"}>
       {isEditing ? (
         <>
           <Input

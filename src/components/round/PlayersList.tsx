@@ -50,14 +50,14 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyId, loa
   };
 
   return (
-    <Box>
-      <HStack mb={2} justifyContent={!loadingAdmin && admin ? 'space-between' : 'center'}>
+    <Box w={"md"}>
+      <HStack mb={2} justifyContent="center">
         <Heading mb={2}>Players</Heading>
         {!loadingAdmin && admin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
       </HStack>
       {loading && <Text>Loading players...</Text>}
       {error && <Text color="red">Error: {error.message}</Text>}
-      <VStack align="center" justify="center" gap={0}>
+      <VStack align={{ base: "center", md: "center", lg: "start" }} justify="center" gap={0}>
         {!loading && !error && players?.length ? (
           players.map(p => (
             <DeletablePlayerRow

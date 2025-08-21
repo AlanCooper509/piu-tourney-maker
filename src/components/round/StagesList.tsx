@@ -103,7 +103,7 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
           const [isOpen, setIsOpen] = useState(!stage.charts);
           const toggleOpen = () => setIsOpen(prev => !prev);
           return (
-            <Box key={stage.id} mb={2} p={2} borderWidth="2px" borderRadius="md" borderColor="gray.400">
+            <Box key={stage.id} mb={2} p={2} w="md" maxWidth="100vw" borderWidth="2px" borderRadius="md" borderColor="gray.400">
               <Collapsible.Root defaultOpen={!stage.chart_id}>
                 <Collapsible.Trigger asChild cursor="pointer" w="full">
                   <Box as="div" onClick={toggleOpen}>

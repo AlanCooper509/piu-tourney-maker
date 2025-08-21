@@ -1,4 +1,4 @@
-import { Box, VStack, HStack, Link, Text, useBreakpointValue, Button, Spacer, Tag, IconButton, Heading } from "@chakra-ui/react";
+import { Box, VStack, HStack, Link, Text, useBreakpointValue, Button, Spacer, Tag, IconButton, Heading, Container, Separator } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
 import { keyframes } from "@emotion/react";
 import type { PlayerRound } from "../types/PlayerRound";
@@ -49,9 +49,8 @@ function PlayerRow({
 
   const totalScore = player.songs.reduce((sum, s) => sum + (s.score ?? 0), 0);
 
-  // medal colors
   const getBgColor = () => {
-    if (!isEliminated) return "red.emphasized";
+    if (isEliminated) return "red.emphasized";
     if (index === 0) return undefined;
     if (index === 1) return undefined;
     if (index === 2) return undefined;
@@ -59,7 +58,7 @@ function PlayerRow({
   };
 
   const getBgGradient = () => {
-    if (!isEliminated) return undefined;
+    if (isEliminated) return undefined;
     if (index === 0) return "linear-gradient({colors.yellow.300}, {colors.yellow.600})"; // shiny gold
     if (index === 1) return "linear-gradient({colors.gray.300}, {colors.gray.700})";     // shiny silver
     if (index === 2) return "linear-gradient({colors.yellow.emphasized}, {colors.yellow.subtle})"; // shiny bronze
@@ -289,9 +288,9 @@ function Leaderboard() {
   */
 
   const cardWidth = useBreakpointValue({ base: "90%", md: "70%", lg: "50%" });
-  const headerFontSize = useBreakpointValue({ base: "2xl", md: "3xl", lg: "4xl" });
-  const rowFontSize = useBreakpointValue({ base: "lg", md: "xl", lg: "2xl" });
-  const songFontSize = useBreakpointValue({ base: "md", md: "lg", lg: "xl" });
+  const headerFontSize = useBreakpointValue({ base: "xl", md: "2xl", lg: "3xl" });
+  const rowFontSize = useBreakpointValue({ base: "md", md: "lg", lg: "xl" });
+  const songFontSize = useBreakpointValue({ base: "sm", md: "md", lg: "lg" });
 
   // Dynamic bottom padding based on viewport height
   const bottomPadding = useBreakpointValue({
@@ -301,78 +300,83 @@ function Leaderboard() {
   });
 
   return (
-    <VStack w="100%" align="center" mt={12} pb={bottomPadding}>
-      {/* Round Leaderboard */}
-      <Box 
-        fontWeight="bold"
-        textShadow="0px 2px 4px rgba(0,0,0,0.4)"
-      >
-        <HStack>
-          <Link href={`/tourney/${tourneyId}/round/${roundId}`}>
-            <IconButton variant="outline" colorPalette="cyan" borderWidth="2px" size="sm" px={2}>
-              <IoReturnDownBack />
-            </IconButton>
-          </Link>
-          <RoundLink
-            tourneyId={tourneyId}
-            roundId={roundId}
-            roundName={rounds[0]?.name}
-            fontSize="4xl"
-          />
-        </HStack>
-      </Box>
-      <Heading size="2xl" mb={5}>
-        Players Advancing: {advancingThreshold}
-      </Heading>
-      <Box
-        w={cardWidth}
-        borderRadius="2xl"
-        overflow="visible"
-        shadow="xl"
-        bgGradient="linear(to-b, gray.900, gray.800)"
-      >
-        <HStack py={4} px={6} bgGradient="linear(to-r, teal.400, green.400)" borderTopRadius="2xl">
-          <Text
-            fontSize={headerFontSize}
-            color="white"
-            textShadow="0px 2px 6px rgba(0,0,0,0.5)"
-          >
-            Scoreboard
-          </Text>
-          <Spacer />
-          <Button
-            size="md"
-            px={6}
-            py={4}                // match row height
-            bg="gray.700"
-            color="white"
-            borderRadius="md"
-            _hover={{ bg: "gray.600" }}
-            onClick={toggleAll}
-          >
-            {expandedPlayers.size > 0 ? "Collapse All" : "Expand All"}
-          </Button>
-        </HStack>
-
-        {players.map((player, index) => {
-          const isEliminated = advancingThreshold !== null && index < advancingThreshold;
-          return (
-            <PlayerRow
-              key={player.name}
-              player={player}
-              index={index}
-              isExpanded={expandedPlayers.has(player.name)}
-              toggleExpand={toggleExpand}
-              updatedPlayer={updatedPlayer}
-              positionsRef={positionsRef}
-              rowFontSize={rowFontSize}
-              songFontSize={songFontSize}
-              isEliminated={isEliminated}
+    <Container maxW="8xl">
+      <VStack w="100%" align="center" mt={12} pb={bottomPadding}>
+        {/* Round Leaderboard */}
+        <Box 
+          fontWeight="bold"
+          textShadow="0px 2px 4px rgba(0,0,0,0.4)"
+        >
+          <HStack>
+            <Link href={`/tourney/${tourneyId}/round/${roundId}`}>
+              <IconButton variant="outline" colorPalette="cyan" borderWidth="2px" size="sm" px={2}>
+                <IoReturnDownBack />
+              </IconButton>
+            </Link>
+            <RoundLink
+              tourneyId={tourneyId}
+              roundId={roundId}
+              roundName={rounds[0]?.name}
+              fontSize="4xl"
             />
-          )
-        })}
-      </Box>
-    </VStack>
+          </HStack>
+        </Box>
+        <Heading size="2xl" mb={5}>
+          Players Advancing: {advancingThreshold}
+        </Heading>
+        <Box
+          w={cardWidth}
+          borderRadius="2xl"
+          overflow="visible"
+          shadow="xl"
+          bgGradient="linear(to-b, gray.900, gray.800)"
+        >
+          <HStack py={4} px={6} bgGradient="linear(to-r, teal.400, green.400)" borderTopRadius="2xl">
+            <Text
+              fontSize={headerFontSize}
+              color="white"
+              textShadow="0px 2px 6px rgba(0,0,0,0.5)"
+            >
+              Scoreboard
+            </Text>
+            <Spacer />
+            <Button
+              size="md"
+              px={6}
+              py={4}                // match row height
+              bg="gray.700"
+              color="white"
+              borderRadius="md"
+              _hover={{ bg: "gray.600" }}
+              onClick={toggleAll}
+            >
+              {expandedPlayers.size > 0 ? "Collapse All" : "Expand All"}
+            </Button>
+          </HStack>
+
+          {players.map((player, index) => {
+            const isEliminated = advancingThreshold !== null && index >= advancingThreshold;
+            return (
+              <>
+                {index === advancingThreshold && <Separator borderWidth={"5px"} my={2} borderColor={"black"}/>}
+                <PlayerRow
+                  key={player.name}
+                  player={player}
+                  index={index}
+                  isExpanded={expandedPlayers.has(player.name)}
+                  toggleExpand={toggleExpand}
+                  updatedPlayer={updatedPlayer}
+                  positionsRef={positionsRef}
+                  rowFontSize={rowFontSize}
+                  songFontSize={songFontSize}
+                  isEliminated={isEliminated}
+                />
+              </>
+            )
+          })}
+        </Box>
+      </VStack>
+    </Container>
   );
 }
 

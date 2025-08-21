@@ -1,4 +1,4 @@
-import { HStack, Text } from "@chakra-ui/react";
+import { HStack, Span, Text } from "@chakra-ui/react";
 import { LiveIndicator } from "./ui/LiveIndicator";
 
 import type { Tourney } from "../types/Tourney";
@@ -11,8 +11,8 @@ interface StatusElementProps {
 export function StatusElement({ element }: StatusElementProps) {
   return (
     <HStack style={{ gap: '0px' }}>
-      <Text mr={2}>Status: {element.status}</Text>
-      {element.status === 'In Progress' && <LiveIndicator />}
+      <Text>Status: <Span color={element.status === 'Complete' ? "green" : "gray"}>{element.status}</Span></Text>
+      {element.status === 'In Progress' && <Span ml={1}><LiveIndicator /></Span>}
     </HStack>
   )
 }

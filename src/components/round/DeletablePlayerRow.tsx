@@ -45,7 +45,7 @@ export default function DeletablePlayerRow({ player, stages, admin, removePlayer
   }
 
   return (
-    <HStack justify={admin ? "space-between" : "center"}>
+    <HStack justify="space-between">
         <PlayerRoundStats player={player} stages={stages} admin={admin} handleDeletePlayer={handleDeletePlayer} />
     </HStack>
   );

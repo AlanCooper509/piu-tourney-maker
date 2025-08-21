@@ -12,6 +12,7 @@ import type { Tourney } from '../../types/Tourney';
 import type { Round } from '../../types/Round';
 import type { CarouselCard } from '../../types/CarouselCard';
 import { StatusElement } from '../StatusElement';
+import PlayersAdvancingElement from '../round/PlayersAdvancingElement';
 
 interface RoundListProps {
   tourney: Tourney | null;
@@ -51,7 +52,7 @@ function roundsToCards(
       content: (
         <VStack>
           <StatusElement element={round} />
-          <Text fontSize="md">Players Advancing: {round.players_advancing}</Text>
+          <PlayersAdvancingElement playersAdvancing={round.players_advancing} roundStatus={round.status}></PlayersAdvancingElement>
         </VStack>
       ),
     }));

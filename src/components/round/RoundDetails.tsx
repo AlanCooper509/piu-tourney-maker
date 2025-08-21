@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Box, Heading, HStack, Text, VStack } from '@chakra-ui/react'
 
 import StartRoundButton from './StartRoundButton'
+import EndRoundButton from './EndRoundButton'
 import EditRoundDetailsButton from './EditRoundDetailsButton'
 import { StatusElement } from '../StatusElement'
 import EditableRoundName from '../tourney/EditableRoundName'
@@ -11,6 +12,7 @@ import LeaderboardLinkButton from './LeaderboardLinkButton'
 import type { Round } from '../../types/Round'
 import type { PlayerRound } from '../../types/PlayerRound'
 import type { Stage } from '../../types/Stage'
+import PlayersAdvancingElement from './PlayersAdvancingElement'
 
 interface RoundDetailsProps {
   round: Round | null
@@ -53,7 +55,7 @@ export function RoundDetails({ round, setRound, players, stages, loading, error,
           onRename={onRenameRound}
           isLoading={updatingName}
         /> :
-        <Text>{round?.name ?? ''}</Text>
+        <></>
       }
     </>
   );
@@ -75,7 +77,7 @@ export function RoundDetails({ round, setRound, players, stages, loading, error,
         {!loading && !error && round && (
           <>
           <StatusElement element={round} />
-          <Text>Players Advancing: {playersAdvancing}</Text>
+          <PlayersAdvancingElement playersAdvancing={playersAdvancing} roundStatus={round?.status} />
           <Text>Scoring: Cumulative</Text> {/* TODO: eventually make this a db param, etc.*/}
           <HStack mt={2}>
             <LeaderboardLinkButton tourneyId={tourneyId} roundId={round?.id ?? 0} />
@@ -95,6 +97,13 @@ export function RoundDetails({ round, setRound, players, stages, loading, error,
                 setRound={setRound}
                 players={players}
                 stages={stages}
+              />
+            )}
+            {!loadingAdmin && admin && round?.status === "In Progress" && (
+              <EndRoundButton
+                tourneyId={tourneyId}
+                round={round}
+                setRound={setRound}
               />
             )}
           </HStack>

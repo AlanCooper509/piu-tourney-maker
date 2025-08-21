@@ -79,14 +79,14 @@ export function TourneyDetails({ tourney, setTourney, players, rounds, loading, 
           onRename={onRenameTourney}
           isLoading={updatingName}
         /> :
-        <Text>{tourney?.name ?? ''}</Text>
+        <Text></Text>
       }
     </>
   );
   return (
     <>
       <title>{tourney && tourney.name ? tourney.name : 'Tournament Details'}</title>
-      <Heading mb={2}>{tourneyNameText}</Heading>
+      <Heading mb={-2}>{tourneyNameText}</Heading>
       <Box>
         <VStack style={{gap: '0px'}}>
           {loading && <Text>Loading tournament...</Text>}

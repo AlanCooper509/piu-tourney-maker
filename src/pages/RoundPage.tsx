@@ -1,4 +1,4 @@
-import { VStack, StackSeparator } from "@chakra-ui/react"
+import { Flex, Box, Container } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -9,9 +9,11 @@ import { PlayersList } from "../components/round/PlayersList";
 import { StagesList } from "../components/round/StagesList";
 import { Toaster } from "../components/ui/toaster";
 
+import type { Tourney } from "../types/Tourney";
 import type { Round } from "../types/Round";
 import type { Stage } from "../types/Stage";
 import type { PlayerRound } from "../types/PlayerRound";
+import RoundHeaderText from "../components/round/RoundHeaderText";
 
 function RoundPage() {
   const { tourneyId, roundId } = useParams<{ tourneyId: string; roundId: string }>();
@@ -22,6 +24,10 @@ function RoundPage() {
   const [players, setPlayers] = useState<PlayerRound[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
 
+  const { data: tourney } = getSupabaseTable<Tourney>(
+    'tourneys',
+    { column: 'id', value: tourneyId }
+  );
   const { data: rounds, loading: loadingRound, error: errorRound } = getSupabaseTable<Round>(
     'rounds',
     { column: 'id', value: roundId }
@@ -67,11 +73,18 @@ function RoundPage() {
   return (
     <>
       <Toaster />
-      <VStack separator={<StackSeparator />}>
-        <RoundDetails round={round} setRound={setRound} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
-        <PlayersList round={round} players={players} setPlayers={setPlayers} stages={stages} tourneyId={Number(tourneyId)} loading={loadingPlayers} error={errorPlayers} admin={isAdmin} loadingAdmin={loadingAdmin} />
-        <StagesList round={round} stages={stages} setStages={setStages} loading={loadingStages} error={errorStages} admin={isAdmin} loadingAdmin={loadingAdmin} />
-      </VStack>
+      <RoundHeaderText tourneyName={tourney[0]?.name} tourneyId={Number(tourneyId)} roundName={rounds[0]?.name}></RoundHeaderText>
+      <RoundDetails round={round} setRound={setRound} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
+      <Container maxW="4xl" py={6}>
+        <Flex direction={['column', 'column', 'column', 'row']} gap={4}>
+          <Box flex="1" width={['100%', '100%', '100%', '50%']} display="flex" justifyContent="center">
+            <PlayersList round={round} players={players} setPlayers={setPlayers} stages={stages} tourneyId={Number(tourneyId)} loading={loadingPlayers} error={errorPlayers} admin={isAdmin} loadingAdmin={loadingAdmin} />
+          </Box>
+          <Box flex="1" width={['100%', '100%', '100%', '50%']} display="flex" justifyContent="center">
+            <StagesList round={round} stages={stages} setStages={setStages} loading={loadingStages} error={errorStages} admin={isAdmin} loadingAdmin={loadingAdmin} />
+          </Box>
+        </Flex>
+      </Container>
     </>
   );
 };
