@@ -13,8 +13,17 @@ interface AddStageButtonProps {
   setStages: React.Dispatch<React.SetStateAction<Stage[]>>;
 }
 
+function alertText() {
+  const lines = [
+    `WARNING! Really delete this stage?`,
+    "This will also permanently remove its chart pool, and any scores already played on this stage!!"
+  ]
+  return lines.join('\n')
+}
+
 export default function DeleteStageButton({ round, stageId, setStages }: AddStageButtonProps) {
   async function onDeleteStage() {
+    if (!confirm(alertText())) return;
     if (!round) return;
     try {
       await handleDeleteStage(stageId);
@@ -38,12 +47,15 @@ export default function DeleteStageButton({ round, stageId, setStages }: AddStag
   return (
     <IconButton
       aria-label="Delete Stage"
+      variant="outline"
+      borderWidth={2}
       size="sm"
       colorPalette="red"
       px={2}
+      mx={1}
       onClick={onDeleteStage}
     >
-      <FaTrash />
+      Remove Stage<FaTrash />
     </IconButton>
   );
 }

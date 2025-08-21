@@ -64,6 +64,8 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
       <IconButton
         aria-label="Add to Pool"
         size="sm"
+        variant="outline"
+        borderWidth={2}
         colorPalette="green"
         px={2}
         onClick={handleSubmit}
