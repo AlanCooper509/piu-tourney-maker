@@ -1,4 +1,4 @@
-import { Text, HStack, Tag } from '@chakra-ui/react';
+import { Text, HStack, Tag, Span } from '@chakra-ui/react';
 
 import { getScoresForPlayer } from '../../helpers/getScoresForPlayer';
 
@@ -24,7 +24,7 @@ export default function ({player, stages}: NonEditablePlayerScores) {
 
   return (
     stages?.map((stage) => {
-      const chartName = stage.charts ? stage.charts.name_en ?? "No Name" : <Text fontStyle="italic" color="fg.subtle">awaiting chart selection...</Text>;
+      const chartName = stage.charts ? stage.charts.name_en ?? "No Name" : <Span fontStyle="italic" color="fg.subtle">awaiting chart selection...</Span>;
       const chartType = stage.charts ? stage.charts.type?.charAt(0) ?? "" : '';
       const chartLevel = stage.charts ? stage.charts.level ?? "" : '??';
 
