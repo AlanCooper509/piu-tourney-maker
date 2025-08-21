@@ -45,7 +45,7 @@ export default function PlayerRoundStats({ player, stages, admin, handleDeletePl
         borderColor="border.emphasized"
         borderWidth={isOpen ? 1 : 0}
       >
-        <Collapsible.Trigger onClick={toggleOpen} mb={isOpen ? 2 : 0} cursor="pointer" w="full">
+        <Collapsible.Trigger asChild onClick={toggleOpen} mb={isOpen ? 2 : 0} cursor="pointer" w="full">
           <HStack>
             <IoChevronForward
               style={{
@@ -59,17 +59,15 @@ export default function PlayerRoundStats({ player, stages, admin, handleDeletePl
             </Text>
             <Spacer/>
             {admin && (
-              <>
-                <IconButton
-                  aria-label="Delete player"
-                  variant="outline"
-                  size="xs"
-                  colorPalette="red"
-                  onClick={handleDeletePlayer}
-                >
-                  <FaTrash />
-                </IconButton>
-              </>
+              <IconButton
+                aria-label="Delete player"
+                variant="outline"
+                size="xs"
+                colorPalette="red"
+                onClick={handleDeletePlayer}
+              >
+                <FaTrash />
+              </IconButton>
             )}
           </HStack>
         </Collapsible.Trigger>
