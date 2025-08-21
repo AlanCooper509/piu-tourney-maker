@@ -105,7 +105,8 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
           return (
             <Box key={stage.id} mb={2} p={2} borderWidth="2px" borderRadius="md" borderColor="gray.400">
               <Collapsible.Root defaultOpen={!stage.chart_id}>
-                <Collapsible.Trigger onClick={toggleOpen} cursor="pointer" w="full">
+                <Collapsible.Trigger asChild cursor="pointer" w="full">
+                  <Box as="div" onClick={toggleOpen}>
                   {/* Stage Header */}
                   <Box w="full" fontWeight="bold" textAlign="start">
                     <HStack>
@@ -156,6 +157,7 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
                       )}
                     </HStack>
                   }
+                  </Box>
                 </Collapsible.Trigger>
                 <Collapsible.Content>
                   <Separator size="lg" borderColor="gray.800" borderWidth="1px" mt={2} />
