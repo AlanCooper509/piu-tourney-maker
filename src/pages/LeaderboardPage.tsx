@@ -61,7 +61,7 @@ function PlayerRow({
     if (isEliminated) return undefined;
     if (index === 0) return "linear-gradient({colors.yellow.300}, {colors.yellow.600})"; // shiny gold
     if (index === 1) return "linear-gradient({colors.gray.300}, {colors.gray.700})";     // shiny silver
-    if (index === 2) return "linear-gradient({colors.yellow.emphasized}, {colors.yellow.subtle})"; // shiny bronze
+    if (index === 2) return "linear-gradient({colors.yellow.700}, {colors.yellow.900})"; // shiny bronze
     return undefined;
   };
 
