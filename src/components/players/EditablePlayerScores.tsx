@@ -149,9 +149,9 @@ export default function EditablePlayerScores({ player, stages, incrementStagesPl
 
   return (
     localStages?.map(stage => {
-      const chartName = stage.charts?.name_en ?? 'No Name';
+      const chartName = stage.charts?.name_en ?? 'awaiting chart selection...';
       const chartType = stage.charts?.type?.charAt(0) ?? '';
-      const chartLevel = stage.charts?.level ?? '';
+      const chartLevel = stage.charts?.level ?? '??';
 
       const playerScore = stage.scores?.find(s => s.player_round_id === player.id);
 
