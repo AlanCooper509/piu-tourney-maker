@@ -28,9 +28,9 @@ export default function DialogForm({ title, trigger, onSubmit, children }: Dialo
             <Dialog.Body>{children}</Dialog.Body>
             <Dialog.Footer>
               <Dialog.ActionTrigger asChild>
-                <Button colorPalette={"red"}>Cancel</Button>
+                <Button variant="outline" borderWidth="2px" colorPalette={"red"}>Cancel</Button>
               </Dialog.ActionTrigger>
-              <Button colorPalette={"green"} onClick={onSubmit}>Submit</Button>
+              <Button variant="outline" borderWidth="2px" colorPalette={"green"} onClick={onSubmit}>Submit</Button>
             </Dialog.Footer>
             <Dialog.CloseTrigger asChild>
               <CloseButton size="sm" />
