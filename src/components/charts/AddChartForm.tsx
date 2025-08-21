@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {HStack, Input, IconButton} from "@chakra-ui/react";
+import { HStack, Input, IconButton } from "@chakra-ui/react";
 import { IoAddCircleSharp } from "react-icons/io5";
 import { ChartTypeSelect } from "./ChartTypeSelect";
 import { toaster } from "../ui/toaster";
@@ -26,12 +26,12 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
       });
     };
     setChartName("");
-    setChartLevel("");      
+    setChartLevel("");
     setChartType("");
   };
 
   return (
-    <HStack my={2} gap={2} alignContent="center" justifyContent="center" borderWidth="2px" borderRadius="md" borderColor="gray.600">
+    <HStack my={2} gap={2} alignContent="center" justifyContent="center" borderRadius="md">
       {/* Chart name */}
       <Input
         size="sm"
@@ -64,6 +64,8 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
       <IconButton
         aria-label="Add to Pool"
         size="sm"
+        variant="outline"
+        borderWidth={2}
         colorPalette="green"
         px={2}
         onClick={handleSubmit}

@@ -21,6 +21,8 @@ export default function AddStageButton({ round, setStages }: AddStageButtonProps
   return (
     <IconButton
       aria-label="Add to Pool"
+      variant="outline"
+      borderWidth={2}
       size="sm"
       colorPalette="green"
       px={2}

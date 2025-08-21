@@ -6,7 +6,7 @@ export async function handleAddRoundToTourney(
   playersAdvancing: number
 ) {
   const { data, error } = await supabaseClient
-    .from("rounds") // or "rounds_tourneys" depending on your schema
+    .from("rounds")
     .insert([
       {
         tourney_id: tourneyId,

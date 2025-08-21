@@ -1,9 +1,10 @@
-import { Box, HStack, IconButton, Spacer, Text } from "@chakra-ui/react";
+import { Box, HStack, IconButton, Text } from "@chakra-ui/react";
 import type { Stage } from "../../types/Stage";
 import { FaTrash } from "react-icons/fa";
 import { toaster } from "../ui/toaster";
 
 import { handleDeleteChartFromPool } from "../../handlers/handleDeleteChartFromPool";
+import { ChartRow } from "./ChartRow";
 
 interface ChartPoolProps {
   stage: Stage;
@@ -20,9 +21,9 @@ export default function ChartPool({ stage, setStages, admin, loadingAdmin }: Cha
         prevStages?.map(stage =>
           stage.id === stageId
             ? {
-                ...stage,
-                chart_pools: stage.chart_pools?.filter(pool => pool.chart_id !== chartId) || [],
-              }
+              ...stage,
+              chart_pools: stage.chart_pools?.filter(pool => pool.chart_id !== chartId) || [],
+            }
             : stage
         ) || []
       );
@@ -43,30 +44,27 @@ export default function ChartPool({ stage, setStages, admin, loadingAdmin }: Cha
       });
     }
   }
-  
+
   return (
     stage.chart_pools?.length ? stage.chart_pools : [{ id: 0, charts: null }]).map(chartInPool => (
-      <Box key={chartInPool.id} borderWidth="1px" borderRadius="sm" pl={4}>
+      <Box mb={1} key={chartInPool.id} borderWidth={1} borderRadius="sm">
         {chartInPool.charts ? (
-          <HStack mb={2} width="100%" align="center">
-              <Text>
-                {chartInPool.charts.name_en ?? 'No Chart Name'}
-              </Text>
-              <Spacer />
-              <Text>
-                {chartInPool.charts.type ?? 'No Chart Type'} {chartInPool.charts.level ?? '(No Chart Difficulty)'}
-              </Text>
-              {!loadingAdmin && admin && (
-                <IconButton
+          <HStack width="100%" align="center">
+            <ChartRow chart={chartInPool.charts} />
+            {!loadingAdmin && admin && (
+              <IconButton
                 aria-label="Delete Chart from Pool"
-                size="sm"
+                size="xl"
+                variant="outline"
+                borderWidth={2}
                 colorPalette="red"
                 px={2}
+                mr={2}
                 onClick={() => onDeleteChartFromPool(stage.id, chartInPool.charts!.id)}
-                >
-                  Remove Chart<FaTrash />
-                </IconButton>
-              )}
+              >
+                <FaTrash />
+              </IconButton>
+            )}
           </HStack>
         ) : (
           <Text>(No charts in this pool yet)</Text>

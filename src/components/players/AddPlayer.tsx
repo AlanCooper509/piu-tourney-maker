@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { HStack, Input, IconButton } from "@chakra-ui/react";
 import { FaCheck } from "react-icons/fa";
-import { IoAddCircleSharp } from "react-icons/io5";
+import { MdOutlinePersonAddAlt } from "react-icons/md";
 import { IoCloseSharp } from "react-icons/io5";
 
 interface AddPlayerProps {
@@ -38,6 +38,8 @@ function AddPlayer({ onAdd, loading }: AddPlayerProps) {
           />
           <IconButton
             aria-label="Save player"
+            variant="outline"
+            borderWidth={2}
             size="sm"
             loading={loading}
             onClick={handleSave}
@@ -47,8 +49,10 @@ function AddPlayer({ onAdd, loading }: AddPlayerProps) {
           </IconButton>
           <IconButton
             aria-label="Cancel edit"
-            onClick={handleCancel}
+            variant="outline"
+            borderWidth={2}
             size="sm"
+            onClick={handleCancel}
             colorPalette="red"
           >
           <IoCloseSharp />
@@ -57,12 +61,14 @@ function AddPlayer({ onAdd, loading }: AddPlayerProps) {
       ) : (
         <IconButton
           aria-label="Add player"
+          variant="outline"
+          borderWidth={2}
           size="sm"
           px={2}
           colorPalette="green"
           onClick={() => setIsAdding(true)}
         >
-            Add Player<IoAddCircleSharp />
+            Add Player<MdOutlinePersonAddAlt />
         </IconButton>
       )}
     </HStack>

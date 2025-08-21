@@ -65,6 +65,8 @@ export default function EditableRoundName({
             aria-label="Save round name"
             onClick={handleSave}
             loading={isLoading}
+            variant="outline"
+            borderWidth={2}
             size="sm"
             colorPalette="green"
           >
@@ -73,6 +75,8 @@ export default function EditableRoundName({
           <IconButton
             aria-label="Cancel edit"
             onClick={handleCancel}
+            variant="outline"
+            borderWidth={2}
             size="sm"
             colorPalette="red"
           >
@@ -92,6 +96,8 @@ export default function EditableRoundName({
             aria-label="Edit round name"
             onClick={() => setIsEditing(true)}
             size="sm"
+            variant="outline"
+            borderWidth={2}
             colorPalette="blue"
           >
             <CiEdit />

@@ -35,10 +35,13 @@ export default function EditRoundDetailsButton({ round, setRound, roundName, set
   const button = admin ? (
     <IconButton
       aria-label="Edit round name"
+      variant="outline"
+      borderWidth={2}
       size="sm"
       colorPalette="blue"
+      px={2}
     >
-      <CiEdit />
+      Edit Details<CiEdit />
     </IconButton>
   ) : null;
 

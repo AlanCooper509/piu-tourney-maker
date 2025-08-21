@@ -1,5 +1,4 @@
-import { HStack, IconButton } from '@chakra-ui/react';
-import { FaTrash } from "react-icons/fa";
+import { HStack } from '@chakra-ui/react';
 
 import PlayerRoundStats from './PlayerRoundStats';
 import { handleDeletePlayerFromRound } from '../../handlers/handleDeletePlayerFromRound';
@@ -10,14 +9,22 @@ import type { Stage } from '../../types/Stage';
 
 interface DeletablePlayerRowProps {
   player: PlayerRound;
-  stages: Stage[] | null; 
+  stages: Stage[] | null;
   admin: boolean;
   removePlayer: (playerId: number) => void;
 }
 
+function alertText(playerName: string) {
+  const lines = [
+    `Delete player "${playerName}"?`,
+    "This will remove ALL of their scores on this round!!"
+  ]
+  return lines.join('\n')
+}
+
 export default function DeletablePlayerRow({ player, stages, admin, removePlayer }: DeletablePlayerRowProps) {
   const handleDeletePlayer = async () => {
-    if (!confirm(`Delete player "${player.player_tourneys.player_name}"?`)) return;
+    if (!confirm(alertText(player.player_tourneys.player_name))) return;
     try {
       await handleDeletePlayerFromRound(player.id);
       removePlayer(player.id);
@@ -38,20 +45,8 @@ export default function DeletablePlayerRow({ player, stages, admin, removePlayer
   }
 
   return (
-    <HStack justify={admin ? "space-between" : "center"} width="100%">
-        <PlayerRoundStats player={player} stages={stages} admin={admin} />
-        {admin && (
-          <>
-            <IconButton
-              aria-label="Delete player"
-              size="sm"
-              colorPalette="red"
-              onClick={handleDeletePlayer}
-            >
-              <FaTrash />
-            </IconButton>
-          </>
-        )}
+    <HStack justify={admin ? "space-between" : "center"}>
+        <PlayerRoundStats player={player} stages={stages} admin={admin} handleDeletePlayer={handleDeletePlayer} />
     </HStack>
   );
 }

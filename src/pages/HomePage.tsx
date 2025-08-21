@@ -5,12 +5,14 @@ import {
 } from '@chakra-ui/react';
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
-import type { Tourney } from '../types/Tourney';
 import { getAdminTourneyIds } from '../hooks/AdminTourneyHelpers';
+import type { Tourney } from '../types/Tourney';
+import { useAuth } from '../context/AuthContext';
 
 function HomePage() {
   const { data: tourneys, loading, error } = getSupabaseTable<Tourney>('tourneys');
   const { adminTourneyIds, loading: adminLoading } = getAdminTourneyIds();
+  const { user } = useAuth();
 
   if (loading) return <Text fontSize="xl">Loading...</Text>;
   if (error) return <Text fontSize="xl">Error: {error.message}</Text>;
@@ -125,13 +127,11 @@ function HomePage() {
 
   // --- Filtering logic ---
   const activeTourneys = tourneys.filter(t => {
-    const status = t.status?.toLowerCase() ?? '';
-    return status === 'in progress' || status === 'active';
+    return t.status === 'In Progress' && new Date(t.end_date) >= new Date();
   });
 
   const archivedTourneys = tourneys.filter(t => {
-    const status = t.status?.toLowerCase() ?? '';
-    return status === 'archived' || status === 'completed';
+    return t.status === 'Complete' || new Date(t.end_date) < new Date();
   });
 
   return (
@@ -152,8 +152,12 @@ function HomePage() {
       <VStack align="stretch" w="100%" mb={8}>
         {activeTourneys.map(row => renderTourneyCard(row, 'active'))}
 
-        {/* Add Tourney card only if user is logged in AND is an admin */}
-        {!adminLoading && adminTourneyIds && adminTourneyIds.length > 0 && renderAddTourneyCard()}
+        {/* Add Tourney card only if user is logged in ('user' exists) */}
+        {/* Temporary: ALSO ensure they are already is assigned manually as a tourney admin somewhere*/}
+        {/* - for BITE8 timeline; just to prevent any potential spammers for now */}
+        {!adminLoading && adminTourneyIds && adminTourneyIds.length > 0 && user && 
+          renderAddTourneyCard()
+        }
       </VStack>
 
       {/* Archived Tourneys */}

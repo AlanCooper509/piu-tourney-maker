@@ -2,8 +2,8 @@ import { HStack, Text, Input, IconButton, Spacer } from '@chakra-ui/react';
 import { useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { FaCheck } from 'react-icons/fa';
-import { FaTrash } from "react-icons/fa";
 import { IoCloseSharp } from 'react-icons/io5';
+import { MdOutlinePersonRemoveAlt1 } from "react-icons/md"
 
 import { handleDeletePlayerFromTourney } from '../../handlers/handleDeletePlayerFromTourney';
 import { handleRenamePlayerInTourney } from '../../handlers/handleRenamePlayerInTourney';
@@ -16,6 +16,14 @@ interface EditablePlayerRowProps {
   admin: boolean;
   updatePlayer: (updated: PlayerTourney) => void;
   removePlayer: (playerId: number) => void;
+}
+
+function alertText(playerName: string) {
+  const lines = [
+    `Delete player "${playerName}"?`,
+    "This will remove ALL of their scores on ALL of their rounds in this tournament!!"
+  ]
+  return lines.join('\n')
 }
 
 export default function EditablePlayerRow({ player, admin, updatePlayer, removePlayer }: EditablePlayerRowProps) {
@@ -48,7 +56,7 @@ export default function EditablePlayerRow({ player, admin, updatePlayer, removeP
   };
 
   const handleDeletePlayer = async () => {
-    if (!confirm(`Delete player "${player.player_name}"?`)) return;
+    if (!confirm(alertText(player.player_name))) return;
     try {
       await handleDeletePlayerFromTourney(player.id);
       removePlayer(player.id);
@@ -88,6 +96,7 @@ export default function EditablePlayerRow({ player, admin, updatePlayer, removeP
             aria-label="Save name"
             onClick={handleSave}
             loading={isLoading}
+            variant="outline"
             size="sm"
             colorPalette="green"
           >
@@ -96,6 +105,7 @@ export default function EditablePlayerRow({ player, admin, updatePlayer, removeP
           <IconButton
             aria-label="Cancel edit"
             onClick={handleCancel}
+            variant="outline"
             size="sm"
             colorPalette="red"
           >
@@ -110,6 +120,7 @@ export default function EditablePlayerRow({ player, admin, updatePlayer, removeP
               <Spacer />
               <IconButton
                 aria-label="Edit player name"
+                variant="outline"
                 size="sm"
                 colorPalette="blue"
                 onClick={() => setIsEditing(true)}
@@ -118,11 +129,12 @@ export default function EditablePlayerRow({ player, admin, updatePlayer, removeP
               </IconButton>
               <IconButton
                 aria-label="Delete player"
+                variant="outline"
                 size="sm"
                 colorPalette="red"
                 onClick={handleDeletePlayer}
               >
-                <FaTrash />
+                <MdOutlinePersonRemoveAlt1 />
               </IconButton>
             </>
           )}
