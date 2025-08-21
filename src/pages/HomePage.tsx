@@ -1,13 +1,12 @@
+import {Heading, Text, Box, VStack, HStack, Image, Flex, LinkBox, LinkOverlay} from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
-import {
-  Heading, Text, Box, VStack, HStack, Image, Flex,
-  LinkBox, LinkOverlay
-} from '@chakra-ui/react';
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
 import { getAdminTourneyIds } from '../hooks/AdminTourneyHelpers';
-import type { Tourney } from '../types/Tourney';
+import handleAddNewTourney from '../handlers/handleAddNewTourney';
 import { useAuth } from '../context/AuthContext';
+
+import type { Tourney } from '../types/Tourney';
 
 function HomePage() {
   const { data: tourneys, loading, error } = getSupabaseTable<Tourney>('tourneys');
@@ -110,6 +109,7 @@ function HomePage() {
       justify="center"
       w={{ base: '90%', md: '60%' }}
       mx="auto"
+      onClick={() => {handleAddNewTourney(crypto.randomUUID(), "2025-08-24", "2025-08-26")}}
     >
       <Text fontSize={{ base: '3xl', sm: '4xl' }} color="gray.400">
         +
@@ -127,7 +127,7 @@ function HomePage() {
 
   // --- Filtering logic ---
   const activeTourneys = tourneys.filter(t => {
-    return t.status === 'In Progress' && new Date(t.end_date) >= new Date();
+    return (t.status === 'Not Started' || t.status === 'In Progress') && new Date(t.end_date) >= new Date();
   });
 
   const archivedTourneys = tourneys.filter(t => {

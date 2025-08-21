@@ -79,7 +79,7 @@ function RoundPage() {
     <>
       <Toaster />
       <RoundHeaderText tourneyName={tourney[0]?.name} tourneyId={Number(tourneyId)} roundName={rounds[0]?.name}></RoundHeaderText>
-      <RoundsNavbar tourneyId={tourneyId} rounds={allRoundsInTourney}></RoundsNavbar>
+      <RoundsNavbar tourneyId={Number(tourneyId)} rounds={allRoundsInTourney}></RoundsNavbar>
       <Separator mt={2} mb={4} />
       <RoundDetails round={round} setRound={setRound} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
       <Separator mt={4} />

@@ -51,7 +51,7 @@ export function PlayersList({ tourney, players, setPlayers, loading, error, admi
       prev?.map(p => (p.id === updated.id ? updated : p)) ?? []
     );
   };
-
+  const columnCount = Math.min(Math.max(players?.length || 1, 1), 4);
   return (
     <>
       <Box>
@@ -61,7 +61,7 @@ export function PlayersList({ tourney, players, setPlayers, loading, error, admi
         </HStack>
         {loading && <Text>Loading players...</Text>}
         {error && <Text color="red">Error: {error.message}</Text>}
-        <SimpleGrid columns={[2,1,2,4]} gap={[0, 0, 3, 5]} mb={2}>
+        <SimpleGrid columns={[1,1,2,columnCount]} gap={[0, 0, 3, 5]} mb={2}>
             {!loading && !error && players?.length ? (
               players.map(p => (
                 <EditablePlayerRow
