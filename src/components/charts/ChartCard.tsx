@@ -1,9 +1,8 @@
-import { Image, Card, Badge } from '@chakra-ui/react'
+import { Image, Card, Badge, Text, HStack } from '@chakra-ui/react'
 import type { Chart, ChartType } from '../../types/Chart'
 
 interface ChartCardProps {
-  chart: Chart,
-  width?: string,
+  chart: Chart
 }
 
 function color(type: ChartType | null): string {
@@ -16,18 +15,21 @@ function color(type: ChartType | null): string {
   }
 }
 
-export function ChartCard({ chart, width = "300px" }: ChartCardProps) {
+export function ChartCard({ chart }: ChartCardProps) {
   return (
-    <Card.Root width={width} size="sm" variant="elevated">
+    <Card.Root variant="elevated">
       {chart.image_url && <Image src={chart.image_url} alt={chart.name_en} filter="auto" />}
       <Card.Body>
         <Card.Title truncate>
-          {chart.name_en}
+          <HStack>
+            <Badge size="md" colorPalette={color(chart.type)} variant="surface">
+              {chart.level}
+            </Badge>
+            <Text truncate>{chart.name_en}</Text>
+          </HStack>
+
         </Card.Title>
         <Card.Description>
-          <Badge size="md" colorPalette={color(chart.type)} variant="surface">
-            {chart.level}
-          </Badge>
         </Card.Description>
       </Card.Body>
     </Card.Root>

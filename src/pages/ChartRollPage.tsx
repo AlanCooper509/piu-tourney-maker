@@ -5,8 +5,6 @@ import getSupabaseTable from '../hooks/getSupabaseTable';
 import type { Stage } from '../types/Stage';
 import { useEffect, useState } from 'react';
 import ChartSpinner from '../components/charts/ChartSpinner';
-
-import "./ChartRollPage.css"
 import { IoArrowBack, IoPlay } from 'react-icons/io5';
 
 
@@ -44,8 +42,13 @@ function ChartRollPage() {
   const pick = stage?.charts;
 
   return <>
+    {/* bg */}
     <Box position="absolute" width="100%" height="100%" top="0" left="0" zIndex="9998" backgroundColor="gray.900" />
+
+    {/* spinner */}
     {charts && pick && playing && <ChartSpinner charts={charts} pick={pick} />}
+
+    {/* controls */}
     <HStack position="absolute" left="1em" bottom="1em" zIndex="10000">
       <Button variant="ghost" colorPalette="black" onClick={onBack}><IoArrowBack /></Button>
       {charts && pick && <Button variant="ghost" colorPalette="black" onClick={onPlay}><IoPlay /></Button>}
