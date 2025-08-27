@@ -34,7 +34,7 @@ export default function PlayerRoundStats({ player, stages, admin, handleDeletePl
   }
 
   return (
-    <Box w="full">
+    <Box w={["xs", "md", "md", "sm"]}>
       <Collapsible.Root
         textAlign="left"
         backgroundColor={isOpen ? "gray.900" : "transparent"}
@@ -46,18 +46,27 @@ export default function PlayerRoundStats({ player, stages, admin, handleDeletePl
         borderWidth={isOpen ? 1 : 0}
       >
         <Collapsible.Trigger asChild onClick={toggleOpen} mb={isOpen ? 2 : 0} cursor="pointer" w="full">
-          <HStack>
+          <HStack w="full" align="center" justify="space-between">
             <IoChevronForward
               style={{
                 transform: isOpen ? 'rotate(90deg)' : 'rotate(0)',
                 transition: 'transform 0.2s ease',
               }}
             />
-            {admin && stagesPlayed == stages?.length ? <Checkbox.Root readOnly checked={true} variant="outline" colorPalette="green"><Checkbox.Control /></Checkbox.Root> : <></>}
-            <Text fontWeight={isOpen ? "bold" : "normal"}>
-              {player.player_tourneys.player_name}
-            </Text>
-            <Spacer/>
+            <HStack flex="1" overflow="hidden">
+              {admin && stagesPlayed == stages?.length && (
+                <Checkbox.Root readOnly checked variant="outline" colorPalette="green">
+                  <Checkbox.Control />
+                </Checkbox.Root>
+              )}
+              <Text
+                fontWeight={isOpen ? "bold" : "normal"}
+                truncate
+                title={player.player_tourneys.player_name}
+              >
+                {player.player_tourneys.player_name}
+              </Text>
+            </HStack>
             {admin && (
               <IconButton
                 aria-label="Delete player"

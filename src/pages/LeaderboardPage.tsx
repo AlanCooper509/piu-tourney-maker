@@ -99,29 +99,40 @@ function PlayerRow({
       animation={updatedPlayer === player.name ? `highlight 0.5s ease` : undefined}
       mb={2}
     >
-      <HStack
-        bg={getBgColor()}
-        bgImage={getBgGradient()}
-        color={index === 0 ? "white" : "gray.100"}
-        px={6}
-        py={4}
-        cursor="pointer"
-        justify="space-between"
-        onClick={() => toggleExpand(player.name)}
-        transition="all 0.3s ease"
-        _hover={{ transform: "scale(1.02)", shadow: "md" }}
-        borderRadius="md"
-        textShadow={index === 0 ? "0px 2px 4px rgba(0,0,0,0.5)" : undefined}
-        overflow="visible"
-      >
-        <HStack>
-          <Text fontSize={rowFontSize} fontWeight="bold">
-            #{index + 1}
-          </Text>
-          <Text fontSize={rowFontSize}>{player.name}</Text>
-        </HStack>
-        <Text fontSize={rowFontSize}>{totalScore.toLocaleString()}</Text>
+    <HStack
+      bg={getBgColor()}
+      bgImage={getBgGradient()}
+      color={index === 0 ? "white" : "gray.100"}
+      px={6}
+      py={4}
+      cursor="pointer"
+      justify="space-between"
+      onClick={() => toggleExpand(player.name)}
+      transition="all 0.3s ease"
+      _hover={{ transform: "scale(1.02)", shadow: "md" }}
+      borderRadius="md"
+      textShadow={index === 0 ? "0px 2px 4px rgba(0,0,0,0.5)" : undefined}
+      overflow="visible"
+    >
+      {/* Left side: rank + name */}
+      <HStack flex="1" overflow="hidden">
+        <Text fontSize={rowFontSize} fontWeight="bold" flexShrink={0}>
+          #{index + 1}
+        </Text>
+        <Text
+          fontSize={rowFontSize}
+          truncate
+          title={player.name}
+        >
+          {player.name}
+        </Text>
       </HStack>
+
+      {/* Right side: total score */}
+      <Text fontSize={rowFontSize} flexShrink={0}>
+        {totalScore.toLocaleString()}
+      </Text>
+    </HStack>
 
       <Box
         ref={contentRef}

@@ -82,64 +82,70 @@ export default function EditablePlayerRow({ player, admin, updatePlayer, removeP
   };
 
   return (
-    <HStack justify={admin ? "space-between" : "center"} width="100%">
-      {isEditing ? (
-        <>
-          <Input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            size="sm"
-            autoFocus
-            width="auto"
-          />
-          <IconButton
-            aria-label="Save name"
-            onClick={handleSave}
-            loading={isLoading}
-            variant="outline"
-            size="sm"
-            colorPalette="green"
-          >
-            <FaCheck />
-          </IconButton>
-          <IconButton
-            aria-label="Cancel edit"
-            onClick={handleCancel}
-            variant="outline"
-            size="sm"
-            colorPalette="red"
-          >
-            <IoCloseSharp />
-          </IconButton>
-        </>
-      ) : (
-        <>
-          <Text>{player.player_name}</Text>
-          {admin && (
-            <>
-              <Spacer />
-              <IconButton
-                aria-label="Edit player name"
-                variant="outline"
-                size="sm"
-                colorPalette="blue"
-                onClick={() => setIsEditing(true)}
-              >
-                <CiEdit />
-              </IconButton>
-              <IconButton
-                aria-label="Delete player"
-                variant="outline"
-                size="sm"
-                colorPalette="red"
-                onClick={handleDeletePlayer}
-              >
-                <MdOutlinePersonRemoveAlt1 />
-              </IconButton>
-            </>
-          )}
-        </>
-      )}
-    </HStack>
+    <HStack w="full" justify={admin ? "space-between" : "center"} align="center">
+    {isEditing ? (
+      <>
+        <Input
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          size="sm"
+          autoFocus
+          width="auto"
+        />
+        <IconButton
+          aria-label="Save name"
+          onClick={handleSave}
+          loading={isLoading}
+          variant="outline"
+          size="sm"
+          colorPalette="green"
+        >
+          <FaCheck />
+        </IconButton>
+        <IconButton
+          aria-label="Cancel edit"
+          onClick={handleCancel}
+          variant="outline"
+          size="sm"
+          colorPalette="red"
+        >
+          <IoCloseSharp />
+        </IconButton>
+      </>
+    ) : (
+      <>
+        {/* Left side: player name */}
+        <HStack flex="1" overflow="hidden" mx={4}>
+          <Text truncate title={player.player_name}>
+            {player.player_name}
+          </Text>
+        </HStack>
+
+        {/* Right side: admin buttons */}
+        {admin && (
+          <HStack mx={4}>
+            <IconButton
+              aria-label="Edit player name"
+              variant="outline"
+              size="sm"
+              colorPalette="blue"
+              onClick={() => setIsEditing(true)}
+            >
+              <CiEdit />
+            </IconButton>
+            <IconButton
+              aria-label="Delete player"
+              variant="outline"
+              size="sm"
+              colorPalette="red"
+              onClick={handleDeletePlayer}
+            >
+              <MdOutlinePersonRemoveAlt1 />
+            </IconButton>
+          </HStack>
+        )}
+      </>
+    )}
+  </HStack>
   );
 }
