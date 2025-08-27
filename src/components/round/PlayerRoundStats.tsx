@@ -1,4 +1,4 @@
-import { Box, Checkbox, Collapsible, HStack, IconButton, Spacer, Text } from '@chakra-ui/react';
+import { Box, Checkbox, Collapsible, HStack, IconButton, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { IoChevronForward } from 'react-icons/io5';
 import { FaTrash } from 'react-icons/fa';
