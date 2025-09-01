@@ -8,4 +8,5 @@ export interface Tourney {
   end_date: string;              // ISO date string (yyyy-mm-dd)
   status?: TourneyStatus | null; // enum type
   type?: TourneyType | null;     // enum type
+  thumbnail_img?: string;        // text
 }

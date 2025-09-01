@@ -69,26 +69,13 @@ function HomePage() {
               minW={{ base: "60px", sm: "80px", md: "90px" }}
               minH={{ base: "60px", sm: "80px", md: "90px" }}
             >
-              {/* (08/29/2025) Jaekim: Hardcoding in JTAK header images based on the conditional below ie. includes string "JTAK 2 Ahh"*/}
-              {row.name.includes("JTAK 2 Ahh") ? (
-                <Image
-                  src={"https://i.ibb.co/LX4JFxPP/JTAK.png"}
-                  alt={`${row.name} image`}
-                  boxSize={{ base: "60px", sm: "80px", md: "90px" }}
-                  objectFit="cover"
-                  borderRadius="md"
-                />
-              ) : (
-                <Image
-                  src={
-                    "https://images.start.gg/images/tournament/776306/image-ac1496a2e656e00a6a57aa025a87b0b3.jpg"
-                  }
-                  alt={`${row.name} image`}
-                  boxSize={{ base: "60px", sm: "80px", md: "90px" }}
-                  objectFit="cover"
-                  borderRadius="md"
-                />
-              )}
+              <Image
+                src={row.thumbnail_img ?? "/trophy.png"}
+                alt={`${row.name} image`}
+                boxSize={{ base: "60px", sm: "80px", md: "90px" }}
+                objectFit="cover"
+                borderRadius="md"
+              />
             </Box>
 
             <Flex
