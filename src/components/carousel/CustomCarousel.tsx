@@ -87,20 +87,18 @@ export default function CustomCarousel({ cards, isAdmin, adminLoading, adminClic
     <IoAddCircleSharp />
   </IconButton>
 
-  const adminOnlyModal = isAdmin ? <RoundModal
+  const adminOnlyModal = (!adminLoading && isAdmin) ? <RoundModal
     roundName={newRoundName}
     setRoundName={setNewRoundName}
     playersAdvancing={newPlayersAdvancing}
     setPlayersAdvancing={setNewPlayersAdvancing}
     trigger={addRoundButton}
-    admin={isAdmin}
-    adminLoading={adminLoading}
     onSubmitForm={adminClick}
   /> : null;
 
   return (
     <Container centerContent>
-      <Box position={'relative'} maxW="xl" overflow={'hidden'}>
+      <Box position={'relative'} overflow={'hidden'} width={["xl"]}>
         {/* Left Icon */}
         {currentIndex + 1 > 1 ? 
           <IconButton
