@@ -50,13 +50,13 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
         value={chartLevel !== "" ? chartLevel.toString() : undefined}
         onChange={(e) => {
           const value = Number(e.target.value);
-          if (value >= 1) {
-            setChartLevel(value);
-          }
+          if (isNaN(value)) { setChartLevel(value); }
+          if (value > 29) { setChartLevel(29); }
+          else setChartLevel(value);
         }}
         placeholder="Lv."
-        min={1}
-        max={28}
+        min={0}
+        max={29}
         maxWidth={"60px"}
       />
 
