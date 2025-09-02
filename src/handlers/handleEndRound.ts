@@ -38,7 +38,7 @@ function getAdvancingPlayersTourneyIds(round: Round, players: PlayerRound[], sta
     return advancingPlayersTourneyIds;
 }
 
-async function getNextRoundId(tourneyId: number, roundId: number) {
+async function determineNextRoundId(tourneyId: number, roundId: number) {
   // get rounds associated with tourney (for handling player advancement)
   // this underlying query should do ORDER() when fetching the auto-incrementing rounds.id column as our method of handling "round progression" (for now)
   const rounds = await getRoundsInTourney(tourneyId);
@@ -54,7 +54,6 @@ export default async function handleEndRound({ tourneyId, round }: handleStartRo
   if (!round?.id) throw new Error('Round ID is required!');
   const stages = await getStagesInRound(round.id);
   if (!stages) throw new Error('No stages were played!');
-  
   const players = await getPlayersInRound(round.id);
   if (!players) throw new Error('No players to advance!');
   
@@ -66,7 +65,7 @@ export default async function handleEndRound({ tourneyId, round }: handleStartRo
     }
 
     // find next round ID (if there is one)
-    const nextRoundId = await getNextRoundId(tourneyId, round.id);
+    const nextRoundId = round.next_round_id ? round.next_round_id : await determineNextRoundId(tourneyId, round.id);
     if (nextRoundId) {
       const advancingPlayersTourneyIds = getAdvancingPlayersTourneyIds(round, players, stages);
       console.log(advancingPlayersTourneyIds)

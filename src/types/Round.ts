@@ -6,4 +6,5 @@ export interface Round {
   name: string;                      // text
   players_advancing: number;         // bigint -> number
   status: RoundStatus | null;        // enum type
+  next_round_id?: number;            // bigint -> number
 }

@@ -3,7 +3,8 @@ import { supabaseClient } from "../lib/supabaseClient";
 export async function handleAddRoundToTourney(
   tourneyId: number,
   roundName: string,
-  playersAdvancing: number
+  playersAdvancing: number,
+  nextRoundId: number | undefined
 ) {
   const { data, error } = await supabaseClient
     .from("rounds")
@@ -12,6 +13,7 @@ export async function handleAddRoundToTourney(
         tourney_id: tourneyId,
         name: roundName,
         players_advancing: playersAdvancing,
+        next_round_id: nextRoundId
       },
     ])
     .select()

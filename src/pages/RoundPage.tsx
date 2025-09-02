@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
 import { isAdminForTourney } from "../hooks/AdminTourneyHelpers";
-import { RoundDetails } from "../components/round/RoundDetails";
+import { RoundDetails } from "../components/round/details/RoundDetails";
 import { PlayersList } from "../components/round/PlayersList";
 import { StagesList } from "../components/round/StagesList";
 import RoundHeaderText from "../components/round/RoundHeaderText";
@@ -86,7 +86,7 @@ function RoundPage() {
         <RoundsNavbar tourneyId={Number(tourneyId)} rounds={sortedRounds}></RoundsNavbar>
       }
       <Separator mt={2} mb={4} />
-      <RoundDetails round={round} setRound={setRound} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
+      <RoundDetails round={round} setRound={setRound} rounds={sortedRounds} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
       <Separator mt={4} />
       <Container maxW="4xl" py={6}>
         <Flex direction={['column', 'column', 'column', 'row']} gap={4}>
