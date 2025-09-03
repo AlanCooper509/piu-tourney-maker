@@ -1,6 +1,7 @@
 import { Box, HStack, IconButton, Text } from "@chakra-ui/react";
 import type { Stage } from "../../types/Stage";
 import { FaTrash } from "react-icons/fa";
+import { MdOutlineCheck } from "react-icons/md";
 import { toaster } from "../ui/toaster";
 
 import { handleDeleteChartFromPool } from "../../handlers/handleDeleteChartFromPool";
@@ -9,11 +10,13 @@ import { ChartRow } from "./ChartRow";
 interface ChartPoolProps {
   stage: Stage;
   setStages: React.Dispatch<React.SetStateAction<Stage[]>>;
+  onChooseChart: (stageId: number, chartId: number) => Promise<void>;
+  toggleOpen: () => void;
   admin: boolean;
   loadingAdmin: boolean;
 }
 
-export default function ChartPool({ stage, setStages, admin, loadingAdmin }: ChartPoolProps) {
+export default function ChartPool({ stage, setStages, onChooseChart, toggleOpen, admin, loadingAdmin }: ChartPoolProps) {
   async function onDeleteChartFromPool(stageId: number, chartId: number) {
     try {
       await handleDeleteChartFromPool(stageId, chartId);
@@ -52,18 +55,36 @@ export default function ChartPool({ stage, setStages, admin, loadingAdmin }: Cha
           <HStack width="100%" align="center">
             <ChartRow chart={chartInPool.charts} />
             {!loadingAdmin && admin && (
-              <IconButton
-                aria-label="Delete Chart from Pool"
-                size="xl"
-                variant="outline"
-                borderWidth={2}
-                colorPalette="red"
-                px={2}
-                mr={2}
-                onClick={() => onDeleteChartFromPool(stage.id, chartInPool.charts!.id)}
-              >
-                <FaTrash />
-              </IconButton>
+              <>
+                <IconButton
+                  aria-label="Delete Chart from Pool"
+                  size="xl"
+                  variant="outline"
+                  borderWidth={2}
+                  colorPalette="red"
+                  px={2}
+                  onClick={() => onDeleteChartFromPool(stage.id, chartInPool.charts!.id)}
+                >
+                  <FaTrash />
+                </IconButton>
+                {!stage.chart_id && stage.chart_pools && stage.chart_pools.length !== 0 && (
+                  <IconButton
+                    aria-label="Select Chart from Pool"
+                    size="xl"
+                    variant="outline"
+                    borderWidth={2}
+                    colorPalette="green"
+                    px={2}
+                    mr={2}
+                    onClick={async () => {
+                      await onChooseChart(stage.id, chartInPool.charts!.id);
+                      toggleOpen();
+                    }}
+                  >
+                    <MdOutlineCheck />
+                  </IconButton>
+                )}
+              </>
             )}
           </HStack>
         ) : (
