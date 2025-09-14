@@ -7,7 +7,7 @@ interface HeroTitleProps {
 }
 
 export const HeroTitle: React.FC<HeroTitleProps> = ({
-  text = "Pump It Up Tournament Builder",
+  text = "Pump It Up Tourney Maker",
   imageUrl = "https://preview.redd.it/pump-it-up-phoenix-2024-v0-wingd1wryw0d1.jpeg?auto=webp&s=00bf42c49d7b475464de9f65df97374e4ebbfd49",
 }) => {
   const shadow = useBreakpointValue({
@@ -16,7 +16,12 @@ export const HeroTitle: React.FC<HeroTitleProps> = ({
   });
 
   return (
-    <Box position="relative" w="100%" mb={8} h={{ base: "25vh", sm: "30vh", md: "25vh" }}>
+    <Box
+      position="relative"
+      w="100%"
+      mb={8}
+      h={{ base: "25vh", sm: "30vh", md: "25vh" }}
+    >
       {/* Background Image */}
       <Image
         src={imageUrl}
