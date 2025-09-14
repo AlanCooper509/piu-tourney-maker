@@ -8,9 +8,10 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "./CustomCarousel.css"
 
-import RoundModal from '../round/RoundModal';
+import RoundModal from '../round/details/RoundModal';
 
 import type { CarouselCard } from '../../types/CarouselCard';
+import type { Round } from '../../types/Round';
 
 interface CaptionCarouselBaseProps {
   cards: CarouselCard[];
@@ -19,11 +20,12 @@ interface CaptionCarouselBaseProps {
 interface CaptionCarouselAdminProps extends CaptionCarouselBaseProps {
   isAdmin: true;
   adminLoading: boolean;
-  adminClick: () => void;
+  adminClick: (name: string, advancing: number, nextRoundId: number | undefined) => void;
   newRoundName: string;
   setNewRoundName: (name: string) => void;
   newPlayersAdvancing: number;
   setNewPlayersAdvancing: (count: number) => void;
+  rounds?: Round[];
 }
 
 interface CaptionCarouselNonAdminProps extends CaptionCarouselBaseProps {
@@ -34,12 +36,13 @@ interface CaptionCarouselNonAdminProps extends CaptionCarouselBaseProps {
   setNewRoundName?: never;
   newPlayersAdvancing?: never;
   setNewPlayersAdvancing?: never;
+  rounds?: never;
 }
 
 type CaptionCarouselProps = CaptionCarouselAdminProps | CaptionCarouselNonAdminProps;
 
 // inspired from https://chakra-templates.vercel.app/page-sections/carousels
-export default function CustomCarousel({ cards, isAdmin, adminLoading, adminClick, newRoundName, setNewRoundName, newPlayersAdvancing, setNewPlayersAdvancing }: CaptionCarouselProps) {
+export default function CustomCarousel({ cards, isAdmin, adminLoading, adminClick, newRoundName, setNewRoundName, newPlayersAdvancing, setNewPlayersAdvancing, rounds}: CaptionCarouselProps) {
   const [slider, setSlider] = React.useState<Slider | null>(null)
   const [currentIndex, setCurrentIndex] = React.useState(0) // track current slide index
 
@@ -87,22 +90,24 @@ export default function CustomCarousel({ cards, isAdmin, adminLoading, adminClic
     <IoAddCircleSharp />
   </IconButton>
 
-  const adminOnlyModal = isAdmin ? <RoundModal
-    roundName={newRoundName}
-    setRoundName={setNewRoundName}
-    playersAdvancing={newPlayersAdvancing}
-    setPlayersAdvancing={setNewPlayersAdvancing}
-    trigger={addRoundButton}
-    admin={isAdmin}
-    adminLoading={adminLoading}
-    onSubmitForm={adminClick}
-  /> : null;
+  const addRoundModal = !adminLoading && isAdmin && (
+    <RoundModal
+      round={undefined}
+      rounds={rounds}
+      roundName={newRoundName}
+      setRoundName={setNewRoundName}
+      playersAdvancing={newPlayersAdvancing}
+      setPlayersAdvancing={setNewPlayersAdvancing}
+      trigger={addRoundButton}
+      onSubmitForm={adminClick}
+    />
+  )
 
   return (
     <Container centerContent>
-      <Box position={'relative'} maxW="xl" overflow={'hidden'}>
+      <Box position={'relative'} overflow={'hidden'} width={["md", "md", "lg", "xl"]}>
         {/* Left Icon */}
-        {currentIndex + 1 > 1 ? 
+        {currentIndex + 1 > 1 && (
           <IconButton
             aria-label="left-arrow"
             variant="ghost"
@@ -115,9 +120,7 @@ export default function CustomCarousel({ cards, isAdmin, adminLoading, adminClic
           >
             <BiLeftArrowAlt size="40px" />
           </IconButton>
-          :
-          <></>
-        }
+        )}
         {/* Right Icon or Admin Add Button */}
         {currentIndex + 1 < Math.ceil(cards.length / settings.slidesToShow) ? (
           // Normal right arrow when there’s a next slide
@@ -135,7 +138,7 @@ export default function CustomCarousel({ cards, isAdmin, adminLoading, adminClic
           </IconButton>
         ) : (
           // Admin-only Add button when on last slide and user is admin
-          isAdmin && adminOnlyModal
+          addRoundModal
         )}
 
         <Box position="relative" overflow="hidden">

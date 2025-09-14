@@ -12,7 +12,7 @@ import type { Tourney } from '../../types/Tourney';
 import type { Round } from '../../types/Round';
 import type { CarouselCard } from '../../types/CarouselCard';
 import { StatusElement } from '../StatusElement';
-import PlayersAdvancingElement from '../round/PlayersAdvancingElement';
+import PlayersAdvancingElement from '../round/details/PlayersAdvancingElement';
 
 interface RoundListProps {
   tourney: Tourney | null;
@@ -62,6 +62,7 @@ async function addRoundToTourney(
   tourneyId: number,
   name: string,
   players_advancing: number,
+  nextRoundId: number | undefined,
   setRoundsState: React.Dispatch<React.SetStateAction<Round[]>>,
   setAddingRound: (val: boolean) => void
 ) {
@@ -71,7 +72,8 @@ async function addRoundToTourney(
     const newRound = await handleAddRoundToTourney(
       tourneyId,
       name,
-      players_advancing
+      players_advancing,
+      nextRoundId
     );
 
     setRoundsState((prev: Round[]) => [...(prev ?? []), newRound]);
@@ -133,16 +135,17 @@ export function RoundsList({ tourney, rounds, loading, error, admin, loadingAdmi
     }
   };
 
-  const onAddRound = () => {
+  function onAddRound(name: string, advancing: number, nextRoundId: number | undefined) {
     if (!tourney) return;
     addRoundToTourney(
       tourney.id,
-      newRoundName,
-      newPlayersAdvancing,
+      name,
+      advancing,
+      nextRoundId,
       setRoundsState,
       setAddingRound
     );
-  };
+  }
 
   const carouselInput: CarouselCard[] = !loading && !error && roundsState?.length
     ? roundsToCards(roundsState, onRenameRound, updatingRoundId, admin, loadingAdmin)
@@ -168,6 +171,7 @@ export function RoundsList({ tourney, rounds, loading, error, admin, loadingAdmi
             setNewRoundName={setNewRoundName}
             newPlayersAdvancing={newPlayersAdvancing}
             setNewPlayersAdvancing={setNewPlayersAdvancing}
+            rounds={rounds ?? undefined}
           />
         ) : (
           <CustomCarousel cards={carouselInput} />

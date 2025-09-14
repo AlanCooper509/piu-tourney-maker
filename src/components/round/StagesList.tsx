@@ -1,6 +1,7 @@
 import { Box, Heading, Text, HStack } from '@chakra-ui/react';
 
-import { handleAssignRandomChartToStage } from '../../handlers/handleAssignRandomChartToStage';
+import { handleAssignRandomChartToStage } from '../../handlers/handleAssignChartToStage';
+import { handleAssignChartToStage } from '../../handlers/handleAssignChartToStage';
 import { handleAddChartToPool } from '../../handlers/handleAddChartToPool';
 import AddStageButton from '../stages/AddStageButton';
 import { toaster } from '../ui/toaster';
@@ -20,6 +21,22 @@ interface StageListProps {
 }
 
 export function StagesList({ round, stages, setStages, loading, error, admin, loadingAdmin }: StageListProps) {
+  async function onChooseChart(stageId: number, chosenChartId: number) {
+    const updatedStage = await handleAssignChartToStage(stageId, chosenChartId,);
+    if (!updatedStage) return;
+
+    setStages((prevStages) =>
+      prevStages.map((stage) => (stage.id === stageId ? updatedStage : stage))
+    );
+
+    toaster.create({
+      title: "Chart Selected",
+      description: `Chart ID "${updatedStage.chart_id}" was selected successfully for Stage: "${stageId}".`,
+      type: "success",
+      closable: true,
+    });
+  }
+
   async function onRollChart(stageId: number) {
     const updatedStage = await handleAssignRandomChartToStage(stageId);
     if (!updatedStage) return;
@@ -100,6 +117,7 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
             admin={admin}
             loadingAdmin={loadingAdmin}
             setStages={setStages}
+            onChooseChart={onChooseChart}
             onRollChart={onRollChart}
             onAddChartToPool={onAddChartToPool}
           />
