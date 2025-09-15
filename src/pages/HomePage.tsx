@@ -31,13 +31,21 @@ function HomePage() {
     loading: loading,
     error: error,
   } = getSupabaseTable<Tourney>("tourneys");
+
+  // sorted by start_date descending
+  const sortedTourneys = tourneys
+  ? [...tourneys].sort((a, b) => {
+      const dateA = new Date(a.start_date).getTime();
+      const dateB = new Date(b.start_date).getTime();
+      return dateB - dateA; // descending
+    })
+  : [];
+
   const { adminTourneyIds, loading: adminLoading } = getAdminTourneyIds();
   const { user } = useAuth();
 
   if (loading) return <Text fontSize="xl">Loading...</Text>;
   if (error) return <Text fontSize="xl">Error: {error.message}</Text>;
-
-  tourneys.sort((a, b) => a.id - b.id);
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "TBD";
@@ -187,7 +195,7 @@ function HomePage() {
     );
   });
 
-  const archivedTourneys = tourneys.filter((t) => {
+  const archivedTourneys = sortedTourneys.filter((t) => {
     return t.status === "Complete" || new Date(t.end_date) < new Date();
   });
 
