@@ -17,12 +17,19 @@ import handleAddNewTourney from "../handlers/handleAddNewTourney";
 import { useAuth } from "../context/AuthContext";
 
 import type { Tourney } from "../types/Tourney";
+import type { Event } from "../types/Event";
 
 function HomePage() {
   const {
+    data: events,
+    loading: loadingEvents,
+    error: errorEvents,
+  } = getSupabaseTable<Event>("events");
+
+  const {
     data: tourneys,
-    loading,
-    error,
+    loading: loading,
+    error: error,
   } = getSupabaseTable<Tourney>("tourneys");
   const { adminTourneyIds, loading: adminLoading } = getAdminTourneyIds();
   const { user } = useAuth();
@@ -42,7 +49,7 @@ function HomePage() {
     });
   };
 
-  const renderTourneyCard = (row: Tourney, keyPrefix: string) => (
+  const renderTourneyCard = (row: Tourney | Event, keyPrefix: string) => (
     <LinkBox
       as="article"
       key={`${keyPrefix}-${row.id}`}
@@ -197,6 +204,18 @@ function HomePage() {
             {!adminLoading &&
               adminTourneyIds.length > 0 &&
               renderAddTourneyCard()}
+          </VStack>
+        </>
+      )}
+
+      {/* Events */}
+      {user && !loadingEvents && !errorEvents && (
+        <>
+          <Flex justify="center" w="100%">
+            {renderSectionHeader("Events")}
+          </Flex>
+          <VStack align="stretch" w="100%" mb={8}>
+            {events.map((row) => renderTourneyCard(row, "active"))}
           </VStack>
         </>
       )}
