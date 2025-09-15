@@ -3,12 +3,12 @@ import { VStack, StackSeparator, Heading, Link, Separator } from "@chakra-ui/rea
 import { useParams } from "react-router-dom";
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
-import { isAdminForTourney } from "../hooks/AdminTourneyHelpers";
 
 import { TourneyDetails } from "../components/tourney/TourneyDetails";
 import { PlayersList } from "../components/tourney/PlayersList";
 import { RoundsList } from "../components/tourney/RoundsList";
 import { Toaster } from "../components/ui/toaster";
+import { useCurrentTourney } from "../context/CurrentTourneyContext";
 
 import type { Tourney } from '../types/Tourney';
 import type { PlayerTourney } from "../types/PlayerTourney";
@@ -17,6 +17,9 @@ import RoundsNavbar from "../components/round/RoundsNavbar";
 
 function TourneyPage() {
   const { tourneyId } = useParams();
+  if (!tourneyId) return <div>Invalid Tourney ID</div>;
+
+  setTourneyIdContext();
 
   const [tourney, setTourney] = useState<Tourney | null>(null);
   const [players, setPlayers] = useState<PlayerTourney[]>([]);
@@ -35,13 +38,12 @@ function TourneyPage() {
     { column: 'tourney_id', value: tourneyId }
   );
 
-  // Stores tourney table details and sets isAdmin
+  // Stores tourney table details
   useEffect(() => {
     if (tourneys?.length) {
       setTourney(tourneys[0]);
     }
   }, [tourneys]);
-  const { isAdmin, loading: loadingAdmin } = isAdminForTourney(Number(tourneyId));
 
   // Sync players when playersData changes
   useEffect(() => {
@@ -80,8 +82,6 @@ function TourneyPage() {
           rounds={sortedRounds}
           loading={loadingTourney}
           error={errorTourney}
-          admin={isAdmin}
-          loadingAdmin={loadingAdmin}
         />
         <PlayersList
           tourney={tourney}
@@ -89,20 +89,27 @@ function TourneyPage() {
           setPlayers={setPlayers}
           loading={loadingPlayers}
           error={errorPlayers}
-          admin={isAdmin}
-          loadingAdmin={loadingAdmin}
         />
         <RoundsList
           tourney={tourney}
           rounds={sortedRounds}
           loading={loadingRounds}
           error={errorRounds}
-          admin={isAdmin}
-          loadingAdmin={loadingAdmin}
         />
       </VStack>
     </>
   );
+}
+
+function setTourneyIdContext() {
+  // save the current tourney id into the TourneyPage's context
+  const { tourneyId: tourneyIdStr } = useParams<{ tourneyId: string }>();
+  const { setTourneyId } = useCurrentTourney();
+  useEffect(() => {
+    if (tourneyIdStr) {
+      setTourneyId(Number(tourneyIdStr));
+    }
+  }, [tourneyIdStr, setTourneyId]);
 }
 
 export default TourneyPage;

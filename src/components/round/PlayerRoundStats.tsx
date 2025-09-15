@@ -4,20 +4,24 @@ import { IoChevronForward } from 'react-icons/io5';
 import { FaTrash } from 'react-icons/fa';
 
 import EditablePlayerScores from '../players/EditablePlayerScores';
+import { useIsAdminForTourney } from '../../context/TourneyAdminContext';
+import { useCurrentTourney } from '../../context/CurrentTourneyContext';
+import { getScoresForPlayer } from '../../helpers/getScoresForPlayer';
+import NonEditablePlayerScores from '../players/NonEditablePlayerScores';
 
 import type { PlayerRound } from "../../types/PlayerRound";
 import type { Stage } from '../../types/Stage';
-import { getScoresForPlayer } from '../../helpers/getScoresForPlayer';
-import NonEditablePlayerScores from '../players/NonEditablePlayerScores';
 
 interface PlayerRoundStatsProps {
   player: PlayerRound;
   stages: Stage[] | null;
-  admin: boolean;
   handleDeletePlayer: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export default function PlayerRoundStats({ player, stages, admin, handleDeletePlayer }: PlayerRoundStatsProps) {
+export default function PlayerRoundStats({ player, stages, handleDeletePlayer }: PlayerRoundStatsProps) {
+  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+
   const [isOpen, setIsOpen] = useState(false);
   const toggleOpen = () => setIsOpen(prev => !prev);
   const [stagesPlayed, setStagesPlayed] = useState(0);
@@ -54,7 +58,7 @@ export default function PlayerRoundStats({ player, stages, admin, handleDeletePl
               }}
             />
             <HStack flex="1" overflow="hidden">
-              {admin && stagesPlayed == stages?.length && (
+              {!loadingTourneyAdminStatus && isTourneyAdmin && stagesPlayed == stages?.length && (
                 <Checkbox.Root readOnly checked variant="outline" colorPalette="green">
                   <Checkbox.Control />
                 </Checkbox.Root>
@@ -67,7 +71,7 @@ export default function PlayerRoundStats({ player, stages, admin, handleDeletePl
                 {player.player_tourneys.player_name}
               </Text>
             </HStack>
-            {admin && (
+            {!loadingTourneyAdminStatus && isTourneyAdmin && (
               <IconButton
                 aria-label="Delete player"
                 variant="outline"
@@ -81,7 +85,7 @@ export default function PlayerRoundStats({ player, stages, admin, handleDeletePl
           </HStack>
         </Collapsible.Trigger>
         <Collapsible.Content w="xs">
-          {admin ? 
+          {!loadingTourneyAdminStatus && isTourneyAdmin ? 
             <EditablePlayerScores
               player={player}
               stages={stages}

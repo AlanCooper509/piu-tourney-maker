@@ -10,7 +10,6 @@ import type { Stage } from '../../types/Stage';
 interface DeletablePlayerRowProps {
   player: PlayerRound;
   stages: Stage[] | null;
-  admin: boolean;
   removePlayer: (playerId: number) => void;
 }
 
@@ -22,7 +21,7 @@ function alertText(playerName: string) {
   return lines.join('\n')
 }
 
-export default function DeletablePlayerRow({ player, stages, admin, removePlayer }: DeletablePlayerRowProps) {
+export default function DeletablePlayerRow({ player, stages, removePlayer }: DeletablePlayerRowProps) {
   const handleDeletePlayer = async () => {
     if (!confirm(alertText(player.player_tourneys.player_name))) return;
     try {
@@ -46,7 +45,7 @@ export default function DeletablePlayerRow({ player, stages, admin, removePlayer
 
   return (
     <HStack justify="space-between">
-        <PlayerRoundStats player={player} stages={stages} admin={admin} handleDeletePlayer={handleDeletePlayer} />
+        <PlayerRoundStats player={player} stages={stages} handleDeletePlayer={handleDeletePlayer} />
     </HStack>
   );
 }

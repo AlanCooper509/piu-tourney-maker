@@ -9,12 +9,12 @@ import { RollChartButton } from "../stages/RollChartButton";
 import AddChartForm from "../charts/AddChartForm";
 import type { ChartQuery } from "../../types/ChartQuery";
 import ChartPool from "../charts/ChartPool";
+import { useIsAdminForTourney } from "../../context/TourneyAdminContext";
+import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 
 interface StageRowProps {
   stage: Stage;
   round: Round | null;
-  admin: boolean;
-  loadingAdmin: boolean;
   setStages: React.Dispatch<React.SetStateAction<Stage[]>>;
   onChooseChart: (stageId: number, chartId: number) => Promise<void>;
   onRollChart: (stageId: number) => Promise<void>;
@@ -26,7 +26,10 @@ interface StageRowProps {
   ) => Promise<void>;
 }
 
-export default function StageRow({ stage, round, admin, loadingAdmin, setStages, onChooseChart, onRollChart, onAddChartToPool }: StageRowProps) {
+export default function StageRow({ stage, round, setStages, onChooseChart, onRollChart, onAddChartToPool }: StageRowProps) {
+  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+
   const [isOpen, setIsOpen] = useState(!stage.charts);
   const toggleOpen = () => setIsOpen(prev => !prev);
 
@@ -64,7 +67,7 @@ export default function StageRow({ stage, round, admin, loadingAdmin, setStages,
         )}
 
         {/* Admin Buttons */}
-        {!loadingAdmin && admin && (
+        {!loadingTourneyAdminStatus && isTourneyAdmin && (
             <HStack alignContent="center" justify="center" mt={2}>
             <DeleteStageButton
                 round={round}
@@ -107,7 +110,7 @@ export default function StageRow({ stage, round, admin, loadingAdmin, setStages,
     <Collapsible.Content>
         <Separator size="lg" borderColor="gray.800" borderWidth="1px" mt={2} />
 
-        {!loadingAdmin && admin && (
+        {!loadingTourneyAdminStatus && isTourneyAdmin && (
         <AddChartForm
             onSubmit={(chartQuery: ChartQuery) =>
             onAddChartToPool(
@@ -128,8 +131,6 @@ export default function StageRow({ stage, round, admin, loadingAdmin, setStages,
         setStages={setStages}
         onChooseChart={onChooseChart}
         toggleOpen={toggleOpen}
-        admin={admin}
-        loadingAdmin={loadingAdmin}
         />
     </Collapsible.Content>
     </Collapsible.Root>

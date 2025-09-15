@@ -37,6 +37,8 @@ export function getAdminTourneyIds() {
   return { adminTourneyIds, loading };
 }
 
+// Hook to check if current user is admin for a specific tourney
+// Not used anywhere in favor of useIsAdminForTourney from TourneyAdminContext; kept for reference if ever needed later
 export function isAdminForTourney(tourneyId: number) {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);

@@ -5,6 +5,8 @@ import { handleAssignChartToStage } from '../../handlers/handleAssignChartToStag
 import { handleAddChartToPool } from '../../handlers/handleAddChartToPool';
 import AddStageButton from '../stages/AddStageButton';
 import { toaster } from '../ui/toaster';
+import { useCurrentTourney } from '../../context/CurrentTourneyContext';
+import { useIsAdminForTourney } from '../../context/TourneyAdminContext';
 
 import type { Round } from '../../types/Round';
 import type { Stage } from '../../types/Stage';
@@ -16,11 +18,12 @@ interface StageListProps {
   setStages: React.Dispatch<React.SetStateAction<Stage[]>>;
   loading: boolean;
   error: Error | null;
-  admin: boolean;
-  loadingAdmin: boolean;
 }
 
-export function StagesList({ round, stages, setStages, loading, error, admin, loadingAdmin }: StageListProps) {
+export function StagesList({ round, stages, setStages, loading, error }: StageListProps) {
+  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+
   async function onChooseChart(stageId: number, chosenChartId: number) {
     const updatedStage = await handleAssignChartToStage(stageId, chosenChartId,);
     if (!updatedStage) return;
@@ -102,7 +105,7 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
       <HStack mb={2} justifyContent="center" alignItems="center">
         <Heading>Stages</Heading>
         {/* Add Stage Button */}
-        {!loadingAdmin && admin &&
+        {!loadingTourneyAdminStatus && isTourneyAdmin &&
           <AddStageButton round={round} setStages={setStages} />
         }
       </HStack>
@@ -114,8 +117,6 @@ export function StagesList({ round, stages, setStages, loading, error, admin, lo
             key={stage.id}
             stage={stage}
             round={round}
-            admin={admin}
-            loadingAdmin={loadingAdmin}
             setStages={setStages}
             onChooseChart={onChooseChart}
             onRollChart={onRollChart}

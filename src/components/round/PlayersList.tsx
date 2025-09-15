@@ -5,6 +5,8 @@ import { handleAddPlayerToRound } from '../../handlers/handleAddPlayerToRound'
 import DeletablePlayerRow from './DeletablePlayerRow'
 import AddPlayer from '../players/AddPlayer'
 import { toaster } from '../ui/toaster'
+import { useIsAdminForTourney } from '../../context/TourneyAdminContext'
+import { useCurrentTourney } from '../../context/CurrentTourneyContext'
 
 import type { PlayerRound } from '../../types/PlayerRound'
 import type { Round } from '../../types/Round'
@@ -15,21 +17,21 @@ interface PlayersListProps {
   players: PlayerRound[] | null
   setPlayers: React.Dispatch<React.SetStateAction<PlayerRound[]>>
   stages: Stage[] | null
-  tourneyId: number
   loading: boolean
   error: Error | null
-  admin: boolean
-  loadingAdmin: boolean
 }
 
-export function PlayersList({ round, players, setPlayers, stages, tourneyId, loading, error, admin, loadingAdmin }: PlayersListProps) {
+export function PlayersList({ round, players, setPlayers, stages, loading, error }: PlayersListProps) {
+  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+
   const [addingPlayer, setAddingPlayer] = useState(false);
 
   const onAddPlayer = async (name: string) => {
     if (!round) return;
     try {
       setAddingPlayer(true);
-      const newPlayer = await handleAddPlayerToRound(name, round.id, tourneyId);
+      const newPlayer = await handleAddPlayerToRound(name, round.id, Number(tourneyId));
       setPlayers((prev: PlayerRound[]) => [...(prev ?? []), newPlayer]);
       toaster.create({
         title: "Player Added",
@@ -53,7 +55,7 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyId, loa
     <Box w={"md"}>
       <HStack mb={2} justifyContent="center">
         <Heading mb={2}>Players</Heading>
-        {!loadingAdmin && admin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
+        {!loadingTourneyAdminStatus && isTourneyAdmin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
       </HStack>
       {loading && <Text>Loading players...</Text>}
       {error && <Text color="red">Error: {error.message}</Text>}
@@ -64,7 +66,6 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyId, loa
               key={p.id}
               player={p}
               stages={stages}
-              admin={admin}
               removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
             />
           ))

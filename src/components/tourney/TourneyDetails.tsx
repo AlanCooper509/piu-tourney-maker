@@ -1,14 +1,18 @@
 import { useState } from 'react'
 import { Box, Heading, VStack, Text, IconButton } from '@chakra-ui/react'
 
+
 import EditableTourneyName from './EditableTourneyName'
 import { handleUpdateTourneyName } from '../../handlers/handleUpdateTourneyName'
-import type { Tourney } from '../../types/Tourney'
 import { handleStartTourney } from '../../handlers/handleStartTourney'
 import { toaster } from '../ui/toaster'
+import { StatusElement } from '../StatusElement'
+import { useCurrentTourney } from '../../context/CurrentTourneyContext'
+import { useIsAdminForTourney } from '../../context/TourneyAdminContext'
+
+import type { Tourney } from '../../types/Tourney'
 import type { Round } from '../../types/Round'
 import type { PlayerTourney } from '../../types/PlayerTourney'
-import { StatusElement } from '../StatusElement'
 
 interface TourneyDetailsProps {
   tourney: Tourney | null
@@ -17,11 +21,12 @@ interface TourneyDetailsProps {
   rounds: Round[] | null
   loading: boolean
   error: Error | null
-  admin: boolean
-  loadingAdmin: boolean
 }
 
-export function TourneyDetails({ tourney, setTourney, players, rounds, loading, error, admin, loadingAdmin }: TourneyDetailsProps) {
+export function TourneyDetails({ tourney, setTourney, players, rounds, loading, error }: TourneyDetailsProps) {
+  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+
   // Rename tourney logic
   const [updatingName, setUpdatingName] = useState(false);
   const onRenameTourney = async (newName: string) => {
@@ -73,7 +78,7 @@ export function TourneyDetails({ tourney, setTourney, players, rounds, loading, 
 
   const tourneyNameText = (
     <>
-      {!loadingAdmin && admin ?
+      {!loadingTourneyAdminStatus && isTourneyAdmin ?
         <EditableTourneyName
           tourneyName={tourney?.name ?? ''}
           onRename={onRenameTourney}
@@ -95,7 +100,7 @@ export function TourneyDetails({ tourney, setTourney, players, rounds, loading, 
           <>
             <Text>Type: {tourney.type}</Text>
             <StatusElement element={tourney} />
-            {!loadingAdmin && admin && tourney?.status === "Not Started" && (
+            {!loadingTourneyAdminStatus && isTourneyAdmin && tourney?.status === "Not Started" && (
               <IconButton 
                 colorPalette="green"
                 variant="outline"

@@ -6,11 +6,12 @@ import EndRoundButton from '../EndRoundButton'
 import EditRoundDetailsButton from './EditRoundDetailsButton'
 import { StatusElement } from '../../StatusElement'
 import LeaderboardLinkButton from '../LeaderboardLinkButton'
+import PlayersAdvancingElement from './PlayersAdvancingElement'
+import { useIsAdminForTourney } from '../../../context/TourneyAdminContext'
 
 import type { Round } from '../../../types/Round'
 import type { PlayerRound } from '../../../types/PlayerRound'
 import type { Stage } from '../../../types/Stage'
-import PlayersAdvancingElement from './PlayersAdvancingElement'
 
 interface RoundDetailsProps {
   round: Round | null
@@ -21,8 +22,6 @@ interface RoundDetailsProps {
   loading: boolean
   error: Error | null
   tourneyId: number
-  admin: boolean
-  loadingAdmin: boolean
 }
 
 export function RoundDetails({ 
@@ -33,10 +32,10 @@ export function RoundDetails({
   stages, 
   loading, 
   error, 
-  tourneyId, 
-  admin, 
-  loadingAdmin 
+  tourneyId
 }: RoundDetailsProps) {
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourneyId);
+
   // Local edit state only
   const [roundNameDraft, setRoundNameDraft] = useState<string | null>(null);
   const [playersAdvancingDraft, setPlayersAdvancingDraft] = useState<number | null>(null);
@@ -57,7 +56,7 @@ export function RoundDetails({
           {!loading && !error && !round && <Text>Round ID not found.</Text>}
           {!loading && !error && round && (
             <>
-              {!loadingAdmin && admin && (
+              {!loadingTourneyAdminStatus && isTourneyAdmin && (
                 <Box my={2}>
                     <EditRoundDetailsButton
                       round={round}
@@ -85,7 +84,7 @@ export function RoundDetails({
                   tourneyId={tourneyId}
                   roundId={round?.id ?? 0}
                 />
-                {!loadingAdmin && admin && round?.status === 'Not Started' && (
+                {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === 'Not Started' && (
                   <StartRoundButton
                     round={round}
                     setRound={setRound}
@@ -93,7 +92,7 @@ export function RoundDetails({
                     stages={stages}
                   />
                 )}
-                {!loadingAdmin && admin && round?.status === 'In Progress' && (
+                {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === 'In Progress' && (
                   <EndRoundButton
                     tourneyId={tourneyId}
                     round={round}

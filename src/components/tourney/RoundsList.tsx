@@ -7,6 +7,8 @@ import { handleAddRoundToTourney } from '../../handlers/handleAddRoundToTourney'
 import EditableRoundName from './EditableRoundName';
 import RoundLink from './RoundLink';
 import { toaster } from '../ui/toaster';
+import { useIsAdminForTourney } from '../../context/TourneyAdminContext';
+import { useCurrentTourney } from '../../context/CurrentTourneyContext';
 
 import type { Tourney } from '../../types/Tourney';
 import type { Round } from '../../types/Round';
@@ -19,22 +21,110 @@ interface RoundListProps {
   rounds: Round[] | null;
   loading: boolean;
   error: Error | null;
-  admin: boolean;
-  loadingAdmin: boolean;
+}
+
+export function RoundsList({ tourney, rounds, loading, error }: RoundListProps) {
+  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+
+  const [updatingRoundId, setUpdatingRoundId] = useState<number | null>(null);
+  const [roundsState, setRoundsState] = useState<Round[]>(rounds ?? []);
+  const [newRoundName, setNewRoundName] = useState('');
+  const [newPlayersAdvancing, setNewPlayersAdvancing] = useState(0);
+  const [addingRound, setAddingRound] = useState(false);
+
+  useEffect(() => {
+    if (!rounds) return;
+
+    setRoundsState(prev => {
+      const prevById = new Map(prev.map(r => [r.id, r]));
+      const merged = rounds.map(r => {
+        const existing = prevById.get(r.id);
+        return existing ? { ...existing, ...r } : r;
+      });
+      return merged.sort((a, b) => a.id - b.id);
+    });
+  }, [rounds]);
+
+  const onRenameRound = async (roundId: number, newName: string) => {
+    const round = roundsState.find(r => r.id === roundId);
+    if (!round) return;
+
+    try {
+      setUpdatingRoundId(roundId);
+      const updatedRound = await handleUpdateRoundName(roundId, newName);
+      setRoundsState(prev =>
+        prev.map(r => (r.id === roundId ? updatedRound : r))
+      );
+    } catch (error) {
+      throw error;
+    } finally {
+      setUpdatingRoundId(null);
+    }
+  };
+
+  function onAddRound(name: string, advancing: number, nextRoundId: number | undefined) {
+    if (!tourney) return;
+    addRoundToTourney(
+      tourney.id,
+      name,
+      advancing,
+      nextRoundId,
+      setRoundsState,
+      setAddingRound
+    );
+  }
+
+  const carouselInput: CarouselCard[] = !loading && !error && roundsState?.length
+    ? roundsToCards(roundsState, onRenameRound, updatingRoundId)
+    : [];
+
+  return (
+    <Box>
+      <Heading mb={2}>Rounds</Heading>
+      {loading && <Text>Loading rounds...</Text>}
+      {error && <Text color="red">Error: {error.message}</Text>}
+      {!loading && !error && !roundsState?.length && (
+        <Text mb={4}>No rounds found.</Text>
+      )}
+      {!loading && !error ? (
+        <>
+        {!loadingTourneyAdminStatus && isTourneyAdmin ? (
+          <CustomCarousel
+            cards={carouselInput}
+            isAdmin={true}
+            adminClick={onAddRound}
+            adminLoading={addingRound}
+            newRoundName={newRoundName}
+            setNewRoundName={setNewRoundName}
+            newPlayersAdvancing={newPlayersAdvancing}
+            setNewPlayersAdvancing={setNewPlayersAdvancing}
+            rounds={rounds ?? undefined}
+          />
+        ) : (
+          <CustomCarousel cards={carouselInput} />
+        )}
+        </>
+      ) : (
+        <></>
+      )}
+    </Box>
+  );
 }
 
 function roundsToCards(
   rounds: Round[],
   onRenameRound: (roundId: number, newName: string) => Promise<void>,
   updatingRoundId: number | null,
-  admin: boolean,
-  loadingAdmin: boolean
 ): CarouselCard[] {
+  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+
   return rounds
     .slice()
     .sort((a, b) => a.id - b.id)
     .map((round) => ({
-      title: !loadingAdmin && admin ? (
+      title: !loadingTourneyAdminStatus && isTourneyAdmin ? (
         <EditableRoundName
           roundId={round.id}
           tourneyId={round.tourney_id}
@@ -96,90 +186,4 @@ async function addRoundToTourney(
   } finally {
     setAddingRound(false);
   }
-}
-
-export function RoundsList({ tourney, rounds, loading, error, admin, loadingAdmin }: RoundListProps) {
-  const [updatingRoundId, setUpdatingRoundId] = useState<number | null>(null);
-  const [roundsState, setRoundsState] = useState<Round[]>(rounds ?? []);
-  const [newRoundName, setNewRoundName] = useState('');
-  const [newPlayersAdvancing, setNewPlayersAdvancing] = useState(0);
-  const [addingRound, setAddingRound] = useState(false);
-
-  useEffect(() => {
-    if (!rounds) return;
-
-    setRoundsState(prev => {
-      const prevById = new Map(prev.map(r => [r.id, r]));
-      const merged = rounds.map(r => {
-        const existing = prevById.get(r.id);
-        return existing ? { ...existing, ...r } : r;
-      });
-      return merged.sort((a, b) => a.id - b.id);
-    });
-  }, [rounds]);
-
-  const onRenameRound = async (roundId: number, newName: string) => {
-    const round = roundsState.find(r => r.id === roundId);
-    if (!round) return;
-
-    try {
-      setUpdatingRoundId(roundId);
-      const updatedRound = await handleUpdateRoundName(roundId, newName);
-      setRoundsState(prev =>
-        prev.map(r => (r.id === roundId ? updatedRound : r))
-      );
-    } catch (error) {
-      throw error;
-    } finally {
-      setUpdatingRoundId(null);
-    }
-  };
-
-  function onAddRound(name: string, advancing: number, nextRoundId: number | undefined) {
-    if (!tourney) return;
-    addRoundToTourney(
-      tourney.id,
-      name,
-      advancing,
-      nextRoundId,
-      setRoundsState,
-      setAddingRound
-    );
-  }
-
-  const carouselInput: CarouselCard[] = !loading && !error && roundsState?.length
-    ? roundsToCards(roundsState, onRenameRound, updatingRoundId, admin, loadingAdmin)
-    : [];
-
-  return (
-    <Box>
-      <Heading mb={2}>Rounds</Heading>
-      {loading && <Text>Loading rounds...</Text>}
-      {error && <Text color="red">Error: {error.message}</Text>}
-      {!loading && !error && !roundsState?.length && (
-        <Text mb={4}>No rounds found.</Text>
-      )}
-      {!loading && !error ? (
-        <>
-        {admin ? (
-          <CustomCarousel
-            cards={carouselInput}
-            isAdmin={true}
-            adminClick={onAddRound}
-            adminLoading={addingRound}
-            newRoundName={newRoundName}
-            setNewRoundName={setNewRoundName}
-            newPlayersAdvancing={newPlayersAdvancing}
-            setNewPlayersAdvancing={setNewPlayersAdvancing}
-            rounds={rounds ?? undefined}
-          />
-        ) : (
-          <CustomCarousel cards={carouselInput} />
-        )}
-        </>
-      ) : (
-        <></>
-      )}
-    </Box>
-  );
 }

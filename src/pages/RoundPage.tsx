@@ -3,13 +3,13 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
-import { isAdminForTourney } from "../hooks/AdminTourneyHelpers";
 import { RoundDetails } from "../components/round/details/RoundDetails";
 import { PlayersList } from "../components/round/PlayersList";
 import { StagesList } from "../components/round/StagesList";
 import RoundHeaderText from "../components/round/RoundHeaderText";
 import RoundsNavbar from "../components/round/RoundsNavbar";
 import { Toaster } from "../components/ui/toaster";
+import { useCurrentTourney } from "../context/CurrentTourneyContext";
 
 import type { Tourney } from "../types/Tourney";
 import type { Round } from "../types/Round";
@@ -20,6 +20,8 @@ function RoundPage() {
   const { tourneyId, roundId } = useParams<{ tourneyId: string; roundId: string }>();
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
   if (!roundId) return <div>Invalid Round ID</div>;
+
+  setTourneyIdContext();
 
   const [round, setRound] = useState<Round | null>(null);
   const [players, setPlayers] = useState<PlayerRound[]>([]);
@@ -70,13 +72,12 @@ function RoundPage() {
     }
   }, [stagesData]);
 
-  // Stores round table details and sets isAdmin
+  // Stores round table details
   useEffect(() => {
     if (rounds?.length) {
       setRound(rounds[0]);
     }
   }, [rounds]);
-  const { isAdmin, loading: loadingAdmin } = isAdminForTourney(Number(tourneyId));
 
   return (
     <>
@@ -86,20 +87,31 @@ function RoundPage() {
         <RoundsNavbar tourneyId={Number(tourneyId)} rounds={sortedRounds}></RoundsNavbar>
       }
       <Separator mt={2} mb={4} />
-      <RoundDetails round={round} setRound={setRound} rounds={sortedRounds} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} admin={isAdmin} loadingAdmin={loadingAdmin} />
+      <RoundDetails round={round} setRound={setRound} rounds={sortedRounds} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} />
       <Separator mt={4} />
       <Container maxW="4xl" py={6}>
         <Flex direction={['column', 'column', 'column', 'row']} gap={4}>
           <Box flex="1" width={['100%', '100%', '100%', '50%']} display="flex" justifyContent="center">
-            <PlayersList round={round} players={players} setPlayers={setPlayers} stages={stages} tourneyId={Number(tourneyId)} loading={loadingPlayers} error={errorPlayers} admin={isAdmin} loadingAdmin={loadingAdmin} />
+            <PlayersList round={round} players={players} setPlayers={setPlayers} stages={stages} loading={loadingPlayers} error={errorPlayers} />
           </Box>
           <Box flex="1" width={['100%', '100%', '100%', '50%']} display="flex" justifyContent="center">
-            <StagesList round={round} stages={stages} setStages={setStages} loading={loadingStages} error={errorStages} admin={isAdmin} loadingAdmin={loadingAdmin} />
+            <StagesList round={round} stages={stages} setStages={setStages} loading={loadingStages} error={errorStages} />
           </Box>
         </Flex>
       </Container>
     </>
   );
 };
+
+function setTourneyIdContext() {
+  // save the current tourney id into the RoundPage's context
+  const { tourneyId: tourneyIdStr, roundId: _roundId } = useParams<{ tourneyId: string, roundId: string }>();
+  const { setTourneyId } = useCurrentTourney();
+  useEffect(() => {
+    if (tourneyIdStr) {
+      setTourneyId(Number(tourneyIdStr));
+    }
+  }, [tourneyIdStr, setTourneyId]);
+}
 
 export default RoundPage;

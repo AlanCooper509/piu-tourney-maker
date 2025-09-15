@@ -8,12 +8,13 @@ import { MdOutlinePersonRemoveAlt1 } from "react-icons/md"
 import { handleDeletePlayerFromTourney } from '../../handlers/handleDeletePlayerFromTourney';
 import { handleRenamePlayerInTourney } from '../../handlers/handleRenamePlayerInTourney';
 import { toaster } from '../../components/ui/toaster';
+import { useCurrentTourney } from '../../context/CurrentTourneyContext';
+import { useIsAdminForTourney } from '../../context/TourneyAdminContext';
 
 import type { PlayerTourney } from '../../types/PlayerTourney';
 
 interface EditablePlayerRowProps {
   player: PlayerTourney;
-  admin: boolean;
   updatePlayer: (updated: PlayerTourney) => void;
   removePlayer: (playerId: number) => void;
 }
@@ -26,7 +27,10 @@ function alertText(playerName: string) {
   return lines.join('\n')
 }
 
-export default function EditablePlayerRow({ player, admin, updatePlayer, removePlayer }: EditablePlayerRowProps) {
+export default function EditablePlayerRow({ player, updatePlayer, removePlayer }: EditablePlayerRowProps) {
+  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(player.player_name);
   const [isLoading, setIsLoading] = useState(false);
@@ -82,7 +86,7 @@ export default function EditablePlayerRow({ player, admin, updatePlayer, removeP
   };
 
   return (
-    <HStack w="full" justify={admin ? "space-between" : "center"} align="center">
+    <HStack w="full" justify={(!loadingTourneyAdminStatus && isTourneyAdmin) ? "space-between" : "center"} align="center">
     {isEditing ? (
       <>
         <Input
@@ -122,7 +126,7 @@ export default function EditablePlayerRow({ player, admin, updatePlayer, removeP
         </HStack>
 
         {/* Right side: admin buttons */}
-        {admin && (
+        {!loadingTourneyAdminStatus && isTourneyAdmin && (
           <HStack mx={4}>
             <IconButton
               aria-label="Edit player name"

@@ -3,6 +3,8 @@ import type { Stage } from "../../types/Stage";
 import { FaTrash } from "react-icons/fa";
 import { MdOutlineCheck } from "react-icons/md";
 import { toaster } from "../ui/toaster";
+import { useIsAdminForTourney } from "../../context/TourneyAdminContext";
+import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 
 import { handleDeleteChartFromPool } from "../../handlers/handleDeleteChartFromPool";
 import { ChartRow } from "./ChartRow";
@@ -12,11 +14,12 @@ interface ChartPoolProps {
   setStages: React.Dispatch<React.SetStateAction<Stage[]>>;
   onChooseChart: (stageId: number, chartId: number) => Promise<void>;
   toggleOpen: () => void;
-  admin: boolean;
-  loadingAdmin: boolean;
 }
 
-export default function ChartPool({ stage, setStages, onChooseChart, toggleOpen, admin, loadingAdmin }: ChartPoolProps) {
+export default function ChartPool({ stage, setStages, onChooseChart, toggleOpen }: ChartPoolProps) {
+  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+
   async function onDeleteChartFromPool(stageId: number, chartId: number) {
     try {
       await handleDeleteChartFromPool(stageId, chartId);
@@ -54,7 +57,7 @@ export default function ChartPool({ stage, setStages, onChooseChart, toggleOpen,
         {chartInPool.charts ? (
           <HStack width="100%" align="center">
             <ChartRow chart={chartInPool.charts} />
-            {!loadingAdmin && admin && (
+            {!loadingTourneyAdminStatus && isTourneyAdmin && (
               <>
                 <IconButton
                   aria-label="Delete Chart from Pool"

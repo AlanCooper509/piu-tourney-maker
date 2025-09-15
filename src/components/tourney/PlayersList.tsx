@@ -5,6 +5,8 @@ import AddPlayer from '../players/AddPlayer';
 import EditablePlayerRow from './EditablePlayerRow';
 import { handleAddPlayerToTourney } from '../../handlers/handleAddPlayerToTourney';
 import { toaster } from "../../components/ui/toaster";
+import { useCurrentTourney } from '../../context/CurrentTourneyContext';
+import { useIsAdminForTourney } from '../../context/TourneyAdminContext';
 
 import type { PlayerTourney } from '../../types/PlayerTourney';
 import type { Tourney } from '../../types/Tourney';
@@ -15,11 +17,12 @@ interface PlayersListProps {
   setPlayers: React.Dispatch<React.SetStateAction<PlayerTourney[]>>;
   loading: boolean;
   error: Error | null;
-  admin: boolean;
-  loadingAdmin: boolean;
 }
 
-export function PlayersList({ tourney, players, setPlayers, loading, error, admin, loadingAdmin }: PlayersListProps) {
+export function PlayersList({ tourney, players, setPlayers, loading, error }: PlayersListProps) {
+  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+
   const [addingPlayer, setAddingPlayer] = useState(false);
 
   const onAddPlayer = async (name: string) => {
@@ -57,7 +60,7 @@ export function PlayersList({ tourney, players, setPlayers, loading, error, admi
       <Box>
         <HStack mb={2} justifyContent="center" alignItems="center">
           <Heading mb={2}>Players</Heading>
-          {!loadingAdmin && admin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
+          {!loadingTourneyAdminStatus && isTourneyAdmin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
         </HStack>
         {loading && <Text>Loading players...</Text>}
         {error && <Text color="red">Error: {error.message}</Text>}
@@ -67,7 +70,6 @@ export function PlayersList({ tourney, players, setPlayers, loading, error, admi
                 <EditablePlayerRow
                   key={p.id}
                   player={p}
-                  admin={admin}
                   updatePlayer={updatePlayer}
                   removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
                 />
