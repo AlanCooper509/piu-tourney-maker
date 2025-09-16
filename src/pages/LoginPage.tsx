@@ -77,6 +77,7 @@ export default function LoginForm() {
 
               <Button
                 colorPalette="blue"
+                variant={"outline"}
                 type="submit"
                 loading={loading}
                 disabled={loading}
@@ -86,6 +87,7 @@ export default function LoginForm() {
 
               <Button
                 colorPalette="green"
+                variant={"outline"}
                 onClick={handleSignUp}
                 loading={loading}
                 disabled={loading}
@@ -101,6 +103,7 @@ export default function LoginForm() {
               <Text>Signed in as: {user.email}</Text>
               <Button
                 colorPalette="red"
+                variant={"outline"}
                 onClick={handleSignOut}
                 loading={loading}
                 disabled={loading}
