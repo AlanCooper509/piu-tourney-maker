@@ -28,13 +28,15 @@ interface EventCardProps {
 const EventCard: React.FC<EventCardProps> = ({
   event,
   tourneys,
-  adminTourneyIds
+  adminTourneyIds,
 }) => {
   const { user } = useAuth();
   const userId = user?.id ?? null;
 
   const [expanded, setExpanded] = useState(false);
-  const toggleExpanded = () => { setExpanded(!expanded) };
+  const toggleExpanded = () => {
+    setExpanded(!expanded);
+  };
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "TBD";
@@ -64,9 +66,11 @@ const EventCard: React.FC<EventCardProps> = ({
           position="relative"
         >
           <HStack align="center" w="100%">
-
             {/* Event Thumbnail Image */}
-            <Box minW={{ base: "60px", sm: "80px", md: "90px" }} minH={{ base: "60px", sm: "80px", md: "90px" }}>
+            <Box
+              minW={{ base: "60px", sm: "80px", md: "90px" }}
+              minH={{ base: "60px", sm: "80px", md: "90px" }}
+            >
               <Image
                 src={event.thumbnail_img ?? "/trophy.png"}
                 alt={`${event.name} image`}
@@ -75,9 +79,13 @@ const EventCard: React.FC<EventCardProps> = ({
                 borderRadius="md"
               />
             </Box>
-            <Flex direction="column" flex="1" justify="space-between" minH={{ base: "70px", sm: "90px" }}>
+            <Flex
+              direction="column"
+              flex="1"
+              justify="space-between"
+              minH={{ base: "70px", sm: "90px" }}
+            >
               <HStack justify="space-between" w="100%" align="start">
-
                 {/* Event Name with Link to Event Page */}
                 <Link to={`/event/${event.id}`}>
                   <Heading
@@ -103,24 +111,28 @@ const EventCard: React.FC<EventCardProps> = ({
                       _hover={{ bg: "gray.700", transform: "scale(1.1)" }}
                       transition="all 0.2s"
                     >
-                      <IoChevronForward style={{
-                        transform: expanded ? 'rotate(90deg)' : 'rotate(0)',
-                        transition: 'transform 0.2s ease',
-                      }}/>
+                      <IoChevronForward
+                        style={{
+                          transform: expanded ? "rotate(90deg)" : "rotate(0)",
+                          transition: "transform 0.2s ease",
+                        }}
+                      />
                     </IconButton>
                   </Collapsible.Trigger>
                 )}
               </HStack>
               <Box w="100%" mt={2}>
-
                 {/* Dates of Event */}
-                <Text fontSize={{ base: "md", sm: "lg" }} color="gray.300" textAlign="left">
+                <Text
+                  fontSize={{ base: "md", sm: "lg" }}
+                  color="gray.300"
+                  textAlign="left"
+                >
                   Dates: {formatDate(event.start_date)}
                   {event.end_date ? ` - ${formatDate(event.end_date)}` : ""}
                 </Text>
               </Box>
               <Flex justify="space-between" mt={2}>
-
                 {/* Count of Tournaments */}
                 <Text fontSize={{ base: "md", sm: "lg" }} color="gray.300">
                   {tourneys.length} tournament{tourneys.length !== 1 ? "s" : ""}
