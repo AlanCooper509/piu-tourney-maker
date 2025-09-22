@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { IoMdCalendar } from "react-icons/io";
-import { VStack, HStack, Box, Image, Text } from "@chakra-ui/react";
+import { Box, Text } from "@chakra-ui/react";
 
 import type { Event } from "../types/Event";
 import getSupabaseTable from "../hooks/getSupabaseTable";
