@@ -1,5 +1,14 @@
 // src/components/ui/TourneyCard.tsx
-import { LinkBox, LinkOverlay, HStack, Box, Flex, Image, Heading, Text } from "@chakra-ui/react";
+import {
+  LinkBox,
+  LinkOverlay,
+  HStack,
+  Box,
+  Flex,
+  Image,
+  Heading,
+  Text,
+} from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
@@ -13,7 +22,12 @@ interface TourneyCardProps {
   adminTourneyIds: number[];
 }
 
-const TourneyCard: React.FC<TourneyCardProps> = ({ row, keyPrefix, isNested = false, adminTourneyIds }) => {
+const TourneyCard: React.FC<TourneyCardProps> = ({
+  row,
+  keyPrefix,
+  isNested = false,
+  adminTourneyIds,
+}) => {
   const { user } = useAuth();
   const userId = user?.id ?? null;
 
@@ -32,6 +46,7 @@ const TourneyCard: React.FC<TourneyCardProps> = ({ row, keyPrefix, isNested = fa
       as="article"
       key={`${keyPrefix}-${row.id}`}
       borderWidth="1px"
+      mb={isNested ? "0px" : "15px"}
       borderRadius={isNested ? "none" : "lg"}
       borderTopWidth={isNested ? "0" : "1px"}
       p={{ base: 4, sm: 5 }}
@@ -52,7 +67,10 @@ const TourneyCard: React.FC<TourneyCardProps> = ({ row, keyPrefix, isNested = fa
         <Link to={`/tourney/${row.id}`}>
           <HStack align="center" w="100%">
             {/* Tourney Thumbnail Image */}
-            <Box minW={{ base: "60px", sm: "80px", md: "90px" }} minH={{ base: "60px", sm: "80px", md: "90px" }}>
+            <Box
+              minW={{ base: "60px", sm: "80px", md: "90px" }}
+              minH={{ base: "60px", sm: "80px", md: "90px" }}
+            >
               <Image
                 src={row.thumbnail_img ?? "/trophy.png"}
                 alt={`${row.name} image`}
@@ -61,11 +79,22 @@ const TourneyCard: React.FC<TourneyCardProps> = ({ row, keyPrefix, isNested = fa
                 borderRadius="md"
               />
             </Box>
-            <Flex direction="column" flex="1" justify="space-between" minH={{ base: "70px", sm: "90px" }}>
+            <Flex
+              direction="column"
+              flex="1"
+              justify="space-between"
+              minH={{ base: "70px", sm: "90px" }}
+            >
               <HStack justify="space-between" w="100%" align="start">
-
                 {/* Tourney Name */}
-                <Heading as="h3" fontSize={{ base: "lg", sm: "xl", md: isNested ? "xl" : "3xl" }}>
+                <Heading
+                  as="h3"
+                  fontSize={{
+                    base: "lg",
+                    sm: "xl",
+                    md: isNested ? "xl" : "3xl",
+                  }}
+                >
                   {row.name}
                 </Heading>
 
@@ -79,7 +108,11 @@ const TourneyCard: React.FC<TourneyCardProps> = ({ row, keyPrefix, isNested = fa
 
               {/* Tourney Dates */}
               <Box w="100%" mt={2}>
-                <Text fontSize={{ base: "sm", sm: "md" }} color="gray.300" textAlign="left">
+                <Text
+                  fontSize={{ base: "sm", sm: "md" }}
+                  color="gray.300"
+                  textAlign="left"
+                >
                   Dates: {formatDate(row.start_date)}
                   {row.end_date ? ` - ${formatDate(row.end_date)}` : ""}
                 </Text>
@@ -90,8 +123,10 @@ const TourneyCard: React.FC<TourneyCardProps> = ({ row, keyPrefix, isNested = fa
                 <Text
                   fontSize={{ base: "sm", sm: "md" }}
                   color={
-                    row.status === "In Progress" ? "yellow.300"
-                      : row.status === "Not Started" ? "blue.300"
+                    row.status === "In Progress"
+                      ? "yellow.300"
+                      : row.status === "Not Started"
+                      ? "blue.300"
                       : /* assume it's "Complete" */ "green.400"
                   }
                   fontWeight="bold"
