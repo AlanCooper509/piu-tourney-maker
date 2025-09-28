@@ -7,6 +7,7 @@ import AddPlayer from '../players/AddPlayer'
 import { toaster } from '../ui/toaster'
 import { useIsAdminForTourney } from '../../context/TourneyAdminContext'
 import { useCurrentTourney } from '../../context/CurrentTourneyContext'
+import calculatePlayerRankingsInRound from '../../helpers/calculatePlayerRankingsInRound'
 
 import type { PlayerRound } from '../../types/PlayerRound'
 import type { Round } from '../../types/Round'
@@ -26,6 +27,21 @@ export function PlayersList({ round, players, setPlayers, stages, loading, error
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
 
   const [addingPlayer, setAddingPlayer] = useState(false);
+
+  const sortedPlayers = () => {
+    if (!round) return;
+    const rankings = calculatePlayerRankingsInRound({ players, stages });
+    if (round.status === 'Complete') {
+      let sort = [];
+      for (let i = 0; i < rankings.length; i++) {
+        const playerId = rankings[i][0];
+        const player = players?.find(p => p.id === playerId);
+        sort.push(player);
+      }
+      return sort;
+    }
+    return players;
+  }
 
   const onAddPlayer = async (name: string) => {
     if (!round) return;
@@ -50,7 +66,6 @@ export function PlayersList({ round, players, setPlayers, stages, loading, error
       setAddingPlayer(false);
     }
   };
-
   return (
     <Box w={"md"}>
       <HStack mb={2} justifyContent="center">
@@ -61,14 +76,14 @@ export function PlayersList({ round, players, setPlayers, stages, loading, error
       {error && <Text color="red">Error: {error.message}</Text>}
       <VStack align={{ base: "center", md: "center", lg: "start" }} justify="center" gap={0}>
         {!loading && !error && players?.length ? (
-          players.map(p => (
-            <DeletablePlayerRow
-              key={p.id}
-              player={p}
-              stages={stages}
-              removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
-            />
-          ))
+          (sortedPlayers() ?? []).map(p => p ? (
+              <DeletablePlayerRow
+                key={p.id}
+                player={p}
+                stages={stages}
+                removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
+              />
+            ): null)
         ) : (
           !loading && !error && <Text>No players found.</Text>
         )}
