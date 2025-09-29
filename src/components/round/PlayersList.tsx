@@ -7,6 +7,7 @@ import AddPlayer from '../players/AddPlayer'
 import { toaster } from '../ui/toaster'
 import { useIsAdminForTourney } from '../../context/TourneyAdminContext'
 import { useCurrentTourney } from '../../context/CurrentTourneyContext'
+import calculatePlayerRankingsInRound from '../../helpers/calculatePlayerRankingsInRound'
 
 import type { PlayerRound } from '../../types/PlayerRound'
 import type { Round } from '../../types/Round'
@@ -51,6 +52,10 @@ export function PlayersList({ round, players, setPlayers, stages, loading, error
     }
   };
 
+  if (round && round.status === "Complete" && players && stages) {
+    players = sortPlayers(players, stages);
+  }
+
   return (
     <Box w={"md"}>
       <HStack mb={2} justifyContent="center">
@@ -61,18 +66,29 @@ export function PlayersList({ round, players, setPlayers, stages, loading, error
       {error && <Text color="red">Error: {error.message}</Text>}
       <VStack align={{ base: "center", md: "center", lg: "start" }} justify="center" gap={0}>
         {!loading && !error && players?.length ? (
-          players.map(p => (
-            <DeletablePlayerRow
-              key={p.id}
-              player={p}
-              stages={stages}
-              removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
-            />
-          ))
+          (players).map(p => p ? (
+              <DeletablePlayerRow
+                key={p.id}
+                player={p}
+                stages={stages}
+                removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
+              />
+            ): null)
         ) : (
           !loading && !error && <Text>No players found.</Text>
         )}
       </VStack>
     </Box>
   )
+}
+
+function sortPlayers(players: PlayerRound[], stages: Stage[]) {
+  const rankings = calculatePlayerRankingsInRound({ players, stages });
+  let sortedPlayers = [];
+  for (let i = 0; i < rankings.length; i++) {
+    const playerId = rankings[i][0];
+    const player = players?.find(p => p.id === playerId);
+    if (player) sortedPlayers.push(player);
+  }
+  return sortedPlayers;
 }
