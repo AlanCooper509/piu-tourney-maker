@@ -8,6 +8,7 @@ import {
 } from "@chakra-ui/react";
 import { SlArrowUp } from "react-icons/sl";
 
+import EventPage from "./pages/EventPage.tsx";
 import HomePage from "./pages/HomePage.tsx";
 import TourneyPage from "./pages/TourneyPage.tsx";
 import LeaderboardPage from "./pages/LeaderboardPage.tsx";
@@ -48,6 +49,7 @@ function App() {
                     element={<ChartRollPage />}
                   />
                   <Route path="/login" element={<LoginPage />} />
+                  <Route path="/event/:eventId" element={<EventPage />} />
                 </Routes>
                 {/* Footer on all pages */}
                 <Box w="100%" py={100}>
@@ -58,7 +60,9 @@ function App() {
                     size="sm"
                     colorPalette="blue"
                     variant="outline"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    onClick={() =>
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }
                   >
                     <SlArrowUp /> Back to Top
                   </Button>
