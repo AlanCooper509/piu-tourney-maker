@@ -14,7 +14,14 @@ function HomePage() {
   if (error) return <Text fontSize="xl">Error: {error.message}</Text>;
 
   const renderSectionHeader = (title: string) => (
-    <Box display="inline-block" bg="gray.900" px={4} py={2} borderRadius="md" mb={4}>
+    <Box
+      display="inline-block"
+      bg="gray.900"
+      px={4}
+      py={2}
+      borderRadius="md"
+      mb={4}
+    >
       <Heading as="h2" fontSize="32px" textAlign="center">
         {title}
       </Heading>
@@ -23,15 +30,18 @@ function HomePage() {
 
   const now = new Date();
   const filteredEvents = {
-    upcoming: events?.filter((e) => e.start_date && new Date(e.start_date) > now) || [],
-    active: events?.filter(
-      (e) =>
-        e.start_date &&
-        e.end_date &&
-        new Date(e.start_date) <= now &&
-        new Date(e.end_date) >= now
-    ) || [],
-    completed: events?.filter((e) => e.end_date && new Date(e.end_date) < now) || [],
+    upcoming:
+      events?.filter((e) => e.start_date && new Date(e.start_date) > now) || [],
+    active:
+      events?.filter(
+        (e) =>
+          e.start_date &&
+          e.end_date &&
+          new Date(e.start_date) <= now &&
+          new Date(e.end_date) >= now
+      ) || [],
+    completed:
+      events?.filter((e) => e.end_date && new Date(e.end_date) < now) || [],
   };
 
   const eventTourneyMap: Map<number, Tourney[]> = new Map();
@@ -48,19 +58,35 @@ function HomePage() {
 
   return (
     <>
+      ~To Include: Spotlight tourney~
+      {/* Sort by : ACTIVE EVENTS > UPCOMING EVENTS > COMPLETED EVENTS
+          Each Spotlight Tourney will contain basic info for the event, tourney status, AND a see more btn at the bottom
+       */}
+      {console.log(filteredEvents)}
+      {/* filteredEvents returns 3 arrays,
+        active
+        completed 
+        and upcoming
+
+      first, so into the active tourney event, upcoming event, and completed event 
+
+      then, create carosel (look at rounds)
+      */}
       {Object.entries(filteredEvents).map(([section, eventList]) =>
         eventList.length > 0 ? (
           <VStack key={section} align="stretch" w="100%" mb={8} gap={6}>
             <Flex justify="center" w="100%">
-              {renderSectionHeader(`${section.charAt(0).toUpperCase() + section.slice(1)} Events`)}
+              {renderSectionHeader(
+                `${section.charAt(0).toUpperCase() + section.slice(1)} Events`
+              )}
             </Flex>
             {eventList.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  tourneys={eventTourneyMap.get(event.id) || []}
-                  adminTourneyIds={adminTourneyIds}
-                />
+              <EventCard
+                key={event.id}
+                event={event}
+                tourneys={eventTourneyMap.get(event.id) || []}
+                adminTourneyIds={adminTourneyIds}
+              />
             ))}
           </VStack>
         ) : null

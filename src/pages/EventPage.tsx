@@ -68,7 +68,7 @@ function EventPage() {
         bgImage={`url(${event[0].hero_img})`}
         bgPos="center"
         bgRepeat="no-repeat"
-        bgSize="100%"
+        bgSize="cover"
         minH={"400px"}
         width="100%"
         display="flex"
@@ -87,7 +87,7 @@ function EventPage() {
 
         <Heading
           as="h2"
-          fontSize="48px"
+          fontSize={["48px", "52px", "56px"]}
           fontWeight="bold"
           textAlign="center"
           mt="160px"
@@ -107,26 +107,34 @@ function EventPage() {
           {/* Date row */}
           <HStack align="center">
             <Box w="40px" display="flex" justifyContent="center">
-              <Box as={IoMdCalendar} boxSize={["25px", "30px", "40px"]} />
+              <Box as={IoMdCalendar} boxSize={["22px", "26px", "30px"]} />
             </Box>
-            <Text fontSize="18px" fontWeight="bold">
+            <Text
+              fontSize={["14px", "18px", "22px"]}
+              fontWeight="bold"
+              textAlign="left"
+            >
               {formatDate(event[0].start_date)}
               {event[0].end_date ? ` - ${formatDate(event[0].end_date)}` : ""}
             </Text>
           </HStack>
 
           {/* Location row */}
-          <HStack align="center">
+          <HStack align="center" mt="50px">
             <Box w="40px" display="flex" justifyContent="center">
-              <Box as={CiLocationOn} boxSize={["25px", "30px", "40px"]} />
+              <Box as={CiLocationOn} boxSize={["22px", "26px", "30px"]} />
             </Box>
-            <Text fontSize="18px" fontWeight="bold">
+            <Text
+              fontSize={["14px", "18px", "22px"]}
+              fontWeight="bold"
+              textAlign="left"
+            >
               {event[0].location}
             </Text>
           </HStack>
 
           {/* Quick Description */}
-          <Text fontSize="16px" maxW="400px" textAlign="left">
+          <Text fontSize="16px" maxW="600px" textAlign="left" mt="50px">
             {event[0].description}
           </Text>
         </VStack>
