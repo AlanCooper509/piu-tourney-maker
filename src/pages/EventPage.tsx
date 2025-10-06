@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
-import { Heading, Text } from "@chakra-ui/react";
+import { Heading, IconButton, Text, VStack } from "@chakra-ui/react";
+import { IoAddCircleSharp } from "react-icons/io5";
 
 import type { Event } from "../types/Event";
 import type { Tourney } from "../types/Tourney";
@@ -7,10 +8,12 @@ import type { Tourney } from "../types/Tourney";
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import TourneyCard from "../components/ui/TourneyCard";
 import EventOverview from "../components/event/EventOverview";
+import { useIsAdminForEvent } from "../context/admin/AdminEventContext";
 
 function EventPage() {
   // get eventId from url path
   const { eventId } = useParams();
+  const { isEventAdmin, loadingEventAdminStatus } = useIsAdminForEvent(Number(eventId));
 
   // get event details from eventId
   const {
@@ -31,6 +34,7 @@ function EventPage() {
     column: "event_id",
     value: eventId,
   });
+  tourneys?.sort((a, b) => a.start_date.localeCompare(b.start_date));
 
   // get array check
   if (event_loading) return <Text fontSize="xl">Loading...</Text>;
@@ -51,7 +55,24 @@ function EventPage() {
 
       {/* Section 3: Associated Tourneys */}
       <Heading fontSize="30px" fontWeight="bold" mt="50px" mb="50px">
-        Tourneys
+        <VStack>
+          <Text>Tourneys</Text>
+          {!loadingEventAdminStatus && isEventAdmin && (
+            <IconButton
+              aria-label="Add to Pool"
+              size="sm"
+              variant="outline"
+              borderWidth={2}
+              colorPalette="green"
+              px={2}
+              ml={4}
+              mt={2}
+              onClick={() => {}}
+            >
+              Create New Tourney (NYI)<IoAddCircleSharp />
+            </IconButton>
+          )}
+        </VStack>
       </Heading>
 
       {/* Check if associated event has <= 1 tourneys */}

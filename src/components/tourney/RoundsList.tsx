@@ -7,7 +7,7 @@ import { handleAddRoundToTourney } from '../../handlers/handleAddRoundToTourney'
 import EditableRoundName from './EditableRoundName';
 import RoundLink from './RoundLink';
 import { toaster } from '../ui/toaster';
-import { useIsAdminForTourney } from '../../context/TourneyAdminContext';
+import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import { useCurrentTourney } from '../../context/CurrentTourneyContext';
 
 import type { Tourney } from '../../types/Tourney';
@@ -76,7 +76,7 @@ export function RoundsList({ tourney, rounds, loading, error }: RoundListProps) 
   }
 
   const carouselInput: CarouselCard[] = !loading && !error && roundsState?.length
-    ? roundsToCards(roundsState, onRenameRound, updatingRoundId)
+    ? roundsToCards(roundsState, onRenameRound, updatingRoundId, loadingTourneyAdminStatus, isTourneyAdmin)
     : [];
 
   return (
@@ -116,9 +116,9 @@ function roundsToCards(
   rounds: Round[],
   onRenameRound: (roundId: number, newName: string) => Promise<void>,
   updatingRoundId: number | null,
+  loadingTourneyAdminStatus: boolean,
+  isTourneyAdmin: boolean
 ): CarouselCard[] {
-  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
 
   return rounds
     .slice()

@@ -8,7 +8,7 @@ import { handleStartTourney } from '../../handlers/handleStartTourney'
 import { toaster } from '../ui/toaster'
 import { StatusElement } from '../StatusElement'
 import { useCurrentTourney } from '../../context/CurrentTourneyContext'
-import { useIsAdminForTourney } from '../../context/TourneyAdminContext'
+import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 
 import type { Tourney } from '../../types/Tourney'
 import type { Round } from '../../types/Round'

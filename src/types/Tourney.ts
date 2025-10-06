@@ -1,5 +1,5 @@
 export type TourneyStatus = "Not Started" | "In Progress" | "Complete";
-export type TourneyType = "Gauntlet" | "Double Elimination";
+export type TourneyType = "Gauntlet" | "Double Elimination" | "Waterfall (Redemption)";
 export interface Tourney {
   id: number;                    // bigint -> number
   event_id: number;              // bigint -> number

@@ -3,7 +3,7 @@ import type { Stage } from "../../types/Stage";
 import { FaTrash } from "react-icons/fa";
 import { MdOutlineCheck } from "react-icons/md";
 import { toaster } from "../ui/toaster";
-import { useIsAdminForTourney } from "../../context/TourneyAdminContext";
+import { useIsAdminForTourney } from '../../context/admin/AdminTourneyContext';
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 
 import { handleDeleteChartFromPool } from "../../handlers/handleDeleteChartFromPool";

@@ -18,7 +18,8 @@ import ChartRollPage from "./pages/ChartRollPage.tsx";
 import { HeroTitle } from "./components/ui/HeroTitle";
 import { ColorModeProvider } from "./components/ui/color-mode";
 import { CurrentTourneyProvider } from "./context/CurrentTourneyContext.tsx";
-import { AdminTourneyProvider } from "./context/TourneyAdminContext.tsx";
+import { AdminTourneyProvider } from "./context/admin/AdminTourneyContext.tsx";
+import { AdminEventProvider } from "./context/admin/AdminEventContext.tsx";
 
 import "./App.css";
 
@@ -27,50 +28,52 @@ function App() {
     <ChakraProvider value={defaultSystem}>
       {/* Force global dark mode */}
       <ColorModeProvider forcedTheme="dark">
-        <AdminTourneyProvider>
-          <CurrentTourneyProvider>
-            <Box bg="gray.900" color="white" minH="100vh">
-              <BrowserRouter>
-                {/* HeroTitle Card on all pages */}
-                <HeroTitle />
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/tourney/:tourneyId" element={<TourneyPage />} />
-                  <Route
-                    path="/tourney/:tourneyId/round/:roundId"
-                    element={<RoundPage />}
-                  />
-                  <Route
-                    path="/tourney/:tourneyId/round/:roundId/leaderboard"
-                    element={<LeaderboardPage />}
-                  />
-                  <Route
-                    path="/tourney/:tourneyId/round/:roundId/stage/:stageId/roll"
-                    element={<ChartRollPage />}
-                  />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/event/:eventId" element={<EventPage />} />
-                </Routes>
-                {/* Footer on all pages */}
-                <Box w="100%" py={100}>
-                  <Text textAlign="center" fontSize="lg" mb={5}>
-                    Piu Tourney Builder 2025 ©
-                  </Text>
-                  <Button
-                    size="sm"
-                    colorPalette="blue"
-                    variant="outline"
-                    onClick={() =>
-                      window.scrollTo({ top: 0, behavior: "smooth" })
-                    }
-                  >
-                    <SlArrowUp /> Back to Top
-                  </Button>
-                </Box>
-              </BrowserRouter>
-            </Box>
-          </CurrentTourneyProvider>
-        </AdminTourneyProvider>
+        <AdminEventProvider>
+          <AdminTourneyProvider>
+            <CurrentTourneyProvider>
+              <Box bg="gray.900" color="white" minH="100vh">
+                <BrowserRouter>
+                  {/* HeroTitle Card on all pages */}
+                  <HeroTitle />
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/tourney/:tourneyId" element={<TourneyPage />} />
+                    <Route
+                      path="/tourney/:tourneyId/round/:roundId"
+                      element={<RoundPage />}
+                    />
+                    <Route
+                      path="/tourney/:tourneyId/round/:roundId/leaderboard"
+                      element={<LeaderboardPage />}
+                    />
+                    <Route
+                      path="/tourney/:tourneyId/round/:roundId/stage/:stageId/roll"
+                      element={<ChartRollPage />}
+                    />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/event/:eventId" element={<EventPage />} />
+                  </Routes>
+                  {/* Footer on all pages */}
+                  <Box w="100%" py={100}>
+                    <Text textAlign="center" fontSize="lg" mb={5}>
+                      Piu Tourney Builder 2025 ©
+                    </Text>
+                    <Button
+                      size="sm"
+                      colorPalette="blue"
+                      variant="outline"
+                      onClick={() =>
+                        window.scrollTo({ top: 0, behavior: "smooth" })
+                      }
+                    >
+                      <SlArrowUp /> Back to Top
+                    </Button>
+                  </Box>
+                </BrowserRouter>
+              </Box>
+            </CurrentTourneyProvider>
+          </AdminTourneyProvider>
+        </AdminEventProvider>
       </ColorModeProvider>
     </ChakraProvider>
   );

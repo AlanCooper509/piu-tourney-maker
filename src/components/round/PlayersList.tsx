@@ -5,7 +5,7 @@ import { handleAddPlayerToRound } from '../../handlers/handleAddPlayerToRound'
 import DeletablePlayerRow from './DeletablePlayerRow'
 import AddPlayer from '../players/AddPlayer'
 import { toaster } from '../ui/toaster'
-import { useIsAdminForTourney } from '../../context/TourneyAdminContext'
+import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import { useCurrentTourney } from '../../context/CurrentTourneyContext'
 import calculatePlayerRankingsInRound from '../../helpers/calculatePlayerRankingsInRound'
 

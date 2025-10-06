@@ -6,7 +6,7 @@ import { handleAddChartToPool } from '../../handlers/handleAddChartToPool';
 import AddStageButton from '../stages/AddStageButton';
 import { toaster } from '../ui/toaster';
 import { useCurrentTourney } from '../../context/CurrentTourneyContext';
-import { useIsAdminForTourney } from '../../context/TourneyAdminContext';
+import { useIsAdminForTourney } from '../../context/admin/AdminTourneyContext';
 
 import type { Round } from '../../types/Round';
 import type { Stage } from '../../types/Stage';
