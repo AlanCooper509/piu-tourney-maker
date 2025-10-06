@@ -54,14 +54,16 @@ function HomePage() {
             <Flex justify="center" w="100%">
               {renderSectionHeader(`${section.charAt(0).toUpperCase() + section.slice(1)} Events`)}
             </Flex>
-            {eventList.map((event) => (
+            {eventList.map((event) => {
+              const tourneysForEvent = eventTourneyMap.get(event.id)?.sort((a, b) => a.start_date.localeCompare(b.start_date)) || [];
+              return (
                 <EventCard
                   key={event.id}
                   event={event}
-                  tourneys={eventTourneyMap.get(event.id) || []}
+                  tourneys={tourneysForEvent}
                   adminTourneyIds={adminTourneyIds}
                 />
-            ))}
+            )})}
           </VStack>
         ) : null
       )}

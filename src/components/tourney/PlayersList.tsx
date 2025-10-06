@@ -6,7 +6,7 @@ import EditablePlayerRow from './EditablePlayerRow';
 import { handleAddPlayerToTourney } from '../../handlers/handleAddPlayerToTourney';
 import { toaster } from "../../components/ui/toaster";
 import { useCurrentTourney } from '../../context/CurrentTourneyContext';
-import { useIsAdminForTourney } from '../../context/TourneyAdminContext';
+import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 
 import type { PlayerTourney } from '../../types/PlayerTourney';
 import type { Tourney } from '../../types/Tourney';

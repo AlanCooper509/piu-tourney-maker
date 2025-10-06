@@ -9,7 +9,7 @@ import { handleDeletePlayerFromTourney } from '../../handlers/handleDeletePlayer
 import { handleRenamePlayerInTourney } from '../../handlers/handleRenamePlayerInTourney';
 import { toaster } from '../../components/ui/toaster';
 import { useCurrentTourney } from '../../context/CurrentTourneyContext';
-import { useIsAdminForTourney } from '../../context/TourneyAdminContext';
+import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 
 import type { PlayerTourney } from '../../types/PlayerTourney';
 

@@ -4,7 +4,7 @@ import { IoChevronForward } from 'react-icons/io5';
 import { FaTrash } from 'react-icons/fa';
 
 import EditablePlayerScores from '../players/EditablePlayerScores';
-import { useIsAdminForTourney } from '../../context/TourneyAdminContext';
+import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import { useCurrentTourney } from '../../context/CurrentTourneyContext';
 import { getScoresForPlayer } from '../../helpers/getScoresForPlayer';
 import NonEditablePlayerScores from '../players/NonEditablePlayerScores';

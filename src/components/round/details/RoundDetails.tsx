@@ -7,7 +7,7 @@ import EditRoundDetailsButton from './EditRoundDetailsButton'
 import { StatusElement } from '../../StatusElement'
 import LeaderboardLinkButton from '../LeaderboardLinkButton'
 import PlayersAdvancingElement from './PlayersAdvancingElement'
-import { useIsAdminForTourney } from '../../../context/TourneyAdminContext'
+import { useIsAdminForTourney } from '../../../context/admin/AdminTourneyContext'
 
 import type { Round } from '../../../types/Round'
 import type { PlayerRound } from '../../../types/PlayerRound'

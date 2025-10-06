@@ -9,7 +9,7 @@ import { RollChartButton } from "../stages/RollChartButton";
 import AddChartForm from "../charts/AddChartForm";
 import type { ChartQuery } from "../../types/ChartQuery";
 import ChartPool from "../charts/ChartPool";
-import { useIsAdminForTourney } from "../../context/TourneyAdminContext";
+import { useIsAdminForTourney } from '../../context/admin/AdminTourneyContext';
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 
 interface StageRowProps {
