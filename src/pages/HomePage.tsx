@@ -290,25 +290,69 @@ function HomePage() {
 
   return (
     <>
-      {Object.entries(filteredEvents).map(([section, eventList]) =>
-        eventList.length > 0 ? (
-          <VStack key={section} align="stretch" w="100%" mb={8} gap={6}>
-            <Flex justify="center" w="100%">
-              {renderSectionHeader(
-                `${section.charAt(0).toUpperCase() + section.slice(1)} Events`
-              )}
-            </Flex>
-            {eventList.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                tourneys={eventTourneyMap.get(event.id) || []}
-                adminTourneyIds={adminTourneyIds}
-              />
+      <MotionBox
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+        width="100%"
+        p={4}
+      >
+        {/* Spotlight Swiper */}
+        <MotionBox variants={fadeIn}>
+          <Swiper
+            modules={[Navigation, Pagination, Autoplay]}
+            navigation
+            pagination={{ clickable: true }}
+            spaceBetween={50}
+            slidesPerView={1}
+            autoplay={{ delay: 5000, disableOnInteraction: false }}
+            loop
+          >
+            {sortedEvents.map((event) => (
+              <SwiperSlide key={event.id}>
+                {renderSpotlightTourney(event)}
+              </SwiperSlide>
             ))}
-          </VStack>
-        ) : null
-      )}
+          </Swiper>
+        </MotionBox>
+
+        {/* Event sections */}
+        {Object.entries(filteredEvents).map(([section, eventList]) =>
+          eventList.length > 0 ? (
+            <MotionVStack
+              key={section}
+              align="stretch"
+              w="100%"
+              mb={8}
+              gap={6}
+              variants={fadeIn}
+            >
+              <MotionFlex justify="center" w="100%" variants={fadeIn}>
+                {renderSectionHeader(
+                  `${section.charAt(0).toUpperCase() + section.slice(1)} Events`
+                )}
+              </MotionFlex>
+              {eventList.map((event) => {
+                const tourneysForEvent =
+                  eventTourneyMap
+                    .get(event.id)
+                    ?.sort((a, b) =>
+                      a.start_date.localeCompare(b.start_date)
+                    ) || [];
+                return (
+                  <MotionBox key={event.id} variants={fadeIn}>
+                    <EventCard
+                      event={event}
+                      tourneys={tourneysForEvent}
+                      adminTourneyIds={adminTourneyIds}
+                    />
+                  </MotionBox>
+                );
+              })}
+            </MotionVStack>
+          ) : null
+        )}
+      </MotionBox>
     </>
   );
 }
