@@ -16,13 +16,13 @@ interface DialogFormProps {
 
 export default function DialogForm({ title, trigger, onSubmit, formBody }: DialogFormProps) {
   return (
-    <Dialog.Root>
+    <Dialog.Root closeOnInteractOutside={false} modal={false}>
       <Dialog.Trigger asChild>
         {trigger}
       </Dialog.Trigger>
       <Portal>
         <Dialog.Backdrop />
-        <Dialog.Positioner>
+        <Dialog.Positioner pointerEvents="none">
           <Dialog.Content>
             <Dialog.Header>
               <Dialog.Title>{title}</Dialog.Title>

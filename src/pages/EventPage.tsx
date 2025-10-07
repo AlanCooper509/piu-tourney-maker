@@ -1,6 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Heading, IconButton, Text, VStack } from "@chakra-ui/react";
-import { IoAddCircleSharp } from "react-icons/io5";
+import { Heading, Text, VStack } from "@chakra-ui/react";
 
 import type { Event } from "../types/Event";
 import type { Tourney } from "../types/Tourney";
@@ -8,6 +7,7 @@ import type { Tourney } from "../types/Tourney";
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import TourneyCard from "../components/ui/TourneyCard";
 import EventOverview from "../components/event/EventOverview";
+import CreateTourneyButton from "../components/event/CreateTourneyButton";
 import { useIsAdminForEvent } from "../context/admin/AdminEventContext";
 
 function EventPage() {
@@ -58,19 +58,9 @@ function EventPage() {
         <VStack>
           <Text>Tourneys</Text>
           {!loadingEventAdminStatus && isEventAdmin && (
-            <IconButton
-              aria-label="Add to Pool"
-              size="sm"
-              variant="outline"
-              borderWidth={2}
-              colorPalette="green"
-              px={2}
-              ml={4}
-              mt={2}
-              onClick={() => {}}
-            >
-              Create New Tourney (NYI)<IoAddCircleSharp />
-            </IconButton>
+            <CreateTourneyButton 
+              eventId={event[0].id}
+            />
           )}
         </VStack>
       </Heading>

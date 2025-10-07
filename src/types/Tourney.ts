@@ -1,5 +1,11 @@
 export type TourneyStatus = "Not Started" | "In Progress" | "Complete";
 export type TourneyType = "Gauntlet" | "Double Elimination" | "Waterfall (Redemption)";
+export const tourneyTypes: TourneyType[] = [
+  "Gauntlet",
+  "Double Elimination",
+  "Waterfall (Redemption)",
+] as const;
+
 export interface Tourney {
   id: number;                    // bigint -> number
   event_id: number;              // bigint -> number
