@@ -68,8 +68,6 @@ export default async function handleEndRound({ tourneyId, round }: handleStartRo
     const nextRoundId = round.next_round_id ? round.next_round_id : await determineNextRoundId(tourneyId, round.id);
     if (nextRoundId) {
       const advancingPlayersTourneyIds = getAdvancingPlayersTourneyIds(round, players, stages);
-      console.log(advancingPlayersTourneyIds)
-      console.log(nextRoundId)
       handleAddPlayersToRound(nextRoundId, advancingPlayersTourneyIds);
     }
 

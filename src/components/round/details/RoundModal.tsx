@@ -53,7 +53,6 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
     const nextRoundId = formNextRound ? Number(formNextRound[0]) : undefined;
     setRoundName(formRoundName);
     setPlayersAdvancing(advancing);
-    console.log(formNextRound);
     onSubmitForm(formRoundName, advancing, nextRoundId);
   }
 
