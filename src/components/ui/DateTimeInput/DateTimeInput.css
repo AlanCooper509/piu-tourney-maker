@@ -1,0 +1,132 @@
+/* Palette */
+:root {
+  --dt-bg: #1a202c;           /* main dark background */
+  --dt-neighbor-bg: #12141a;  /* neighboring month days background */
+  --dt-border: #2d3748;       /* borders */
+  --dt-text: #f7fafc;         /* text color */
+  --dt-hover: #7e2813;        /* hover/active color */
+  --dt-disabled-bg: #374151;  /* disabled background */
+  --dt-disabled-text: #a0aec0;
+  --dt-icon-text: #cbd5e0;  /* icon color */
+  --dt-today-bg: #2b6cb0;     /* today background */
+  --dt-weekend-text: #a9dbff; /* weekend text color */
+  --dt-nav-hover: #2b6cb0;    /* nav button hover */
+}
+
+/* Base containers */
+.react-datetime-picker__wrapper {
+    background-color: transparent !important;
+    border: 0;
+    padding: 0;
+}
+
+.react-calendar,
+.react-clock {
+  background-color: var(--dt-bg);
+  color: var(--dt-text);
+  border: 1px solid var(--dt-border);
+}
+
+/* Calendar tiles */
+.react-calendar__tile {
+  background-color: var(--dt-bg);
+  color: var(--dt-text);
+  border: 1px solid var(--dt-border);
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus,
+.react-calendar__tile--active {
+  background-color: var(--dt-hover);
+  color: var(--dt-text);
+}
+
+.react-calendar__tile--now {
+  background-color: var(--dt-today-bg);
+}
+
+.react-calendar__tile:disabled {
+  background-color: var(--dt-disabled-bg);
+  color: var(--dt-disabled-text);
+  cursor: not-allowed;
+}
+
+/* Neighboring month days (previous/next month) */
+.react-calendar__month-view__days__day--neighboringMonth {
+  background-color: var(--dt-neighbor-bg);
+}
+
+/* Weekends */
+.react-calendar__month-view__days__day--weekend {
+  color: var(--dt-weekend-text);
+}
+
+/* Active weekends */
+.react-calendar__month-view__days__day--weekend.react-calendar__tile--active {
+  color: var(--dt-text);
+  background-color: var(--dt-hover);
+}
+
+/* Calendar navigation */
+.react-calendar__navigation {
+  background-color: var(--dt-bg);
+  color: var(--dt-text);
+  border-bottom: 4px solid var(--dt-border);
+}
+
+.react-calendar__navigation__label {
+  background-color: var(--dt-border);
+  color: var(--dt-text);
+}
+
+.react-calendar__navigation button {
+  background-color: var(--dt-bg);
+  color: var(--dt-text);
+  outline: none;
+}
+
+.react-calendar__navigation button:disabled {
+  background-color: var(--dt-disabled-bg);
+  color: var(--dt-disabled-text);
+  cursor: not-allowed;
+}
+
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus,
+.react-calendar__navigation button:enabled:active {
+  background-color: var(--dt-nav-hover);
+  color: var(--dt-text);
+}
+
+/* Day of Week Abbreviations */
+abbr {
+  text-decoration: none; /* removes the dotted underline */
+  border-bottom: none;   /* some browsers use border for the dots */
+  cursor: help;          /* optional: keep the "help" cursor */
+  color: inherit;        /* optional: match surrounding text color */
+}
+
+/* Calendar buttons icons */
+.react-datetime-picker__button__icon {
+  stroke: var(--dt-icon-text); /* icon color */
+}
+
+/* AM/PM select box */
+.react-datetime-picker__inputGroup__amPm {
+  color: var(--dt-text);
+  margin-left: -5px;
+}
+
+.react-datetime-picker__inputGroup__amPm option {
+  background-color: var(--dt-bg);
+  color: var(--dt-text);
+}
+
+.chakra-datetime-input {
+  border-radius: var(--chakra-radii-sm);
+  border: 1px solid var(--chakra-colors-gray-800);
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  width: 100%;
+}

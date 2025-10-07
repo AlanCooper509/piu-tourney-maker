@@ -4,18 +4,20 @@ import { tourneyTypes } from "../../types/Tourney";
 
 import DialogForm from "../ui/DialogForm";
 import { useState } from "react";
-import DateTimeInput from "../ui/DateTimeInput";
+import DateTimeInput from "../ui/DateTimeInput/DateTimeInput";
+
+type ValuePiece = Date | null;
+type Value = ValuePiece | [ValuePiece, ValuePiece];
 
 interface CreateTourneyButtonProps {
   eventId: number;
 }
 
 export default function CreateTourneyButton({ eventId }: CreateTourneyButtonProps) {
-  const [formTourneyName, setFormTourneyName] = useState("");
+  const [tourneyName, setTourneyName] = useState("");
+  const [startDate, setStartDate] = useState<Value>(null);
+  const [endDate, setEndDate] = useState<Value>(null);
   const [tourneyFormat, setFormTourneyFormat] = useState<string[]>([]);
-
-  console.log(formTourneyName);
-  console.log(tourneyFormat);
 
   const tourneyTypeCollection = createListCollection({
     items: tourneyTypes.map(type => ({
@@ -23,6 +25,34 @@ export default function CreateTourneyButton({ eventId }: CreateTourneyButtonProp
       value: type,
     })),
   });
+
+  const onStartDateChange = (val: Value) => {
+    // update startDate
+    setStartDate(val);
+
+    // If endDate is before new startDate, update endDate to be same as startDate
+    if (val && endDate) {
+      const start = Array.isArray(val) ? val[0] : val;
+      const end = Array.isArray(endDate) ? endDate[0] : endDate;
+      if (end && start && end < start) {
+        setEndDate(start);
+      }
+    }
+  }
+
+  const onEndDateChange = (val: Value) => {
+    // update endDate
+    setEndDate(val);
+
+    // If startDate is after new endDate, update startDate to be same as endDate
+    if (val && startDate) {
+      const end = Array.isArray(val) ? val[0] : val;
+      const start = Array.isArray(startDate) ? startDate[0] : startDate;
+      if (end && start && start > end) {
+        setStartDate(end);
+      }
+    }
+  }
 
   const trigger = (
     <IconButton
@@ -46,20 +76,24 @@ export default function CreateTourneyButton({ eventId }: CreateTourneyButtonProp
       <Field.Root>
         <Field.Label>Tourney Name</Field.Label>
         <Input
-          value={formTourneyName}
-          onChange={(e) => setFormTourneyName(e.target.value)}
+          value={tourneyName}
+          onChange={(e) => setTourneyName(e.target.value)}
           placeholder="Enter tourney name"
         />
       </Field.Root>
 
       {/* Placeholder for DateTimeInput component */}
       <DateTimeInput 
-        label="Start Date & Time (NYI)"
+        label="Tourney Start"
+        value={startDate}
+        onChange={onStartDateChange}
       />
 
       {/* Placeholder for DateTimeInput component */}
       <DateTimeInput 
-        label="End Date & Time (NYI)"
+        label="Tourney End"
+        value={endDate}
+        onChange={onEndDateChange}
       />
 
       {/* Tourney Type Selector */}
@@ -100,7 +134,13 @@ export default function CreateTourneyButton({ eventId }: CreateTourneyButtonProp
     <DialogForm
       title="Create New Tourney"
       trigger={trigger}
-      onSubmit={() => {console.log(eventId)}}
+      onSubmit={() => {
+        console.log(tourneyName);
+        console.log(startDate);
+        console.log(endDate);
+        console.log(eventId)
+        console.log(tourneyFormat);
+      }}
       formBody={formBody}
     />
   );
