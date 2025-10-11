@@ -1,19 +1,22 @@
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Heading, Text, VStack } from "@chakra-ui/react";
 
 import type { Event } from "../types/Event";
 import type { Tourney } from "../types/Tourney";
 
+import { Toaster } from "../components/ui/toaster";
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import TourneyCard from "../components/ui/TourneyCard";
 import EventOverview from "../components/event/EventOverview";
-import CreateTourneyButton from "../components/event/CreateTourneyButton";
+import CreateTourneyButton from "../components/event/CreateTourneyButton/CreateTourneyButton";
 import { useIsAdminForEvent } from "../context/admin/AdminEventContext";
 
 function EventPage() {
   // get eventId from url path
   const { eventId } = useParams();
   const { isEventAdmin, loadingEventAdminStatus } = useIsAdminForEvent(Number(eventId));
+  const [tourneys, setTourneys] = useState<Tourney[]>([]);
 
   // get event details from eventId
   const {
@@ -27,14 +30,23 @@ function EventPage() {
 
   // get tourneys to render @ section 3
   const {
-    data: tourneys,
+    data: tourneys_data,
     loading: tourneys_loading,
     error: tourneys_error,
   } = getSupabaseTable<Tourney>("tourneys", {
     column: "event_id",
     value: eventId,
   });
-  tourneys?.sort((a, b) => a.start_date.localeCompare(b.start_date));
+
+  useEffect(() => {
+    if (tourneys_data) {
+      // Sort and set only once per page load
+      const sorted = [...tourneys_data].sort((a, b) =>
+        a.start_date.localeCompare(b.start_date)
+      );
+      setTourneys(sorted);
+    }
+  }, [tourneys_data]);
 
   // get array check
   if (event_loading) return <Text fontSize="xl">Loading...</Text>;
@@ -50,6 +62,8 @@ function EventPage() {
 
   return (
     <>
+      <Toaster />
+
       {/* Section 1 and 2: Hero Image & Event Overview */}
       <EventOverview event={event[0]} />
 
@@ -60,6 +74,8 @@ function EventPage() {
           {!loadingEventAdminStatus && isEventAdmin && (
             <CreateTourneyButton 
               eventId={event[0].id}
+              tourneys={tourneys || []}
+              setTourneys={setTourneys}
             />
           )}
         </VStack>

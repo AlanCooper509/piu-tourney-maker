@@ -1,22 +1,23 @@
 import { Field, IconButton, Text, Input, VStack, Select, createListCollection } from "@chakra-ui/react";
 import { IoAddCircleSharp } from "react-icons/io5";
-import { tourneyTypes } from "../../types/Tourney";
+import { tourneyTypes, type Tourney } from "../../../types/Tourney";
 
-import DialogForm from "../ui/DialogForm";
+import onSubmitHandler from "./onSubmitHandler";
+import DialogForm from "../../ui/DialogForm";
 import { useState } from "react";
-import DateTimeInput from "../ui/DateTimeInput/DateTimeInput";
-
-type ValuePiece = Date | null;
-type Value = ValuePiece | [ValuePiece, ValuePiece];
+import DateTimeInput from "../../ui/DateTimeInput/DateTimeInput";
 
 interface CreateTourneyButtonProps {
   eventId: number;
+  tourneys: Tourney[];
+  setTourneys: React.Dispatch<React.SetStateAction<Tourney[]>>;
 }
 
-export default function CreateTourneyButton({ eventId }: CreateTourneyButtonProps) {
+export default function CreateTourneyButton({ eventId, tourneys, setTourneys }: CreateTourneyButtonProps) {
+  const [open, setOpen] = useState(false);
   const [tourneyName, setTourneyName] = useState("");
-  const [startDate, setStartDate] = useState<Value>(null);
-  const [endDate, setEndDate] = useState<Value>(null);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [tourneyFormat, setFormTourneyFormat] = useState<string[]>([]);
 
   const tourneyTypeCollection = createListCollection({
@@ -26,7 +27,7 @@ export default function CreateTourneyButton({ eventId }: CreateTourneyButtonProp
     })),
   });
 
-  const onStartDateChange = (val: Value) => {
+  const onStartDateChange = (val: Date | null) => {
     // update startDate
     setStartDate(val);
 
@@ -40,7 +41,7 @@ export default function CreateTourneyButton({ eventId }: CreateTourneyButtonProp
     }
   }
 
-  const onEndDateChange = (val: Value) => {
+  const onEndDateChange = (val: Date | null) => {
     // update endDate
     setEndDate(val);
 
@@ -54,7 +55,7 @@ export default function CreateTourneyButton({ eventId }: CreateTourneyButtonProp
     }
   }
 
-  const trigger = (
+  const button = (
     <IconButton
       aria-label="Add to Pool"
       size="sm"
@@ -82,14 +83,14 @@ export default function CreateTourneyButton({ eventId }: CreateTourneyButtonProp
         />
       </Field.Root>
 
-      {/* Placeholder for DateTimeInput component */}
+      {/* Start DateTimeInput component */}
       <DateTimeInput 
         label="Tourney Start"
         value={startDate}
         onChange={onStartDateChange}
       />
 
-      {/* Placeholder for DateTimeInput component */}
+      {/* End DateTimeInput component */}
       <DateTimeInput 
         label="Tourney End"
         value={endDate}
@@ -129,19 +130,23 @@ export default function CreateTourneyButton({ eventId }: CreateTourneyButtonProp
       </Field.Root>
     </VStack>
   )
+  
+  function resetForm() {
+    setTourneyName("");
+    setStartDate(null);
+    setEndDate(null);
+    setFormTourneyFormat([]);
+  }
 
   return (
     <DialogForm
       title="Create New Tourney"
-      trigger={trigger}
-      onSubmit={() => {
-        console.log(tourneyName);
-        console.log(startDate);
-        console.log(endDate);
-        console.log(eventId)
-        console.log(tourneyFormat);
-      }}
+      trigger={button}
       formBody={formBody}
+      open={open}
+      setOpen={setOpen}
+      onSubmit={async () => { return onSubmitHandler({ tourneyName, startDate, endDate, eventId, tourneyFormat, resetForm, tourneys, setTourneys }) }}
+      onCancel={resetForm}
     />
   );
 }

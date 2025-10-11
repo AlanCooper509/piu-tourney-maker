@@ -17,11 +17,12 @@ interface RoundModalProps {
 }
 
 export default function RoundModal({ round, rounds, roundName, setRoundName, playersAdvancing, setPlayersAdvancing, trigger, onSubmitForm }: RoundModalProps) {
+  const [open, setOpen] = useState(false);
   const [formRoundName, setFormRoundName] = useState(roundName);
   const [formPlayersAdvancing, setFormPlayersAdvancing] = useState(playersAdvancing.toString());
   const [formNextRound, setFormNextRound] = useState(round?.next_round_id ? [round.next_round_id.toString()] : []);
 
-  const submitWithGuards = () => {
+  const submitWithGuards = async () => {
     if (!formRoundName.trim()) {
       toaster.create({
         title: "Invalid Round Name",
@@ -29,7 +30,7 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
         type: "error",
         closable: true,
       });
-      return;
+      return false; // Prevent form submission
     }
     const advancing = Number(formPlayersAdvancing);
     if (isNaN(advancing)) {
@@ -39,7 +40,7 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
         type: "error",
         closable: true,
       });
-      return;
+      return false; // Prevent form submission
     }
     if (advancing < 1) {
       toaster.create({
@@ -48,12 +49,13 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
         type: "error",
         closable: true,
       });
-      return;
+      return false; // Prevent form submission
     }
     const nextRoundId = formNextRound ? Number(formNextRound[0]) : undefined;
     setRoundName(formRoundName);
     setPlayersAdvancing(advancing);
     onSubmitForm(formRoundName, advancing, nextRoundId);
+    return true; // Close the form
   }
 
   const otherRounds = createListCollection({
@@ -128,8 +130,17 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
     <DialogForm
       title="Round Information"
       trigger={trigger}
-      onSubmit={submitWithGuards}
+      onSubmit={async () => submitWithGuards()}
+      onCancel={() => {
+        // Reset form fields to current props values
+        setFormRoundName(roundName);
+        setFormPlayersAdvancing(playersAdvancing.toString());
+        setFormNextRound(round?.next_round_id ? [round.next_round_id.toString()] : []);
+        setOpen(false);
+      }}
       formBody={formBody}
+      open={open}
+      setOpen={setOpen}
     />
   );
 }

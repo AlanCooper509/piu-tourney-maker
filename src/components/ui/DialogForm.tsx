@@ -10,13 +10,16 @@ import type { ReactNode } from "react";
 interface DialogFormProps {
   title: string;
   trigger: ReactNode; // element that opens the dialog
-  onSubmit: () => void; // called when form is submitted
   formBody: ReactNode;  // form fields
+  open: boolean;       // control dialog open state
+  setOpen: (open: boolean) => void; // function to set open state
+  onSubmit: () => Promise<boolean>;  // Return true to close, false to keep open
+  onCancel: () => void;  // function to call on cancel
 }
 
-export default function DialogForm({ title, trigger, onSubmit, formBody }: DialogFormProps) {
+export default function DialogForm({ title, trigger, formBody, open, setOpen, onSubmit, onCancel }: DialogFormProps) {
   return (
-    <Dialog.Root closeOnInteractOutside={false} modal={false}>
+    <Dialog.Root open={open} onOpenChange={(details) => setOpen(details.open)} closeOnInteractOutside={false} modal={false}>
       <Dialog.Trigger asChild>
         {trigger}
       </Dialog.Trigger>
@@ -27,15 +30,28 @@ export default function DialogForm({ title, trigger, onSubmit, formBody }: Dialo
             <Dialog.Header>
               <Dialog.Title>{title}</Dialog.Title>
             </Dialog.Header>
+
             <Dialog.Body>{formBody}</Dialog.Body>
+
             <Dialog.Footer>
               <Dialog.ActionTrigger asChild>
-                <Button variant="outline" borderWidth="2px" colorPalette={"red"}>Cancel</Button>
+                <Button variant="outline" borderWidth="2px" colorPalette={"red"} onClick={onCancel}>
+                  Cancel
+                </Button>
               </Dialog.ActionTrigger>
-              <Dialog.ActionTrigger asChild>
-                <Button variant="outline" borderWidth="2px" colorPalette={"green"} onClick={onSubmit}>Submit</Button>
-              </Dialog.ActionTrigger>
+
+              <Button
+                variant="outline"
+                borderWidth="2px"
+                colorPalette={"green"} 
+                onClick={async () => {
+                  const shouldClose = await onSubmit();
+                  if (shouldClose) setOpen(false);
+                }}>
+                Submit
+              </Button>
             </Dialog.Footer>
+
             <Dialog.CloseTrigger asChild>
               <CloseButton size="sm" />
             </Dialog.CloseTrigger>

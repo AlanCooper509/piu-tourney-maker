@@ -1,18 +1,16 @@
 import { Field } from "@chakra-ui/react";
 import DateTimePicker from 'react-datetime-picker';
+import type { Value } from "react-datetime-picker/dist/shared/types.js";
 
 import 'react-datetime-picker/dist/DateTimePicker.css';
 import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
 import './DateTimeInput.css'
 
-type ValuePiece = Date | null;
-type Value = ValuePiece | [ValuePiece, ValuePiece];
-
 interface DateTimeInputProps {
   label: string;
-  value: Value;
-  onChange: (val: Value) => void;
+  value: Date | null;
+  onChange: (val: Date | null) => void; // <-- allow null
   minDate?: Date;
   maxDate?: Date;
 }
@@ -35,8 +33,8 @@ export default function DateTimeInput({
     <Field.Root>
       <Field.Label>{label}</Field.Label>
       <DateTimePicker
-        value={value}
-        onChange={onChange}
+        value={value as Value} // react-datetime-picker expects Value type
+        onChange={onChange as (val: Value) => void} 
         disableClock
         minDate={minAllowed}
         maxDate={maxAllowed}
