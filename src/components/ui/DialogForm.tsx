@@ -53,7 +53,13 @@ export default function DialogForm({ title, trigger, formBody, open, setOpen, on
             </Dialog.Footer>
 
             <Dialog.CloseTrigger asChild>
-              <CloseButton size="sm" />
+              <CloseButton
+                size="sm"
+                onClick={() => {
+                  onCancel();
+                  setOpen(false);
+                }}
+              />
             </Dialog.CloseTrigger>
           </Dialog.Content>
         </Dialog.Positioner>
