@@ -171,7 +171,7 @@ function HomePage() {
             <Box w="40px" display="flex" justifyContent="center">
               <Box as={IoMdCalendar} boxSize={["25px", "30px", "35px"]} />
             </Box>
-            <Text fontSize="18px" fontWeight="bold">
+            <Text fontSize="22px" fontWeight="bold">
               {formatDate(event.start_date)}
               {event.end_date ? ` - ${formatDate(event.end_date)}` : ""}
             </Text>
@@ -181,7 +181,7 @@ function HomePage() {
             <Box w="40px" display="flex" justifyContent="center">
               <Box as={CiLocationOn} boxSize={["25px", "30px", "35px"]} />
             </Box>
-            <Text fontSize="18px" fontWeight="bold">
+            <Text fontSize="16px" fontWeight="bold" textAlign="left">
               {event.location}
             </Text>
           </HStack>
