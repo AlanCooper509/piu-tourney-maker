@@ -246,12 +246,12 @@ function HomePage() {
           {event.name}
         </Heading>
 
-        <VStack align="start" gap={4} zIndex="1" p={4} maxW="400px">
+        <VStack align="start" gap={4} zIndex="1" p={4} maxW="600px">
           <HStack align="center">
             <Box w="40px" display="flex" justifyContent="center">
               <Box as={IoMdCalendar} boxSize="40px" />
             </Box>
-            <Text fontSize="18px" fontWeight="bold">
+            <Text fontSize="26px" fontWeight="bold">
               {formatDate(event.start_date)}
               {event.end_date ? ` - ${formatDate(event.end_date)}` : ""}
             </Text>
@@ -261,7 +261,7 @@ function HomePage() {
             <Box w="40px" display="flex" justifyContent="center">
               <Box as={CiLocationOn} boxSize="40px" />
             </Box>
-            <Text fontSize="18px" textAlign="left" fontWeight="bold">
+            <Text fontSize="16px" textAlign="left" fontWeight="bold">
               {event.location}
             </Text>
           </HStack>
