@@ -11,9 +11,10 @@ interface OnSubmitHandlerProps {
   resetForm: () => void;
   tourneys: Tourney[];
   setTourneys: React.Dispatch<React.SetStateAction<Tourney[]>>;
+  addTourneyAdminId: (id: number) => void;
 }
 
-export default async function onSubmitHandler({ tourneyName, startDate, endDate, eventId, tourneyFormat, resetForm, tourneys, setTourneys }: OnSubmitHandlerProps): Promise<boolean> {
+export default async function onSubmitHandler({ tourneyName, startDate, endDate, eventId, tourneyFormat, resetForm, tourneys, setTourneys, addTourneyAdminId }: OnSubmitHandlerProps): Promise<boolean> {
   if (!isValidTourneyName(tourneyName)) {
     sendToast("Error", "Enter a tourney name!", "error");
     return false; // Prevent form submission
@@ -53,6 +54,9 @@ export default async function onSubmitHandler({ tourneyName, startDate, endDate,
     sendToast("Error", `Failed to create tourney: ${error.message}`, "error");
     return false; // Prevent form submission
   }
+
+  // Add current user as tourney admin in context
+  addTourneyAdminId(data.id);
 
   // Successfully created tourney!
   sendToast("Success", `Tourney "${data.name}" created!`, "success");

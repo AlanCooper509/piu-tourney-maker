@@ -6,6 +6,7 @@ import onSubmitHandler from "./onSubmitHandler";
 import DialogForm from "../../ui/DialogForm";
 import { useState } from "react";
 import DateTimeInput from "../../ui/DateTimeInput/DateTimeInput";
+import { useAdminTourneyContext } from "../../../context/admin/AdminTourneyContext";
 
 interface CreateTourneyButtonProps {
   eventId: number;
@@ -19,6 +20,7 @@ export default function CreateTourneyButton({ eventId, tourneys, setTourneys }: 
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [tourneyFormat, setFormTourneyFormat] = useState<string[]>([]);
+const { addTourneyAdminId } = useAdminTourneyContext();
 
   const tourneyTypeCollection = createListCollection({
     items: tourneyTypes.map(type => ({
@@ -145,7 +147,7 @@ export default function CreateTourneyButton({ eventId, tourneys, setTourneys }: 
       formBody={formBody}
       open={open}
       setOpen={setOpen}
-      onSubmit={async () => { return onSubmitHandler({ tourneyName, startDate, endDate, eventId, tourneyFormat, resetForm, tourneys, setTourneys }) }}
+      onSubmit={async () => { return onSubmitHandler({ tourneyName, startDate, endDate, eventId, tourneyFormat, resetForm, tourneys, setTourneys, addTourneyAdminId }) }}
       onCancel={resetForm}
     />
   );
