@@ -259,7 +259,7 @@ function HomePage() {
 
           <HStack align="center">
             <Box w="40px" display="flex" justifyContent="center">
-              <Box as={CiLocationOn} boxSize="40px" />
+              <Box as={CiLocationOn} boxSize="30px" />
             </Box>
             <Text fontSize="16px" textAlign="left" fontWeight="bold">
               {event.location}
