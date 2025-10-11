@@ -163,8 +163,13 @@ function HomePage() {
       <Flex
         justify="center"
         align="center"
-        mt="30px"
+        pt="70px"
+        mt="-40px"
         display={{ base: "flex", lg: "none" }}
+        backgroundColor="gray.800"
+        borderRadius="2xl"
+        boxShadow="md"
+        overflow="hidden"
       >
         <VStack align="start" p={4}>
           <HStack align="center">
