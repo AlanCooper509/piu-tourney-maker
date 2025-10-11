@@ -85,7 +85,12 @@ function HomePage() {
           new Date(e.end_date) >= now
       ) || [],
     completed:
-      events?.filter((e) => e.end_date && new Date(e.end_date) < now) || [],
+      events?.filter((e) => e.end_date && new Date(e.end_date) < now).sort((a, b) => {
+        // Sort by start_date descending
+        const aDate = new Date(a.start_date);
+        const bDate = new Date(b.start_date);
+        return bDate.getTime() - aDate.getTime();
+      }) || [],
   };
 
   // optional utility
@@ -102,7 +107,7 @@ function HomePage() {
     ...(filteredEvents.completed || []),
   ];
 
-  const sortedEvents = allEvents.sort((a, b) => {
+  const sortedSpotlightEvents = allEvents.sort((a, b) => {
     const getStatus = (event: any) => {
       if (now >= new Date(event.start_date) && now <= new Date(event.end_date))
         return 0; // active
@@ -308,7 +313,7 @@ function HomePage() {
             autoplay={{ delay: 5000, disableOnInteraction: false }}
             loop
           >
-            {sortedEvents.map((event) => (
+            {sortedSpotlightEvents.map((event) => (
               <SwiperSlide key={event.id}>
                 {renderSpotlightTourney(event)}
               </SwiperSlide>
