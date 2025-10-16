@@ -1,4 +1,4 @@
-import { HStack, Text, Input, IconButton } from '@chakra-ui/react';
+import { HStack, Text, Input, IconButton, NumberInput, Field, Box } from '@chakra-ui/react';
 import { useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { FaCheck } from 'react-icons/fa';
@@ -6,7 +6,7 @@ import { IoCloseSharp } from 'react-icons/io5';
 import { MdOutlinePersonRemoveAlt1 } from "react-icons/md"
 
 import { handleDeletePlayerFromTourney } from '../../handlers/handleDeletePlayerFromTourney';
-import { handleRenamePlayerInTourney } from '../../handlers/handleRenamePlayerInTourney';
+import { handleUpdatePlayerInTourney } from '../../handlers/handleUpdatePlayerInTourney';
 import { toaster } from '../../components/ui/toaster';
 import { useCurrentTourney } from '../../context/CurrentTourneyContext';
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
@@ -32,13 +32,14 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
 
   const [isEditing, setIsEditing] = useState(false);
+  const [newSeed, setNewSeed] = useState(player.seed);
   const [newName, setNewName] = useState(player.player_name);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSave = async () => {
     try {
       setIsLoading(true);
-      const updatedPlayer = await handleRenamePlayerInTourney(player.id, newName);
+      const updatedPlayer = await handleUpdatePlayerInTourney(player.id, newName, newSeed ? newSeed : null);
       updatePlayer(updatedPlayer);
       setIsEditing(false);
       toaster.create({
@@ -88,14 +89,29 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
   return (
     <HStack w="full" justify={(!loadingTourneyAdminStatus && isTourneyAdmin) ? "space-between" : "center"} align="center">
     {isEditing ? (
-      <>
-        <Input
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          size="sm"
-          autoFocus
-          width="auto"
-        />
+      <Box display="flex" alignItems="end" gap={2} backgroundColor="bg.subtle" borderColor="border.inverted" borderWidth="1px" borderRadius="md" p={2}>
+        <Field.Root>
+          <Field.Label>Seed</Field.Label>
+          <NumberInput.Root
+            size="sm"
+            value={newSeed ? String(newSeed) : undefined}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setNewSeed(Number(e.target.value))
+            }
+          >
+            <NumberInput.Input maxW="5px"/>
+          </NumberInput.Root>
+        </Field.Root>
+        <Field.Root>
+          <Field.Label>Player Name</Field.Label>
+          <Input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            size="sm"
+            autoFocus
+            width="auto"
+          />
+        </Field.Root>
         <IconButton
           aria-label="Save name"
           onClick={handleSave}
@@ -115,13 +131,13 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
         >
           <IoCloseSharp />
         </IconButton>
-      </>
+      </Box>
     ) : (
       <>
-        {/* Left side: player name */}
+        {/* Left side: player seed/name */}
         <HStack flex="1" overflow="hidden" mx={4}>
           <Text truncate title={player.player_name}>
-            {player.player_name}
+            {player.seed ? `${player.player_name} (${player.seed})` : player.player_name}
           </Text>
         </HStack>
 

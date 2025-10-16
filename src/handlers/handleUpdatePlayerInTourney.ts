@@ -1,9 +1,10 @@
 import { supabaseClient } from '../lib/supabaseClient';
 import type { PlayerTourney } from '../types/PlayerTourney';
 
-export async function handleRenamePlayerInTourney(
+export async function handleUpdatePlayerInTourney(
   id: number,
-  newName: string
+  newName: string,
+  newSeed: number | null
 ): Promise<PlayerTourney> {
   if (!newName.trim()) {
     throw new Error('Player name cannot be empty');
@@ -11,7 +12,7 @@ export async function handleRenamePlayerInTourney(
 
   const { data, error } = await supabaseClient
     .from('player_tourneys')
-    .update({ player_name: newName.trim() })
+    .update({ player_name: newName.trim(), seed: newSeed })
     .eq('id', id)
     .select()
     .single();
