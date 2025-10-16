@@ -44,7 +44,7 @@ function EditableTourneyName({
   };
 
   return (
-    <HStack>
+    <HStack mb={4}>
       <Text>
       Name: 
       </Text>
