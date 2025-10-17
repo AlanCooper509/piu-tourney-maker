@@ -21,8 +21,9 @@ interface StageListProps {
 }
 
 export function StagesList({ round, stages, setStages, loading, error }: StageListProps) {
-  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+  const { tourney } = useCurrentTourney();
+  if (!tourney) return null;
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourney.id));
 
   async function onChooseChart(stageId: number, chosenChartId: number) {
     const updatedStage = await handleAssignChartToStage(stageId, chosenChartId,);

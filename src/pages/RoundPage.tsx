@@ -21,13 +21,13 @@ function RoundPage() {
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
   if (!roundId) return <div>Invalid Round ID</div>;
 
-  setTourneyIdContext();
+  const { tourney, setTourney } = useCurrentTourney();
 
   const [round, setRound] = useState<Round | null>(null);
   const [players, setPlayers] = useState<PlayerRound[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
 
-  const { data: tourney } = getSupabaseTable<Tourney>(
+  const { data: tourneys } = getSupabaseTable<Tourney>(
     'tourneys',
     { column: 'id', value: tourneyId }
   );
@@ -51,8 +51,19 @@ function RoundPage() {
     { column: 'tourney_id', value: tourneyId }
   );
 
-  // sort rounds for navbar
-  const sortedRounds = allRoundsInTourney?.slice().sort((a, b) => a.id - b.id);
+  // Stores tourney table details
+  useEffect(() => {
+    if (tourneys?.length && tourneys[0].id !== tourney?.id) {
+      setTourney(tourneys[0]);
+    }
+  }, [tourneys, tourney?.id, setTourney]);
+
+  // Stores round table details
+  useEffect(() => {
+    if (rounds?.length) {
+      setRound(rounds[0]);
+    }
+  }, [rounds]);
 
   // Sync players when playersData changes
   useEffect(() => {
@@ -72,17 +83,13 @@ function RoundPage() {
     }
   }, [stagesData]);
 
-  // Stores round table details
-  useEffect(() => {
-    if (rounds?.length) {
-      setRound(rounds[0]);
-    }
-  }, [rounds]);
+  // sort rounds for navbar
+  const sortedRounds = allRoundsInTourney?.slice().sort((a, b) => a.id - b.id);
 
   return (
     <>
       <Toaster />
-      <RoundHeaderText tourneyName={tourney[0]?.name} tourneyId={Number(tourneyId)} roundName={rounds[0]?.name}></RoundHeaderText>
+      <RoundHeaderText roundName={rounds[0]?.name}></RoundHeaderText>
       {sortedRounds.length > 1 &&
         <RoundsNavbar tourneyId={Number(tourneyId)} rounds={sortedRounds}></RoundsNavbar>
       }
@@ -102,16 +109,5 @@ function RoundPage() {
     </>
   );
 };
-
-function setTourneyIdContext() {
-  // save the current tourney id into the RoundPage's context
-  const { tourneyId: tourneyIdStr, roundId: _roundId } = useParams<{ tourneyId: string, roundId: string }>();
-  const { setTourneyId } = useCurrentTourney();
-  useEffect(() => {
-    if (tourneyIdStr) {
-      setTourneyId(Number(tourneyIdStr));
-    }
-  }, [tourneyIdStr, setTourneyId]);
-}
 
 export default RoundPage;

@@ -10,22 +10,20 @@ import { StatusElement } from '../StatusElement'
 import { useCurrentTourney } from '../../context/CurrentTourneyContext'
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 
-import type { Tourney } from '../../types/Tourney'
 import type { Round } from '../../types/Round'
 import type { PlayerTourney } from '../../types/PlayerTourney'
 
 interface TourneyDetailsProps {
-  tourney: Tourney | null
-  setTourney: (tourney: Tourney | null) => void
   players: PlayerTourney[] | null
   rounds: Round[] | null
   loading: boolean
   error: Error | null
 }
 
-export function TourneyDetails({ tourney, setTourney, players, rounds, loading, error }: TourneyDetailsProps) {
-  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+export function TourneyDetails({ players, rounds, loading, error }: TourneyDetailsProps) {
+  const { tourney, setTourney } = useCurrentTourney();
+  if (!tourney) return null;
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourney.id));
 
   // Rename tourney logic
   const [updatingName, setUpdatingName] = useState(false);

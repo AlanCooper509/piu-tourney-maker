@@ -19,11 +19,8 @@ function TourneyPage() {
   const { tourneyId } = useParams();
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
 
-  setTourneyIdContext();
-
-  const [tourney, setTourney] = useState<Tourney | null>(null);
+  const { tourney, setTourney } = useCurrentTourney();
   const [players, setPlayers] = useState<PlayerTourney[]>([]);
-
 
   const { data: tourneys, loading: loadingTourney, error: errorTourney } = getSupabaseTable<Tourney>(
     'tourneys',
@@ -40,10 +37,10 @@ function TourneyPage() {
 
   // Stores tourney table details
   useEffect(() => {
-    if (tourneys?.length) {
+    if (tourneys?.length && tourneys[0].id !== tourney?.id) {
       setTourney(tourneys[0]);
     }
-  }, [tourneys]);
+  }, [tourneys, tourney?.id, setTourney]);
 
   // Sync players when playersData changes
   useEffect(() => {
@@ -76,22 +73,18 @@ function TourneyPage() {
       <Separator mt={2} mb={4} />
       <VStack separator={<StackSeparator />}>
         <TourneyDetails
-          tourney={tourney}
-          setTourney={setTourney}
           players={players}
           rounds={sortedRounds}
           loading={loadingTourney}
           error={errorTourney}
         />
         <PlayersList
-          tourney={tourney}
           players={players}
           setPlayers={setPlayers}
           loading={loadingPlayers}
           error={errorPlayers}
         />
         <RoundsList
-          tourney={tourney}
           rounds={sortedRounds}
           loading={loadingRounds}
           error={errorRounds}
@@ -99,17 +92,6 @@ function TourneyPage() {
       </VStack>
     </>
   );
-}
-
-function setTourneyIdContext() {
-  // save the current tourney id into the TourneyPage's context
-  const { tourneyId: tourneyIdStr } = useParams<{ tourneyId: string }>();
-  const { setTourneyId } = useCurrentTourney();
-  useEffect(() => {
-    if (tourneyIdStr) {
-      setTourneyId(Number(tourneyIdStr));
-    }
-  }, [tourneyIdStr, setTourneyId]);
 }
 
 export default TourneyPage;

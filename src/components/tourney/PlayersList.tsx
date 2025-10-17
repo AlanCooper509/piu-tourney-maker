@@ -9,19 +9,18 @@ import { useCurrentTourney } from '../../context/CurrentTourneyContext';
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 
 import type { PlayerTourney } from '../../types/PlayerTourney';
-import type { Tourney } from '../../types/Tourney';
 
 interface PlayersListProps {
-  tourney: Tourney | null;
   players: PlayerTourney[] | null;
   setPlayers: React.Dispatch<React.SetStateAction<PlayerTourney[]>>;
   loading: boolean;
   error: Error | null;
 }
 
-export function PlayersList({ tourney, players, setPlayers, loading, error }: PlayersListProps) {
-  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+export function PlayersList({ players, setPlayers, loading, error }: PlayersListProps) {
+  const { tourney, setTourney: _setTourney } = useCurrentTourney();
+  if (!tourney) return null;
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourney.id));
 
   const [addingPlayer, setAddingPlayer] = useState(false);
 

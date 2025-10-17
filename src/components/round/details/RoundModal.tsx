@@ -1,6 +1,7 @@
-import { Field, Input, NumberInput, Select, VStack, createListCollection } from "@chakra-ui/react";
+import { Checkbox, Field, Input, NumberInput, Select, VStack, createListCollection } from "@chakra-ui/react";
 import { useState } from "react";
 
+import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import DialogForm from "../../ui/DialogForm";
 import { toaster } from "../../ui/toaster";
 import type { Round } from "../../../types/Round";
@@ -13,14 +14,18 @@ interface RoundModalProps {
   playersAdvancing: number;
   setPlayersAdvancing: (count: number) => void;
   trigger: React.ReactNode;
-  onSubmitForm: (name: string, advancing: number, nextId: number | undefined) => void;
+  onSubmitForm: (name: string, advancing: number, nextId: number | undefined, parentId: number | undefined) => void;
 }
 
 export default function RoundModal({ round, rounds, roundName, setRoundName, playersAdvancing, setPlayersAdvancing, trigger, onSubmitForm }: RoundModalProps) {
+  const { tourney } = useCurrentTourney();
+
   const [open, setOpen] = useState(false);
   const [formRoundName, setFormRoundName] = useState(roundName);
   const [formPlayersAdvancing, setFormPlayersAdvancing] = useState(playersAdvancing.toString());
   const [formNextRound, setFormNextRound] = useState(round?.next_round_id ? [round.next_round_id.toString()] : []);
+  const [formParentRoundId, setFormParentRound] = useState(round?.parent_round_id ? [round.parent_round_id.toString()] : []);
+  const [checked, setChecked] = useState(round?.parent_round_id != null);
 
   const submitWithGuards = async () => {
     if (!formRoundName.trim()) {
@@ -52,9 +57,10 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
       return false; // Prevent form submission
     }
     const nextRoundId = formNextRound ? Number(formNextRound[0]) : undefined;
+    const parentRoundId = formParentRoundId ? Number(formParentRoundId[0]) : undefined;
     setRoundName(formRoundName);
     setPlayersAdvancing(advancing);
-    onSubmitForm(formRoundName, advancing, nextRoundId);
+    onSubmitForm(formRoundName, advancing, nextRoundId, parentRoundId);
     return true; // Close the form
   }
 
@@ -68,6 +74,7 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
   });
 
   const defaultNextRoundField = rounds?.find(r => r.id === round?.next_round_id);
+  const defaultParentRoundField = rounds?.find(r => r.id === round?.parent_round_id);
 
   const formBody = (
     <VStack gap={4} align="stretch">
@@ -98,7 +105,7 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
           collection={otherRounds}
           defaultValue={defaultNextRoundField ? [defaultNextRoundField.id.toString()] : []}
           onValueChange={({ value }) => setFormNextRound(value)}
-          size="sm" 
+          size="sm"
         >
           <Select.HiddenSelect />
           <Select.Label>Next Round</Select.Label>
@@ -123,6 +130,51 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
           </Select.Positioner>
         </Select.Root>
       </Field.Root>
+
+      {(tourney?.type == "Waterfall (Redemption)" || round?.parent_round_id != null) && (
+        <>
+          <Checkbox.Root
+            checked={checked}
+            onCheckedChange={(e) => setChecked(!!e.checked)}
+          >
+            <Checkbox.HiddenInput />
+            <Checkbox.Control />
+            <Checkbox.Label>Is this a Redemption round?</Checkbox.Label>
+          </Checkbox.Root>
+          { checked &&  (
+            <Field.Root>
+              <Select.Root
+                collection={otherRounds}
+                defaultValue={defaultParentRoundField ? [defaultParentRoundField.id.toString()] : []}
+                onValueChange={({ value }) => setFormParentRound(value)}
+                size="sm"
+              >
+                <Select.HiddenSelect />
+                <Select.Label>Parent Round</Select.Label>
+                <Select.Control>
+                  <Select.Trigger>
+                    <Select.ValueText placeholder="Choose parent round name" />
+                  </Select.Trigger>
+                  <Select.IndicatorGroup>
+                    <Select.ClearTrigger />
+                    <Select.Indicator />
+                  </Select.IndicatorGroup>
+                </Select.Control>
+                <Select.Positioner>
+                  <Select.Content>
+                    {otherRounds.items.map((otherRound) => (
+                      <Select.Item item={otherRound} key={otherRound.value}>
+                        {otherRound.label}
+                        <Select.ItemIndicator />
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Positioner>
+              </Select.Root>
+            </Field.Root>
+          )}
+        </>
+      )}
     </VStack>
   );
 
@@ -136,6 +188,7 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
         setFormRoundName(roundName);
         setFormPlayersAdvancing(playersAdvancing.toString());
         setFormNextRound(round?.next_round_id ? [round.next_round_id.toString()] : []);
+        setFormParentRound(round?.parent_round_id ? [round.parent_round_id.toString()] : []);
         setOpen(false);
       }}
       formBody={formBody}

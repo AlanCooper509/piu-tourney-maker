@@ -1,12 +1,14 @@
 import { Box, Flex, Heading, Link, Stack, Text, useBreakpointValue } from "@chakra-ui/react";
 
+import { useCurrentTourney } from "../../context/CurrentTourneyContext";
+
 interface RoundHeaderTextProps {
-  tourneyName: string;
-  tourneyId: number;
   roundName: string;
 }
 
-export default function RoundHeaderText({ tourneyName, tourneyId, roundName }: RoundHeaderTextProps) {
+export default function RoundHeaderText({ roundName }: RoundHeaderTextProps) {
+  const { tourney } = useCurrentTourney();
+  if (!tourney) return null;
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   if (isMobile) {
@@ -19,13 +21,13 @@ export default function RoundHeaderText({ tourneyName, tourneyId, roundName }: R
       >
         <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]}>
           <Link
-            href={`/tourney/${tourneyId}`}
+            href={`/tourney/${tourney.id}`}
             color="cyan.solid"
             variant="underline"
             _hover={{ color: 'cyan.focusRing' }}
             _focus={{ color: 'cyan.solid', boxShadow: 'none' }}
           >
-            {tourneyName}
+            {tourney.name}
           </Link>
         </Heading>
         <Heading fontSize="2xl">
@@ -47,13 +49,13 @@ export default function RoundHeaderText({ tourneyName, tourneyId, roundName }: R
       <Flex flex="1" justify="flex-end" pr={3}>
         <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]} textAlign="right">
           <Link
-            href={`/tourney/${tourneyId}`}
+            href={`/tourney/${tourney.id}`}
             color="cyan.solid"
             variant="underline"
             _hover={{ color: 'cyan.focusRing' }}
             _focus={{ color: 'cyan.solid', boxShadow: 'none' }}
           >
-            {tourneyName}
+            {tourney.name}
           </Link>
         </Heading>
       </Flex>

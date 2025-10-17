@@ -10,22 +10,21 @@ import { toaster } from '../ui/toaster';
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import { useCurrentTourney } from '../../context/CurrentTourneyContext';
 
-import type { Tourney } from '../../types/Tourney';
 import type { Round } from '../../types/Round';
 import type { CarouselCard } from '../../types/CarouselCard';
 import { StatusElement } from '../StatusElement';
 import PlayersAdvancingElement from '../round/details/PlayersAdvancingElement';
 
 interface RoundListProps {
-  tourney: Tourney | null;
   rounds: Round[] | null;
   loading: boolean;
   error: Error | null;
 }
 
-export function RoundsList({ tourney, rounds, loading, error }: RoundListProps) {
-  const { tourneyId, setTourneyId: _setTourneyId } = useCurrentTourney();
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourneyId));
+export function RoundsList({ rounds, loading, error }: RoundListProps) {
+  const { tourney } = useCurrentTourney();
+  if (!tourney) return null;
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourney.id));
 
   const [updatingRoundId, setUpdatingRoundId] = useState<number | null>(null);
   const [roundsState, setRoundsState] = useState<Round[]>(rounds ?? []);

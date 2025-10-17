@@ -18,8 +18,8 @@ interface EditRoundDetailsButtonProps {
 }
 
 export default function EditRoundDetailsButton({ round, setRound, rounds, roundName, setRoundName, playersAdvancing, setPlayersAdvancing }: EditRoundDetailsButtonProps) {
-  async function onAdminClick(name: string, advancing: number, nextRoundId: number | undefined) {
-    const updatedRound = await handleUpdateRoundDetails(round.id, name, advancing, nextRoundId);
+  async function onAdminClick(name: string, advancing: number, nextRoundId: number | undefined, parentRoundId: number | undefined) {
+    const updatedRound = await handleUpdateRoundDetails(round.id, name, advancing, nextRoundId, parentRoundId);
     setRound(updatedRound);
 
     toaster.create({
