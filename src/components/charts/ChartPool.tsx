@@ -18,8 +18,8 @@ interface ChartPoolProps {
 
 export default function ChartPool({ stage, setStages, onChooseChart, toggleOpen }: ChartPoolProps) {
   const { tourney } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
   if (!tourney) return null;
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourney.id));
 
   async function onDeleteChartFromPool(stageId: number, chartId: number) {
     try {

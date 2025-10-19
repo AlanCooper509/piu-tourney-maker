@@ -74,6 +74,39 @@ export function TourneyDetails({ players, rounds, loading, error }: TourneyDetai
     }
   };
 
+  const handleSeedPlayers = async () => {
+    if (!tourney) return;
+    if (!players || players.length < 2) {
+      toaster.create({ title: 'Error', description: 'Need at least 2 players', type: 'error', closable: true });
+      return;
+    }
+
+    if (!rounds || rounds.length < 1) {
+      toaster.create({ title: 'Error', description: 'Need at least 1 round', type: 'error', closable: true });
+      return;
+    }
+    try {
+      setIsStarting(true);
+      const {updatedTourney} = await handleStartTourney(tourney.id);
+      setTourney(updatedTourney[0]);
+      toaster.create({
+        title: "Tournament Started",
+        description: `Tournament "${tourney.name}" is now in progress.`,
+        type: "success",
+        closable: true,
+      });
+    } catch (err: any) {
+      toaster.create({
+        title: "Failed to Start Tournament",
+        description: err.message || "Unknown error",
+        type: "error",
+        closable: true,
+      });
+    } finally {
+      setIsStarting(false);
+    }
+  };
+
   const tourneyNameText = (
     <>
       {!loadingTourneyAdminStatus && isTourneyAdmin ?
@@ -101,16 +134,16 @@ export function TourneyDetails({ players, rounds, loading, error }: TourneyDetai
             {!loadingTourneyAdminStatus && isTourneyAdmin && tourney?.status === "Not Started" && (
               <HStack>
                 <IconButton 
-                  colorPalette="green"
+                  colorPalette="blue"
                   variant="outline"
                   borderWidth={2}
                   size="sm"
-                  onClick={handleStartTourneyClick}
+                  onClick={handleSeedPlayers}
                   mt={2}
                   px={2}
                   loading={isStarting}
                 >
-                  Start Tourney
+                  Seed Players
                 </IconButton>
                 <IconButton 
                   colorPalette="green"

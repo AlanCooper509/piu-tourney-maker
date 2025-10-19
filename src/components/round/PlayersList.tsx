@@ -24,8 +24,8 @@ interface PlayersListProps {
 
 export function PlayersList({ round, players, setPlayers, stages, loading, error }: PlayersListProps) {
   const { tourney } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
   if (!tourney) return null;
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourney.id));
 
   const [addingPlayer, setAddingPlayer] = useState(false);
 
