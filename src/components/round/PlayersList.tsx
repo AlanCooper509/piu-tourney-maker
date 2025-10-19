@@ -25,7 +25,6 @@ interface PlayersListProps {
 export function PlayersList({ round, players, setPlayers, stages, loading, error }: PlayersListProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
-  if (!tourney) return null;
 
   const [addingPlayer, setAddingPlayer] = useState(false);
 
@@ -33,7 +32,7 @@ export function PlayersList({ round, players, setPlayers, stages, loading, error
     if (!round) return;
     try {
       setAddingPlayer(true);
-      const newPlayer = await handleAddPlayerToRound(name, round.id, Number(tourney.id));
+      const newPlayer = await handleAddPlayerToRound(name, round.id, Number(tourney?.id));
       setPlayers((prev: PlayerRound[]) => [...(prev ?? []), newPlayer]);
       toaster.create({
         title: "Player Added",

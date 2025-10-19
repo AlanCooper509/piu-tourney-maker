@@ -8,7 +8,6 @@ interface RoundHeaderTextProps {
 
 export default function RoundHeaderText({ roundName }: RoundHeaderTextProps) {
   const { tourney } = useCurrentTourney();
-  if (!tourney) return null;
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   if (isMobile) {
@@ -21,13 +20,13 @@ export default function RoundHeaderText({ roundName }: RoundHeaderTextProps) {
       >
         <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]}>
           <Link
-            href={`/tourney/${tourney.id}`}
+            href={`/tourney/${tourney?.id}`}
             color="cyan.solid"
             variant="underline"
             _hover={{ color: 'cyan.focusRing' }}
             _focus={{ color: 'cyan.solid', boxShadow: 'none' }}
           >
-            {tourney.name}
+            {tourney?.name}
           </Link>
         </Heading>
         <Heading fontSize="2xl">
@@ -49,13 +48,13 @@ export default function RoundHeaderText({ roundName }: RoundHeaderTextProps) {
       <Flex flex="1" justify="flex-end" pr={3}>
         <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]} textAlign="right">
           <Link
-            href={`/tourney/${tourney.id}`}
+            href={`/tourney/${tourney?.id}`}
             color="cyan.solid"
             variant="underline"
             _hover={{ color: 'cyan.focusRing' }}
             _focus={{ color: 'cyan.solid', boxShadow: 'none' }}
           >
-            {tourney.name}
+            {tourney?.name}
           </Link>
         </Heading>
       </Flex>

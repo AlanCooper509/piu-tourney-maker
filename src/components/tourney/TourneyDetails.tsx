@@ -23,7 +23,6 @@ interface TourneyDetailsProps {
 export function TourneyDetails({ players, rounds, loading, error }: TourneyDetailsProps) {
   const { tourney, setTourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
-  if (!tourney) return null;
 
   // Rename tourney logic
   const [updatingName, setUpdatingName] = useState(false);

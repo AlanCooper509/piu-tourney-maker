@@ -30,7 +30,6 @@ function alertText(playerName: string) {
 export default function EditablePlayerRow({ player, updatePlayer, removePlayer }: EditablePlayerRowProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
-  if (!tourney) return null;
 
   const [isEditing, setIsEditing] = useState(false);
   const [newSeed, setNewSeed] = useState(player.seed);
