@@ -28,8 +28,8 @@ interface StageRowProps {
 
 export default function StageRow({ stage, round, setStages, onChooseChart, onRollChart, onAddChartToPool }: StageRowProps) {
   const { tourney } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
   if (!tourney) return null;
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourney.id));
 
   const [isOpen, setIsOpen] = useState(!stage.charts);
   const toggleOpen = () => setIsOpen(prev => !prev);

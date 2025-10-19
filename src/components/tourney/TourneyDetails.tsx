@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Box, Heading, VStack, Text, IconButton } from '@chakra-ui/react'
+import { Box, Heading, VStack, Text, IconButton, HStack } from '@chakra-ui/react'
 
 
 import EditableTourneyName from './EditableTourneyName'
@@ -22,8 +22,8 @@ interface TourneyDetailsProps {
 
 export function TourneyDetails({ players, rounds, loading, error }: TourneyDetailsProps) {
   const { tourney, setTourney } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
   if (!tourney) return null;
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourney.id));
 
   // Rename tourney logic
   const [updatingName, setUpdatingName] = useState(false);
@@ -99,18 +99,32 @@ export function TourneyDetails({ players, rounds, loading, error }: TourneyDetai
             <Text>Type: {tourney.type}</Text>
             <StatusElement element={tourney} />
             {!loadingTourneyAdminStatus && isTourneyAdmin && tourney?.status === "Not Started" && (
-              <IconButton 
-                colorPalette="green"
-                variant="outline"
-                borderWidth={2}
-                size="sm"
-                onClick={handleStartTourneyClick}
-                mt={2}
-                px={2}
-                loading={isStarting}
-              >
-                Start Tourney
-              </IconButton>
+              <HStack>
+                <IconButton 
+                  colorPalette="green"
+                  variant="outline"
+                  borderWidth={2}
+                  size="sm"
+                  onClick={handleStartTourneyClick}
+                  mt={2}
+                  px={2}
+                  loading={isStarting}
+                >
+                  Start Tourney
+                </IconButton>
+                <IconButton 
+                  colorPalette="green"
+                  variant="outline"
+                  borderWidth={2}
+                  size="sm"
+                  onClick={handleStartTourneyClick}
+                  mt={2}
+                  px={2}
+                  loading={isStarting}
+                >
+                  Start Tourney
+                </IconButton>
+              </HStack>
             )}
           </>
         )}

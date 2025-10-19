@@ -31,14 +31,17 @@ export function AdminTourneyProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useIsAdminForTourney(tourneyId: number) {
+export function useIsAdminForTourney(tourneyId?: number) {
   const context = useContext(AdminTourneyContext);
   if (!context) throw new Error("useIsAdminForTourney must be used within AdminTourneyProvider");
 
   const { adminTourneyIds, loadingTourneyAdminStatus } = context;
-  const isTourneyAdmin = !loadingTourneyAdminStatus && adminTourneyIds.includes(tourneyId);
 
-  return { isTourneyAdmin, loadingTourneyAdminStatus, adminTourneyIds };
+  if (!tourneyId)
+    return { isTourneyAdmin: false, loadingTourneyAdminStatus };
+
+  const isTourneyAdmin = !loadingTourneyAdminStatus && adminTourneyIds.includes(tourneyId);
+  return { isTourneyAdmin, loadingTourneyAdminStatus };
 }
 
 export function useAdminTourneyContext() {

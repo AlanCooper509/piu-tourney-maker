@@ -23,8 +23,8 @@ interface RoundListProps {
 
 export function RoundsList({ rounds, loading, error }: RoundListProps) {
   const { tourney } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
   if (!tourney) return null;
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(Number(tourney.id));
 
   const [updatingRoundId, setUpdatingRoundId] = useState<number | null>(null);
   const [roundsState, setRoundsState] = useState<Round[]>(rounds ?? []);
