@@ -54,7 +54,10 @@ export function TourneyDetails({ players, rounds, loading, error }: TourneyDetai
     }
     try {
       setIsStarting(true);
-      const {updatedTourney} = await handleStartTourney(tourney.id);
+      const {updatedTourney} = await handleStartTourney({
+        tourneyId: tourney.id,
+        seedPlayersIntoEarliestRound: tourney.type === "Gauntlet",
+      });
       setTourney(updatedTourney[0]);
       toaster.create({
         title: "Tournament Started",
@@ -96,10 +99,8 @@ export function TourneyDetails({ players, rounds, loading, error }: TourneyDetai
           {error && <Text color="red">Error: {error.message}</Text>}
           {!loading && !error && tourney && (
           <>
-            <Text>Type: {tourney.type}</Text>
-            <StatusElement element={tourney} />
             {!loadingTourneyAdminStatus && isTourneyAdmin && tourney?.status === "Not Started" && (
-              <HStack>
+              <HStack mb={4}>
                 <SeedPlayersButton 
                   players={players}
                   rounds={rounds}
@@ -110,7 +111,6 @@ export function TourneyDetails({ players, rounds, loading, error }: TourneyDetai
                   borderWidth={2}
                   size="sm"
                   onClick={handleStartTourneyClick}
-                  mt={2}
                   px={2}
                   loading={isStarting}
                 >
@@ -118,6 +118,8 @@ export function TourneyDetails({ players, rounds, loading, error }: TourneyDetai
                 </IconButton>
               </HStack>
             )}
+            <Text>Type: {tourney.type}</Text>
+            <StatusElement element={tourney} />
           </>
         )}
         </VStack>

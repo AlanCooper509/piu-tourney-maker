@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { IconButton } from "@chakra-ui/react"
 
+import onSubmitHandler from "./onSubmitHandler";
 import DialogForm from "../../ui/DialogForm"
 import SeedPlayersFormBody from "./SeedPlayersFormBody";
+
 import type { PlayerTourney } from "../../../types/PlayerTourney";
 import type { Round } from "../../../types/Round";
 
@@ -12,6 +14,8 @@ interface SeedPlayersButtonProps {
 }
 export default function SeedPlayersButton({ players, rounds }: SeedPlayersButtonProps) {
   const [isSeeding, setIsSeeding] = useState(false);
+  // preview logic for generating 2D matrix of round --> seeded players mapping
+  const [previewSeeding, setPreviewSeeding] = useState<PlayerTourney[][]>([]);
   const filteredRounds = rounds?.filter(round => round.parent_round_id === null).sort((a, b) => (a.id! - b.id!)) ?? [];
 
   return (
@@ -23,18 +27,17 @@ export default function SeedPlayersButton({ players, rounds }: SeedPlayersButton
           variant="outline"
           borderWidth={2}
           size="sm"
-          mt={2}
           px={2}
           loading={isSeeding}
         >
           Seed Players
         </IconButton>
       }
-      formBody={<SeedPlayersFormBody players={players} rounds={filteredRounds} />}
+      formBody={<SeedPlayersFormBody players={players} rounds={filteredRounds} previewSeeding={previewSeeding} setPreviewSeeding={setPreviewSeeding} />}
       showSubmit={filteredRounds.length > 0}
       open={isSeeding}
       setOpen={setIsSeeding}
-      onSubmit={async () => { return true }}
+      onSubmit={async () => { return onSubmitHandler({ previewSeeding, filteredRounds }) }}
       onCancel={async () => { }}
     />
   )

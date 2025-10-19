@@ -3,14 +3,24 @@ import { updateSupabaseTable } from '../helpers/updateSupabaseTable';
 
 import type { Tourney, TourneyStatus } from '../types/Tourney';
 
-export async function handleStartTourney(tourneyId: number) {
+export interface StartTourneyOptions {
+  tourneyId: number;
+  seedPlayersIntoEarliestRound?: boolean; // optional, default to false
+}
+
+export async function handleStartTourney({
+  tourneyId,
+  seedPlayersIntoEarliestRound = false,
+}: StartTourneyOptions) {
   if (!tourneyId) throw new Error('Tourney ID is required');
 
   try {
     const updatedTourney = await handleUpdateTourneyStatus(tourneyId, 'In Progress');
-
-    // TODO: eventually, will want to also add support for multiple starting rounds or manual placements...
-    const insertedRows = await insertPlayersIntoEarliestRound(tourneyId);
+ 
+    let insertedRows = undefined;
+    if (seedPlayersIntoEarliestRound) {
+      insertedRows = await insertPlayersIntoEarliestRound(tourneyId);
+    }
 
     return { updatedTourney, insertedRows };
   } catch (error) {

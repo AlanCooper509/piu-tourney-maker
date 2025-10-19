@@ -1,7 +1,7 @@
 import handleCheckTourneyStatus from './handleCheckTourneyStatus';
 import handleUpdateRoundStatus from './handleUpdateRoundStatus';
 import calculatePlayerRankingsInRound from '../helpers/calculatePlayerRankingsInRound';
-import handleAddPlayersToRound from './handleAddPlayersToRound';
+import {handleAddPlayersToNextRound} from './handleAddPlayersToRound';
 import { handleUpdateTourneyStatus } from './handleUpdateTourneyStatus';
 import { getRoundsInTourney } from '../helpers/getRoundsInTourney';
 import getStagesInRound from '../helpers/getstagesInRound';
@@ -68,13 +68,13 @@ export default async function handleEndRound({ tourneyId, round }: handleStartRo
     const nextRoundId = round.next_round_id ? round.next_round_id : await determineNextRoundId(tourneyId, round.id);
     if (nextRoundId) {
       const advancingPlayersTourneyIds = getAdvancingPlayersTourneyIds(round, players, stages);
-      handleAddPlayersToRound(nextRoundId, advancingPlayersTourneyIds);
+      await handleAddPlayersToNextRound(nextRoundId, advancingPlayersTourneyIds);
     }
 
     const updatedRound = await handleUpdateRoundStatus(round.id, 'Complete');
 
-    // all rounds are now complete!
     if (!nextRoundId) {
+      // all rounds are now complete!
       handleUpdateTourneyStatus(tourneyId, 'Complete');
     }
     return { updatedRound };

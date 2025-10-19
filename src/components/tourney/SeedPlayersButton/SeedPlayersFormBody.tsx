@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Box, Field, Heading, NumberInput, Text, VStack } from "@chakra-ui/react"
+import { useEffect, useState } from "react";
+import { Box, Field, Heading, NumberInput, Separator, Text, VStack } from "@chakra-ui/react"
 
 import type { PlayerTourney } from "../../../types/PlayerTourney"
 import type { Round } from "../../../types/Round"
@@ -7,8 +7,10 @@ import type { Round } from "../../../types/Round"
 interface SeedPlayersFormBody {
   players: PlayerTourney[] | null
   rounds: Round[]
+  previewSeeding: PlayerTourney[][]
+  setPreviewSeeding: React.Dispatch<React.SetStateAction<PlayerTourney[][]>>
 }
-export default function SeedPlayersFormBody({players, rounds}: SeedPlayersFormBody) {
+export default function SeedPlayersFormBody({players, rounds, previewSeeding, setPreviewSeeding}: SeedPlayersFormBody) {
   let seededPlayers: PlayerTourney[] = [];
   let unseededPlayers: PlayerTourney[] = [];
   if (players) {
@@ -22,18 +24,36 @@ export default function SeedPlayersFormBody({players, rounds}: SeedPlayersFormBo
   const [topPlayersToSeed, setTopPlayersToSeed] = useState(seededPlayers.length);
   const [roundsToSeed, setRoundsToSeed] = useState(rounds.length);
 
-  // preview logic for generating 2D matrix of round --> seeded players mapping
-  const previewSeeding = [];
-  const filteredPlayers = seededPlayers.slice(0, topPlayersToSeed).sort((a, b) => (b.seed! - a.seed!));
-  for (let r = 0; r < roundsToSeed; r++) {
-    const roundPlayers: PlayerTourney[] = [];
-    for (let i = 0; i < playersSeededPerRound; i++) {
-      const playerIndex = r * playersSeededPerRound + i;
-      if (playerIndex >= topPlayersToSeed || playerIndex >= filteredPlayers.length) break;
-      roundPlayers.push(filteredPlayers[playerIndex]);
+
+  useEffect(() => {
+    if (!players || !rounds) return;
+
+    const seededPlayers = players
+      .filter(p => p.seed != null)
+      .sort((a, b) => a.seed! - b.seed!);
+
+    const filteredPlayers = seededPlayers
+      .slice(0, topPlayersToSeed)
+      .sort((a, b) => b.seed! - a.seed!);
+
+    const newPreviewSeeding: PlayerTourney[][] = [];
+
+    for (let r = 0; r < roundsToSeed; r++) {
+      const roundPlayers: PlayerTourney[] = [];
+      for (let i = 0; i < playersSeededPerRound; i++) {
+        const playerIndex = r * playersSeededPerRound + i;
+        if (playerIndex >= topPlayersToSeed || playerIndex >= filteredPlayers.length) break;
+        roundPlayers.push(filteredPlayers[playerIndex]);
+      }
+      newPreviewSeeding.push(roundPlayers);
     }
-    previewSeeding.push(roundPlayers);
-  }
+
+  setPreviewSeeding(prev =>
+    JSON.stringify(prev) !== JSON.stringify(newPreviewSeeding)
+      ? newPreviewSeeding
+      : prev
+  );
+  }, [topPlayersToSeed, roundsToSeed, playersSeededPerRound]);
 
   if (rounds.length === 0) {
     return (
@@ -90,6 +110,7 @@ export default function SeedPlayersFormBody({players, rounds}: SeedPlayersFormBo
         </NumberInput.Root>
         rounds?
       </Box>
+      <Separator my={4}></Separator>
       <Field.Root>
         <Field.Label fontSize="sm">
           Seeded Players Per Round
@@ -118,6 +139,9 @@ export default function SeedPlayersFormBody({players, rounds}: SeedPlayersFormBo
             </VStack>
           </Box>
         ))}
+      </Box>
+      <Box mt={2} fontStyle={"italic"} color="fg.muted">
+        (Note: submitting this will completely override any previous seeding of players into rounds)
       </Box>
     </>
   )
