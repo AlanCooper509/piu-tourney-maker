@@ -11,13 +11,14 @@ interface DialogFormProps {
   title: string;
   trigger: ReactNode; // element that opens the dialog
   formBody: ReactNode;  // form fields
+  showSubmit?: boolean;
   open: boolean;       // control dialog open state
   setOpen: (open: boolean) => void; // function to set open state
   onSubmit: () => Promise<boolean>;  // Return true to close, false to keep open
   onCancel: () => void;  // function to call on cancel
 }
 
-export default function DialogForm({ title, trigger, formBody, open, setOpen, onSubmit, onCancel }: DialogFormProps) {
+export default function DialogForm({ title, trigger, formBody, showSubmit = true, open, setOpen, onSubmit, onCancel }: DialogFormProps) {
   return (
     <Dialog.Root open={open} onOpenChange={(details) => setOpen(details.open)} closeOnInteractOutside={false} modal={false}>
       <Dialog.Trigger asChild>
@@ -43,6 +44,7 @@ export default function DialogForm({ title, trigger, formBody, open, setOpen, on
               <Button
                 variant="outline"
                 borderWidth="2px"
+                display={showSubmit ? 'inline-flex' : 'none'}
                 colorPalette={"green"} 
                 onClick={async () => {
                   const shouldClose = await onSubmit();

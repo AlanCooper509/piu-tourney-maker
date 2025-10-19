@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { Box, Heading, VStack, Text, IconButton, HStack } from '@chakra-ui/react'
 
 
-import EditableTourneyName from './EditableTourneyName'
-import { handleUpdateTourneyName } from '../../handlers/handleUpdateTourneyName'
-import { handleStartTourney } from '../../handlers/handleStartTourney'
-import { toaster } from '../ui/toaster'
-import { StatusElement } from '../StatusElement'
 import { useCurrentTourney } from '../../context/CurrentTourneyContext'
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
+import EditableTourneyName from './EditableTourneyName'
+import SeedPlayersButton from './SeedPlayersButton/SeedPlayersButton'
+import { handleUpdateTourneyName } from '../../handlers/handleUpdateTourneyName'
+import { StatusElement } from '../StatusElement'
+import { toaster } from '../ui/toaster'
+import { handleStartTourney } from '../../handlers/handleStartTourney'
 
 import type { Round } from '../../types/Round'
 import type { PlayerTourney } from '../../types/PlayerTourney'
@@ -23,9 +24,10 @@ interface TourneyDetailsProps {
 export function TourneyDetails({ players, rounds, loading, error }: TourneyDetailsProps) {
   const { tourney, setTourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
+  const [updatingName, setUpdatingName] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
 
   // Rename tourney logic
-  const [updatingName, setUpdatingName] = useState(false);
   const onRenameTourney = async (newName: string) => {
     if (!tourney) return;
     try {
@@ -39,41 +41,7 @@ export function TourneyDetails({ players, rounds, loading, error }: TourneyDetai
     }
   };
 
-  const [isStarting, setIsStarting] = useState(false);
   const handleStartTourneyClick = async () => {
-    if (!tourney) return;
-    if (!players || players.length < 2) {
-      toaster.create({ title: 'Error', description: 'Need at least 2 players', type: 'error', closable: true });
-      return;
-    }
-
-    if (!rounds || rounds.length < 1) {
-      toaster.create({ title: 'Error', description: 'Need at least 1 round', type: 'error', closable: true });
-      return;
-    }
-    try {
-      setIsStarting(true);
-      const {updatedTourney} = await handleStartTourney(tourney.id);
-      setTourney(updatedTourney[0]);
-      toaster.create({
-        title: "Tournament Started",
-        description: `Tournament "${tourney.name}" is now in progress.`,
-        type: "success",
-        closable: true,
-      });
-    } catch (err: any) {
-      toaster.create({
-        title: "Failed to Start Tournament",
-        description: err.message || "Unknown error",
-        type: "error",
-        closable: true,
-      });
-    } finally {
-      setIsStarting(false);
-    }
-  };
-
-  const handleSeedPlayers = async () => {
     if (!tourney) return;
     if (!players || players.length < 2) {
       toaster.create({ title: 'Error', description: 'Need at least 2 players', type: 'error', closable: true });
@@ -132,18 +100,10 @@ export function TourneyDetails({ players, rounds, loading, error }: TourneyDetai
             <StatusElement element={tourney} />
             {!loadingTourneyAdminStatus && isTourneyAdmin && tourney?.status === "Not Started" && (
               <HStack>
-                <IconButton 
-                  colorPalette="blue"
-                  variant="outline"
-                  borderWidth={2}
-                  size="sm"
-                  onClick={handleSeedPlayers}
-                  mt={2}
-                  px={2}
-                  loading={isStarting}
-                >
-                  Seed Players
-                </IconButton>
+                <SeedPlayersButton 
+                  players={players}
+                  rounds={rounds}
+                />
                 <IconButton 
                   colorPalette="green"
                   variant="outline"
