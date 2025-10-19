@@ -21,7 +21,6 @@ interface PlayerRoundStatsProps {
 export default function PlayerRoundStats({ player, stages, handleDeletePlayer }: PlayerRoundStatsProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
-  if (!tourney) return null;
 
   const [isOpen, setIsOpen] = useState(false);
   const toggleOpen = () => setIsOpen(prev => !prev);
