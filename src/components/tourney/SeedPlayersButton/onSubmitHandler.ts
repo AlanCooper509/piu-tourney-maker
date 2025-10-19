@@ -22,7 +22,7 @@ export default async function onSubmitHandler({ previewSeeding, filteredRounds }
   }
 
   try {
-    const { data, error } = await handleAddPlayersMapToRounds(mapping);
+    const { error } = await handleAddPlayersMapToRounds(mapping);
 
     if (error) {
       toaster.create({
