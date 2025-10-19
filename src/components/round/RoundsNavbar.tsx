@@ -7,9 +7,17 @@ type RoundsNavbarProps = {
 };
 
 export default function RoundsNavbar({ tourneyId, rounds }: RoundsNavbarProps) {
+  let filteredRounds = [];
+  if (rounds) {
+    for (const round of rounds) {
+      if (round.parent_round_id === null) {
+        filteredRounds.push(round);
+      }
+    }
+  }
   return (
     <nav style={{ padding: "1rem" }}>
-      {rounds.map((round, index) => (
+      {filteredRounds.map((round, index) => (
         <span key={round.id}>
           <Link
             fontSize={["md", "md", "lg", "xl"]}
