@@ -1,7 +1,7 @@
 import { IconButton } from "@chakra-ui/react";
 import { IoAddCircleSharp } from "react-icons/io5";
 
-import { handleAddStageToRound } from "../../handlers/handleAddStageToRound";
+import { handleAddStageToRound } from "../../handlers/round/handleAddStageToRound";
 
 import type { Round } from "../../types/Round";
 import type { Stage } from "../../types/Stage";

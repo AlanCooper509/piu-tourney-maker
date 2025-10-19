@@ -2,7 +2,7 @@ import { Box, Heading, Text, VStack } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 
 import CustomCarousel from '../carousel/CustomCarousel';
-import { handleUpdateRoundName } from '../../handlers/handleUpdateRoundName'
+import { handleUpdateRoundName } from '../../handlers/round/handleUpdateRoundName'
 import { handleAddRoundToTourney } from '../../handlers/handleAddRoundToTourney';
 import EditableRoundName from './EditableRoundName';
 import RoundLink from './RoundLink';

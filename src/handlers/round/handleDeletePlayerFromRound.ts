@@ -1,4 +1,4 @@
-import { supabaseClient } from "../lib/supabaseClient";
+import { supabaseClient } from "../../lib/supabaseClient";
 
 export async function handleDeletePlayerFromRound(playerRoundId: number): Promise<void> {
   const { error } = await supabaseClient

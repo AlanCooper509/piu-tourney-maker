@@ -1,7 +1,7 @@
 import { HStack } from '@chakra-ui/react';
 
 import PlayerRoundStats from './PlayerRoundStats';
-import { handleDeletePlayerFromRound } from '../../handlers/handleDeletePlayerFromRound';
+import { handleDeletePlayerFromRound } from '../../handlers/round/handleDeletePlayerFromRound';
 import { toaster } from '../ui/toaster';
 
 import type { PlayerRound } from '../../types/PlayerRound';

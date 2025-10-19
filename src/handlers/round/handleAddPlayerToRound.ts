@@ -1,4 +1,4 @@
-import { supabaseClient } from "../lib/supabaseClient";
+import { supabaseClient } from "../../lib/supabaseClient";
 
 export async function handleAddPlayerToRound(
   playerName: string,

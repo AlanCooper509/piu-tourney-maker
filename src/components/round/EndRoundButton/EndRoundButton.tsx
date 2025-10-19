@@ -2,10 +2,10 @@ import { IconButton } from "@chakra-ui/react";
 import { useState } from "react";
 import { GrChapterNext } from "react-icons/gr";
 
-import { toaster } from "../ui/toaster";
+import { toaster } from "../../ui/toaster";
 
-import type { Round } from "../../types/Round";
-import handleEndRound from "../../handlers/handleEndRound";
+import type { Round } from "../../../types/Round";
+import handleEndRound from "../../../handlers/round/handleEndRound";
 
 const toasterErrorTitleText = 'Failed to End Round';
 
@@ -45,7 +45,6 @@ export default function EndRoundButton({ tourneyId, round, setRound }: StartRoun
       setIsEnding(false);
     }
   };
-
 
   return (
     <IconButton

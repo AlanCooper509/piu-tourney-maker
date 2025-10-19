@@ -1,4 +1,4 @@
-import { handleAddPlayersMapToRounds } from "../../../handlers/handleAddPlayersToRound";
+import { handleAddPlayersMapToRounds } from "../../../handlers/round/handleAddPlayersToRound";
 import { toaster } from "../../ui/toaster";
 
 import type { PlayerTourney } from "../../../types/PlayerTourney"

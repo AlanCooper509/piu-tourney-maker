@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Box, HStack, Link, Text, VStack } from '@chakra-ui/react'
 
 import StartRoundButton from '../StartRoundButton'
-import EndRoundButton from '../EndRoundButton'
+import EndRoundButton from '../EndRoundButton/EndRoundButton'
 import EditRoundDetailsButton from './EditRoundDetailsButton'
 import { StatusElement } from '../../StatusElement'
 import LeaderboardLinkButton from '../LeaderboardLinkButton'
