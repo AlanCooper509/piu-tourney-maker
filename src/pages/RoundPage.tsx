@@ -1,13 +1,13 @@
-import { Flex, Box, Container, Separator } from "@chakra-ui/react"
+import { Flex, Box, Container, Separator, Heading } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-import getSupabaseTable from '../hooks/getSupabaseTable';
+import getSupabaseTable from "../hooks/getSupabaseTable";
 import { RoundDetails } from "../components/round/details/RoundDetails";
 import { PlayersList } from "../components/round/PlayersList";
 import { StagesList } from "../components/round/StagesList";
 import RoundHeaderText from "../components/round/RoundHeaderText";
-import RoundsNavbar from "../components/round/RoundsNavbar";
+import RoundsSidebar from "../components/round/RoundsSidebar";
 import { Toaster } from "../components/ui/toaster";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
 
@@ -17,7 +17,10 @@ import type { Stage } from "../types/Stage";
 import type { PlayerRound } from "../types/PlayerRound";
 
 function RoundPage() {
-  const { tourneyId, roundId } = useParams<{ tourneyId: string; roundId: string }>();
+  const { tourneyId, roundId } = useParams<{
+    tourneyId: string;
+    roundId: string;
+  }>();
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
   if (!roundId) return <div>Invalid Round ID</div>;
 
@@ -27,29 +30,37 @@ function RoundPage() {
   const [players, setPlayers] = useState<PlayerRound[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
 
-  const { data: tourneys } = getSupabaseTable<Tourney>(
-    'tourneys',
-    { column: 'id', value: tourneyId }
+  const { data: tourneys } = getSupabaseTable<Tourney>("tourneys", {
+    column: "id",
+    value: tourneyId,
+  });
+  const {
+    data: rounds,
+    loading: loadingRound,
+    error: errorRound,
+  } = getSupabaseTable<Round>("rounds", { column: "id", value: roundId });
+  const {
+    data: playersData,
+    loading: loadingPlayers,
+    error: errorPlayers,
+  } = getSupabaseTable<PlayerRound>(
+    "player_rounds",
+    { column: "round_id", value: roundId },
+    "*, player_tourneys(player_name)"
   );
-  const { data: rounds, loading: loadingRound, error: errorRound } = getSupabaseTable<Round>(
-    'rounds',
-    { column: 'id', value: roundId }
+  const {
+    data: stagesData,
+    loading: loadingStages,
+    error: errorStages,
+  } = getSupabaseTable<Stage>(
+    "stages",
+    { column: "round_id", value: roundId },
+    "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)"
   );
-  const { data: playersData, loading: loadingPlayers, error: errorPlayers } = getSupabaseTable<PlayerRound>(
-    'player_rounds',
-    { column: 'round_id', value: roundId },
-    '*, player_tourneys(player_name)'
-  );
-  const { data: stagesData, loading: loadingStages, error: errorStages } =
-    getSupabaseTable<Stage>(
-      'stages',
-      { column: 'round_id', value: roundId },
-      '*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)'
-    );
-  const { data: allRoundsInTourney } = getSupabaseTable<Round>(
-    'rounds',
-    { column: 'tourney_id', value: tourneyId }
-  );
+  const { data: allRoundsInTourney } = getSupabaseTable<Round>("rounds", {
+    column: "tourney_id",
+    value: tourneyId,
+  });
 
   // Stores tourney table details
   useEffect(() => {
@@ -69,7 +80,8 @@ function RoundPage() {
   useEffect(() => {
     if (playersData) {
       const sortedPlayers = [...playersData].sort(
-        (b, a) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        (b, a) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
       setPlayers(sortedPlayers);
     }
@@ -90,24 +102,73 @@ function RoundPage() {
     <>
       <Toaster />
       <RoundHeaderText roundName={rounds[0]?.name}></RoundHeaderText>
-      {sortedRounds.length > 1 &&
-        <RoundsNavbar tourneyId={Number(tourneyId)} rounds={sortedRounds}></RoundsNavbar>
-      }
+      {/* jaekim: deleted rounds nav bar for rounds sidebar */}
+
       <Separator mt={2} mb={4} />
-      <RoundDetails round={round} setRound={setRound} rounds={sortedRounds} players={players} stages={stages} loading={loadingRound} error={errorRound} tourneyId={Number(tourneyId)} />
-      <Separator mt={4} />
+      <RoundDetails
+        round={round}
+        setRound={setRound}
+        rounds={sortedRounds}
+        players={players}
+        stages={stages}
+        loading={loadingRound}
+        error={errorRound}
+        tourneyId={Number(tourneyId)}
+      />
+      <Separator mt={"24px"} mb={"24px"} />
       <Container maxW="4xl" py={6}>
-        <Flex direction={['column', 'column', 'column', 'row']} gap={4}>
-          <Box flex="1" width={['100%', '100%', '100%', '50%']} display="flex" justifyContent="center">
-            <PlayersList round={round} players={players} setPlayers={setPlayers} stages={stages} loading={loadingPlayers} error={errorPlayers} />
+        <Flex direction={["column", "column", "column", "row"]} gap={4}>
+          {/* Rounds List Code */}
+          <Box
+            flex="1"
+            width={["100%", "100%", "100%", "50%"]}
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+          >
+            <Heading mb={2}>Rounds</Heading>
+            <RoundsSidebar
+              rounds={sortedRounds}
+              tourneyId={Number(tourneyId)}
+              currRound={roundId}
+            />
           </Box>
-          <Box flex="1" width={['100%', '100%', '100%', '50%']} display="flex" justifyContent="center">
-            <StagesList round={round} stages={stages} setStages={setStages} loading={loadingStages} error={errorStages} />
+          {/* Players List Code */}
+          <Box
+            flex="1"
+            width={["100%", "100%", "100%", "50%"]}
+            display="flex"
+            justifyContent="center"
+          >
+            <PlayersList
+              round={round}
+              players={players}
+              setPlayers={setPlayers}
+              stages={stages}
+              loading={loadingPlayers}
+              error={errorPlayers}
+            />
+          </Box>
+
+          {/* Stages List Code */}
+          <Box
+            flex="1"
+            width={["100%", "100%", "100%", "50%"]}
+            display="flex"
+            justifyContent="center"
+          >
+            <StagesList
+              round={round}
+              stages={stages}
+              setStages={setStages}
+              loading={loadingStages}
+              error={errorStages}
+            />
           </Box>
         </Flex>
       </Container>
     </>
   );
-};
+}
 
 export default RoundPage;
