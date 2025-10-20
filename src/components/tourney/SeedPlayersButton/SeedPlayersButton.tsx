@@ -33,7 +33,7 @@ export default function SeedPlayersButton({ players, rounds }: SeedPlayersButton
           Seed Players
         </IconButton>
       }
-      formBody={<SeedPlayersFormBody players={players} rounds={filteredRounds} previewSeeding={previewSeeding} setPreviewSeeding={setPreviewSeeding} />}
+      formBody={<SeedPlayersFormBody players={players ?? []} rounds={filteredRounds} previewSeeding={previewSeeding} setPreviewSeeding={setPreviewSeeding} />}
       showSubmit={filteredRounds.length > 0}
       open={isSeeding}
       setOpen={setIsSeeding}

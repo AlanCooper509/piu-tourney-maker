@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { Box, Field, Heading, NumberInput, Separator, Text, VStack } from "@chakra-ui/react"
+import { Box, Field, Heading, HStack, NumberInput, Separator, Text, VStack } from "@chakra-ui/react"
+import { FaSeedling } from "react-icons/fa";
+import { TbUserQuestion } from "react-icons/tb";
 
 import type { PlayerTourney } from "../../../types/PlayerTourney"
 import type { Round } from "../../../types/Round"
@@ -20,7 +22,8 @@ export default function SeedPlayersFormBody({players, rounds, previewSeeding, se
     unseededPlayers = players.filter(p => p.seed === null || p.seed === undefined);
   }
 
-  const [playersSeededPerRound, setPlayersSeededPerRound] = useState(seededPlayers.length);
+  const [playersSeededPerRound, setPlayersSeededPerRound] = useState(0);
+  const [playersPerRound, setPlayersPerRound] = useState(seededPlayers.length);
   const [topPlayersToSeed, setTopPlayersToSeed] = useState(seededPlayers.length);
   const [roundsToSeed, setRoundsToSeed] = useState(rounds.length);
 
@@ -38,22 +41,29 @@ export default function SeedPlayersFormBody({players, rounds, previewSeeding, se
 
     const newPreviewSeeding: PlayerTourney[][] = [];
 
+    let playerIndex = 0;
     for (let r = 0; r < roundsToSeed; r++) {
       const roundPlayers: PlayerTourney[] = [];
-      for (let i = 0; i < playersSeededPerRound; i++) {
-        const playerIndex = r * playersSeededPerRound + i;
+
+      // use playersPerRound for first round, else playersSeededPerRound
+      const playersThisRound = r === 0 ? playersPerRound : playersSeededPerRound;
+
+      for (let i = 0; i < playersThisRound; i++) {
         if (playerIndex >= topPlayersToSeed || playerIndex >= filteredPlayers.length) break;
         roundPlayers.push(filteredPlayers[playerIndex]);
+        playerIndex++; // advance global index across all rounds
       }
+
       newPreviewSeeding.push(roundPlayers);
     }
 
-  setPreviewSeeding(prev =>
-    JSON.stringify(prev) !== JSON.stringify(newPreviewSeeding)
-      ? newPreviewSeeding
-      : prev
-  );
-  }, [topPlayersToSeed, roundsToSeed, playersSeededPerRound]);
+    // only update state if changed (avoids infinite re-render)
+    setPreviewSeeding(prev =>
+      JSON.stringify(prev) !== JSON.stringify(newPreviewSeeding)
+        ? newPreviewSeeding
+        : prev
+    );
+  }, [topPlayersToSeed, roundsToSeed, playersSeededPerRound, playersPerRound]);
 
   if (rounds.length === 0) {
     return (
@@ -85,7 +95,7 @@ export default function SeedPlayersFormBody({players, rounds, previewSeeding, se
           display="inline-flex"
           size="xs"
           min={0}
-          max={Math.min(seededPlayers.length, playersSeededPerRound*roundsToSeed)}
+          max={Math.min(seededPlayers.length, playersSeededPerRound*(roundsToSeed - 1) + playersPerRound)}
           value={String(topPlayersToSeed)}
           onValueChange={(e) => setTopPlayersToSeed(Number(e.value))}
           width="50px"
@@ -111,34 +121,74 @@ export default function SeedPlayersFormBody({players, rounds, previewSeeding, se
         rounds?
       </Box>
       <Separator my={4}></Separator>
-      <Field.Root>
-        <Field.Label fontSize="sm">
-          Seeded Players Per Round
-        </Field.Label>
-        <NumberInput.Root
-          size="xs"
-          min={0}
-          max={seededPlayers.length}
-          value={String(playersSeededPerRound)}
-          onValueChange={(e) => setPlayersSeededPerRound(Number(e.value))}
-          width="200px"
-        >
-          <NumberInput.Control />
-          <NumberInput.Input />
-        </NumberInput.Root>
-      </Field.Root>
+      <HStack>
+        <Field.Root>
+          <Field.Label fontSize="sm">
+            Total Players Per Round
+          </Field.Label>
+          <NumberInput.Root
+            size="xs"
+            min={playersSeededPerRound}
+            max={seededPlayers.length}
+            value={String(playersPerRound)}
+            onValueChange={(e) => setPlayersPerRound(Number(e.value))}
+            width="200px"
+          >
+            <NumberInput.Control />
+            <NumberInput.Input />
+          </NumberInput.Root>
+        </Field.Root>
+        <Field.Root>
+          <Field.Label fontSize="sm">
+            Seeded Players Per Round
+          </Field.Label>
+          <NumberInput.Root
+            size="xs"
+            min={0}
+            max={playersPerRound}
+            value={String(playersSeededPerRound)}
+            onValueChange={(e) => setPlayersSeededPerRound(Number(e.value))}
+            width="200px"
+          >
+            <NumberInput.Control />
+            <NumberInput.Input />
+          </NumberInput.Root>
+        </Field.Root>
+      </HStack>
       <Box mt={4} p={3} borderWidth={1} borderRadius="md" borderColor="gray.300">
         <Heading size="md" mb={2}>Seeding Preview</Heading>
-        {previewSeeding.map((roundPlayers, idx) => (
-          <Box key={idx} mb={2}>
-            <Text fontWeight="bold">Round {rounds[idx].name}</Text>
-            <VStack align="start" gap={0.5} pl={4}>
-              {roundPlayers.map(player => (
-                <Text key={player.id}>• {player.player_name} (Seed: {player.seed ?? "—"})</Text>
-              ))}
-            </VStack>
-          </Box>
-        ))}
+        {previewSeeding.map((roundPlayers, idx) => {
+          const round = rounds[idx];
+          const playersThisRound = idx === 0 ? playersPerRound : playersSeededPerRound;
+          const emptySlots = Math.max(playersPerRound - playersThisRound, 0);
+
+          return (
+            <Box key={idx} mb={2}>
+              <Text fontWeight="bold">
+                {round.name}
+              </Text>
+              <VStack align="start" gap={0.5} pl={4}>
+                {/* Render seeded players */}
+                {roundPlayers.map(player => (
+                  <HStack key={player.id} gap={2} align="center">
+                    <FaSeedling />
+                    <Text key={player.id}> {player.player_name} (Seed: {player.seed ?? "—"})</Text>
+                  </HStack>
+                ))}
+
+                {/* Render empty slots */}
+                {Array.from({ length: emptySlots }).map((_, i) => (
+                  <HStack key={`empty-${idx}-${i}`} gap={2} align="center">
+                    <TbUserQuestion />
+                    <Text color="gray.400">
+                      _____________
+                    </Text>
+                  </HStack>
+                ))}
+              </VStack>
+            </Box>
+          );
+        })}
       </Box>
       <Box mt={2} fontStyle={"italic"} color="fg.muted">
         (Note: submitting this will completely override any previous seeding of players into rounds)
