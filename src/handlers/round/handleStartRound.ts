@@ -1,5 +1,6 @@
-import handleUpdateRoundStatus from './handleUpdateRoundStatus'
-import handleCheckTourneyStatus from './handleCheckTourneyStatus'
+
+import handleUpdateRoundStatus from './handleUpdateRoundStatus';
+import handleCheckTourneyStatus from '../handleCheckTourneyStatus'
 
 export async function handleStartRound(roundId: number) {
   if (!roundId) throw new Error('Round ID is required');

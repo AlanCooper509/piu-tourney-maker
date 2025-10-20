@@ -1,4 +1,4 @@
-import { supabaseClient } from "../lib/supabaseClient";
+import { supabaseClient } from "../../lib/supabaseClient";
 
 export async function handleAddStageToRound(roundId: number) {
   const { data, error } = await supabaseClient

@@ -2,7 +2,7 @@ import { IconButton } from "@chakra-ui/react";
 import { CiEdit } from "react-icons/ci";
 
 import RoundModal from "./RoundModal";
-import { handleUpdateRoundDetails } from "../../../handlers/handleUpdateRoundDetails";
+import { handleUpdateRoundDetails } from "../../../handlers/round/handleUpdateRoundDetails";
 import { toaster } from "../../ui/toaster";
 
 import type { Round } from "../../../types/Round";

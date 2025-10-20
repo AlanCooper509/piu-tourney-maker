@@ -2,7 +2,7 @@ import { IconButton } from "@chakra-ui/react";
 import { useState } from "react";
 import { MdOutlinePlayArrow } from "react-icons/md";
 
-import { handleStartRound } from "../../handlers/handleStartRound";
+import { handleStartRound } from "../../handlers/round/handleStartRound";
 import { toaster } from "../ui/toaster";
 
 import type { Stage } from "../../types/Stage";

@@ -1,5 +1,5 @@
-import { updateSupabaseTable } from '../helpers/updateSupabaseTable';
-import type { Round, RoundStatus } from '../types/Round';
+import { updateSupabaseTable } from '../../helpers/updateSupabaseTable';
+import type { Round, RoundStatus } from '../../types/Round';
 
 export default async function handleUpdateRoundStatus(roundId: number, status: RoundStatus) {
   if (!roundId) throw new Error("Round ID is required");

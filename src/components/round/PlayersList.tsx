@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Box, Heading, HStack, Text, VStack } from '@chakra-ui/react'
 
-import { handleAddPlayerToRound } from '../../handlers/handleAddPlayerToRound'
+import { handleAddPlayerToRound } from '../../handlers/round/handleAddPlayerToRound'
 import DeletablePlayerRow from './DeletablePlayerRow'
 import AddPlayer from '../players/AddPlayer'
 import { toaster } from '../ui/toaster'

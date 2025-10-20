@@ -1,9 +1,12 @@
-import { supabaseClient } from '../lib/supabaseClient';
-import type { Round } from '../types/Round';
+import { supabaseClient } from '../../lib/supabaseClient';
+import type { Round } from '../../types/Round';
 
-export async function handleUpdateRoundName(
+export async function handleUpdateRoundDetails(
   roundId: number,
-  newName: string
+  newName: string,
+  playersAdvancing: number,
+  nextRoundId: number | undefined,
+  parentRoundId: number | undefined
 ): Promise<Round> {
   if (!roundId) {
     throw new Error('Round ID is required');
@@ -14,7 +17,7 @@ export async function handleUpdateRoundName(
 
   const { data, error } = await supabaseClient
     .from('rounds')
-    .update({ name: newName.trim() })
+    .update({ name: newName.trim(), players_advancing: playersAdvancing, next_round_id: nextRoundId, parent_round_id: parentRoundId })
     .eq('id', roundId)
     .select()
     .single();
