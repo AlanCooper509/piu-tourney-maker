@@ -26,7 +26,7 @@ export default function RoundsNavbar({ tourneyId, rounds }: RoundsNavbarProps) {
           >
             {round.name}
           </Link>
-          {index < rounds.length - 1 && <span style={{ marginRight: "0.5rem" }}>|</span>}
+          {index < filteredRounds.length - 1 && <span style={{ marginRight: "0.5rem" }}>|</span>}
         </span>
       ))}
     </nav>
