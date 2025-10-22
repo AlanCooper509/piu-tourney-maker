@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { VStack, StackSeparator, Heading, Link, Separator } from "@chakra-ui/react"
+import { VStack, StackSeparator, Heading, Link, Separator, Box } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
@@ -56,7 +56,7 @@ function TourneyPage() {
   const sortedRounds = rounds?.slice().sort((a, b) => a.id - b.id);
 
   return (
-    <>
+    <Box mt={8}>
       <Toaster />
       <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]}>
         <Link
@@ -90,7 +90,7 @@ function TourneyPage() {
           error={errorRounds}
         />
       </VStack>
-    </>
+    </Box>
   );
 }
 

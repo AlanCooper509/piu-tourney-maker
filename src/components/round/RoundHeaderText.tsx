@@ -1,4 +1,11 @@
-import { Box, Flex, Heading, Link, Stack, Text, useBreakpointValue } from "@chakra-ui/react";
+import {
+  Flex,
+  Heading,
+  Link,
+  Stack,
+  Text,
+  useBreakpointValue,
+} from "@chakra-ui/react";
 
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 
@@ -12,19 +19,14 @@ export default function RoundHeaderText({ roundName }: RoundHeaderTextProps) {
 
   if (isMobile) {
     return (
-      <Stack
-        align="center"
-        justify="center"
-        direction="column"
-        gap={2}
-      >
+      <Stack align="center" justify="center" direction="column" gap={2}>
         <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]}>
           <Link
             href={`/tourney/${tourney?.id}`}
             color="cyan.solid"
             variant="underline"
-            _hover={{ color: 'cyan.focusRing' }}
-            _focus={{ color: 'cyan.solid', boxShadow: 'none' }}
+            _hover={{ color: "cyan.focusRing" }}
+            _focus={{ color: "cyan.solid", boxShadow: "none" }}
           >
             {tourney?.name}
           </Link>
@@ -38,36 +40,31 @@ export default function RoundHeaderText({ roundName }: RoundHeaderTextProps) {
 
   return (
     <Flex
-      align="baseline"
+      direction="column"
+      align="center"
       justify="center"
       width="100%"
       maxWidth="container.lg"
       mx="auto"
+      gap={4}
     >
-      {/* Left */}
+      {/* Top */}
       <Flex flex="1" justify="flex-end" pr={3}>
         <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]} textAlign="right">
           <Link
             href={`/tourney/${tourney?.id}`}
             color="cyan.solid"
             variant="underline"
-            _hover={{ color: 'cyan.focusRing' }}
-            _focus={{ color: 'cyan.solid', boxShadow: 'none' }}
+            _hover={{ color: "cyan.focusRing" }}
+            _focus={{ color: "cyan.solid", boxShadow: "none" }}
           >
             {tourney?.name}
           </Link>
         </Heading>
       </Flex>
 
-      {/* Separator */}
-      <Box px={3}>
-        <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]} textAlign="center">
-          |
-        </Heading>
-      </Box>
-
-      {/* Right */}
-      <Flex flex="1" justify="flex-start" pl={3}>
+      {/* Bottom */}
+      <Flex flex="1" justify="flex-start" pl={3} mb="24px">
         <Heading fontSize={["2xl", "2xl", "2xl", "3xl"]} textAlign="left">
           <Text as="span">{roundName}</Text>
         </Heading>

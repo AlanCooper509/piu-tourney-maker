@@ -124,7 +124,7 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
           />
         ))
       ) : (
-        !loading && !error && <Text mt={2}>(No stages found)</Text>
+        !loading && !error && <Text mt={2}>No stages yet.</Text>
       )}
     </Box>
   );

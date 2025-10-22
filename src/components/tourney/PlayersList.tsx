@@ -72,7 +72,7 @@ export function PlayersList({ players, setPlayers, loading, error }: PlayersList
                 />
               ))
             ) : (
-              !loading && !error && <Text>No players found.</Text>
+              !loading && !error && <Text>No players yet.</Text>
             )}
         </SimpleGrid>
       </Box>
