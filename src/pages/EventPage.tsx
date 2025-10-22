@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Heading, Text, VStack } from "@chakra-ui/react";
+import { Box, Heading, Text, VStack } from "@chakra-ui/react";
 
 import type { Event } from "../types/Event";
 import type { Tourney } from "../types/Tourney";
@@ -61,7 +61,7 @@ function EventPage() {
   }
 
   return (
-    <>
+    <Box mt={8}>
       <Toaster />
 
       {/* Section 1 and 2: Hero Image & Event Overview */}
@@ -99,7 +99,7 @@ function EventPage() {
             adminTourneyIds={[]}
           />
         ))}
-    </>
+    </Box>
   );
 }
 

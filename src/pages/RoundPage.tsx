@@ -7,7 +7,7 @@ import { RoundDetails } from "../components/round/details/RoundDetails";
 import { PlayersList } from "../components/round/PlayersList";
 import { StagesList } from "../components/round/StagesList";
 import RoundHeaderText from "../components/round/RoundHeaderText";
-import RoundsSidebar from "../components/round/RoundsSidebar";
+import RoundsSidebar from "../components/round/RoundsSidebar/RoundsSidebar";
 import { Toaster } from "../components/ui/toaster";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
 
@@ -99,10 +99,9 @@ function RoundPage() {
   const sortedRounds = allRoundsInTourney?.slice().sort((a, b) => a.id - b.id);
 
   return (
-    <>
+    <Box mt={8}>
       <Toaster />
       <RoundHeaderText roundName={rounds[0]?.name}></RoundHeaderText>
-      {/* jaekim: deleted rounds nav bar for rounds sidebar */}
 
       <Separator mt={2} mb={4} />
       <RoundDetails
@@ -116,7 +115,7 @@ function RoundPage() {
         tourneyId={Number(tourneyId)}
       />
       <Separator mt={"24px"} mb={"24px"} />
-      <Container maxW="4xl" py={6}>
+      <Container maxW="4xl">
         <Flex direction={["column", "column", "column", "row"]} gap={4}>
           {/* Rounds List Code */}
           <Box
@@ -128,9 +127,9 @@ function RoundPage() {
           >
             <Heading mb={2}>Rounds</Heading>
             <RoundsSidebar
-              rounds={sortedRounds}
               tourneyId={Number(tourneyId)}
-              currRound={roundId}
+              rounds={sortedRounds}
+              currentRound={round}
             />
           </Box>
           {/* Players List Code */}
@@ -167,7 +166,7 @@ function RoundPage() {
           </Box>
         </Flex>
       </Container>
-    </>
+    </Box>
   );
 }
 

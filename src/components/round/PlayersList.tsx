@@ -75,7 +75,7 @@ export function PlayersList({ round, players, setPlayers, stages, loading, error
               />
             ): null)
         ) : (
-          !loading && !error && <Text>No players found.</Text>
+          !loading && !error && <Text>No players yet.</Text>
         )}
       </VStack>
     </Box>
