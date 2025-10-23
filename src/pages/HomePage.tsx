@@ -35,9 +35,9 @@ import { CiLocationOn } from "react-icons/ci";
 import { motion } from "framer-motion";
 
 // Wrap Chakra components with motion
-const MotionBox = motion(Box);
-const MotionVStack = motion(VStack);
-const MotionFlex = motion(Flex);
+const MotionBox = motion.create(Box);
+const MotionVStack = motion.create(VStack);
+const MotionFlex = motion.create(Flex);
 
 const fadeIn = {
   hidden: { opacity: 0, y: 33 },
