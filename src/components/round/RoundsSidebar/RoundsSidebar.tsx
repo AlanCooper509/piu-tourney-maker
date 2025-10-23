@@ -60,6 +60,7 @@ export default function RoundsSidebar({
                 <VStack mt={2}>
                   {children.map((child) => (
                     <RoundNavButton
+                      key={child.id}
                       href={`/tourney/${tourneyId}/round/${child.id}`}
                       round={child}
                       isFocus={child.id === currentRound.id}
