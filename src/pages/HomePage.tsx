@@ -54,8 +54,8 @@ function HomePage() {
   const { data: tourneys } = getSupabaseTable<Tourney>("tourneys");
   const { adminTourneyIds } = getAdminTourneyIds();
 
-  if (loading) return <Text fontSize="xl">Loading...</Text>;
-  if (error) return <Text fontSize="xl">Error: {error.message}</Text>;
+  if (loading) return <Text fontSize="xl" mt={8}>Loading...</Text>;
+  if (error) return <Text fontSize="xl" mt={8}>Error: {error.message}</Text>;
 
   const renderSectionHeader = (title: string) => (
     <Box

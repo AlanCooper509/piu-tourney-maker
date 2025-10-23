@@ -49,9 +49,8 @@ function EventPage() {
   }, [tourneys_data]);
 
   // get array check
-  if (event_loading) return <Text fontSize="xl">Loading...</Text>;
-  if (event_error)
-    return <Text fontSize="xl">Error: {event_error.message}</Text>;
+  if (event_loading) return <Text fontSize="xl" mt={8}>Loading...</Text>;
+  if (event_error) return <Text fontSize="xl" mt={8}>Error: {event_error.message}</Text>;
 
   // if eventId is INVALID
   if (event.length == 0) {
