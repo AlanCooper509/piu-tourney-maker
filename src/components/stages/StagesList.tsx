@@ -3,7 +3,7 @@ import { Box, Heading, Text, HStack } from '@chakra-ui/react';
 import { handleAssignRandomChartToStage } from '../../handlers/handleAssignChartToStage';
 import { handleAssignChartToStage } from '../../handlers/handleAssignChartToStage';
 import { handleAddChartToPool } from '../../handlers/handleAddChartToPool';
-import AddStageButton from '../stages/AddStageButton';
+import AddStageButton from './AddStageButton';
 import { toaster } from '../ui/toaster';
 import { useCurrentTourney } from '../../context/CurrentTourneyContext';
 import { useIsAdminForTourney } from '../../context/admin/AdminTourneyContext';

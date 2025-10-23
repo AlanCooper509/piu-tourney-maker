@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import { RoundDetails } from "../components/round/details/RoundDetails";
 import { PlayersList } from "../components/round/PlayersList";
-import { StagesList } from "../components/round/StagesList";
+import { StagesList } from "../components/stages/StagesList";
 import RoundHeaderText from "../components/round/RoundHeaderText";
 import RoundsSidebar from "../components/round/RoundsSidebar/RoundsSidebar";
 import { Toaster } from "../components/ui/toaster";
@@ -35,11 +35,6 @@ function RoundPage() {
     value: tourneyId,
   });
   const {
-    data: rounds,
-    loading: loadingRound,
-    error: errorRound,
-  } = getSupabaseTable<Round>("rounds", { column: "id", value: roundId });
-  const {
     data: playersData,
     loading: loadingPlayers,
     error: errorPlayers,
@@ -57,10 +52,14 @@ function RoundPage() {
     { column: "round_id", value: roundId },
     "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)"
   );
-  const { data: allRoundsInTourney } = getSupabaseTable<Round>("rounds", {
-    column: "tourney_id",
-    value: tourneyId,
-  });
+  const {
+    data: allRoundsInTourney,
+    loading: loadingRounds,
+    error: errorRounds
+  } = getSupabaseTable<Round>(
+    "rounds",
+    { column: "tourney_id", value: tourneyId }
+  );
 
   // Stores tourney table details
   useEffect(() => {
@@ -69,12 +68,13 @@ function RoundPage() {
     }
   }, [tourneys, tourney?.id, setTourney]);
 
-  // Stores round table details
+  // Stores current round if roundId is found in tourney's rounds
   useEffect(() => {
-    if (rounds?.length) {
-      setRound(rounds[0]);
+    if (allRoundsInTourney?.length) {
+      const found = allRoundsInTourney.find(r => r.id === Number(roundId));
+      setRound(found ?? null);
     }
-  }, [rounds]);
+  }, [allRoundsInTourney, roundId]);
 
   // Sync players when playersData changes
   useEffect(() => {
@@ -101,7 +101,7 @@ function RoundPage() {
   return (
     <Box mt={8}>
       <Toaster />
-      <RoundHeaderText roundName={rounds[0]?.name}></RoundHeaderText>
+      <RoundHeaderText roundName={round?.name ?? "Loading..."}></RoundHeaderText>
 
       <Separator mt={2} mb={4} />
       <RoundDetails
@@ -110,8 +110,8 @@ function RoundPage() {
         rounds={sortedRounds}
         players={players}
         stages={stages}
-        loading={loadingRound}
-        error={errorRound}
+        loading={loadingRounds}
+        error={errorRounds}
         tourneyId={Number(tourneyId)}
       />
       <Separator mt={"24px"} mb={"24px"} />
