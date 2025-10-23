@@ -91,7 +91,7 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
         size="sm"
       >
         <Combobox.Control>
-          <Combobox.Input placeholder="Chart Name" value={chartName} />
+          <Combobox.Input placeholder="Chart Name" />
           <Combobox.IndicatorGroup>
             <Combobox.ClearTrigger />
             <Combobox.Trigger />
@@ -105,7 +105,6 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
                 <Combobox.Item
                   key={item.value}
                   item={item}
-                  onSelect={() => setChartName(item.value)}
                 >
                   {item.label}
                   <Combobox.ItemIndicator />
