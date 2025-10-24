@@ -34,8 +34,7 @@ export function RoundDetails({
   error,
   tourneyId,
 }: RoundDetailsProps) {
-  const { isTourneyAdmin, loadingTourneyAdminStatus } =
-    useIsAdminForTourney(tourneyId);
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourneyId);
 
   // Local edit state only
   const [roundNameDraft, setRoundNameDraft] = useState<string | null>(null);
