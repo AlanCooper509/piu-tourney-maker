@@ -5,6 +5,7 @@ import {
   Text,
   defaultSystem,
   Button,
+  Separator,
 } from "@chakra-ui/react";
 import { SlArrowUp } from "react-icons/sl";
 
@@ -37,7 +38,10 @@ function App() {
                   <HeroTitle />
                   <Routes>
                     <Route path="/" element={<HomePage />} />
-                    <Route path="/tourney/:tourneyId" element={<TourneyPage />} />
+                    <Route
+                      path="/tourney/:tourneyId"
+                      element={<TourneyPage />}
+                    />
                     <Route
                       path="/tourney/:tourneyId/round/:roundId"
                       element={<RoundPage />}
@@ -54,9 +58,11 @@ function App() {
                     <Route path="/event/:eventId" element={<EventPage />} />
                   </Routes>
                   {/* Footer on all pages */}
+                  <Separator mt={8} mb={8} />
+
                   <Box w="100%" py={100}>
                     <Text textAlign="center" fontSize="lg" mb={5}>
-                      Piu Tourney Builder 2025 ©
+                      Piu Tourney Maker 2025 ©
                     </Text>
                     <Button
                       size="sm"

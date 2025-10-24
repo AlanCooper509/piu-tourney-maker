@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   createListCollection,
   Heading,
   HStack,
@@ -12,30 +13,39 @@ import {
 import { useNavigate } from "react-router-dom";
 import { BiSolidMedal } from "react-icons/bi";
 import { RiSwordLine } from "react-icons/ri";
+import { IoChevronForward, IoChevronBack } from "react-icons/io5";
 
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import type { Round } from "../../../types/Round";
 
 interface TourneyHeaderTextProps {
-  rounds: Round[],
-  currentRoundId: Number
+  rounds: Round[];
+  currentRoundId: number;
 }
 
-export default function TourneyHeaderText({ rounds, currentRoundId }: TourneyHeaderTextProps) {
+export default function TourneyHeaderText({
+  rounds,
+  currentRoundId,
+}: TourneyHeaderTextProps) {
   const navigate = useNavigate();
   const { tourney } = useCurrentTourney();
+
+  // values for Select dropdown
   const roundOptions = createListCollection({
-    items: rounds.sort((r1, r2) => r1.id - r2.id).map((round) => ({
+    items: rounds
+    .map((round) => ({
       label: round.name,
       value: `/tourney/${tourney?.id}/round/${round.id}`,
       parent: round.parent_round_id,
-      status: round.status
-    }))
+      status: round.status,
+    })),
   });
+  const currentSelectValue = currentRoundId && `/tourney/${tourney?.id}/round/${currentRoundId}`;
 
-  const currentValue = currentRoundId
-    ? `/tourney/${tourney?.id}/round/${currentRoundId}`
-    : undefined;
+  // setup for previous and next round navigation
+  const currentRoundIndex = rounds.findIndex(r => r.id === currentRoundId) ?? null;
+  const prevRoundInList = Number.isInteger(currentRoundId) ? rounds[currentRoundIndex - 1] : null;
+  const nextRoundInList = Number.isInteger(currentRoundId) ? rounds[currentRoundIndex + 1] : null;
 
   return (
     <Stack align="center" justify="center" direction="column" gap={6}>
@@ -50,19 +60,31 @@ export default function TourneyHeaderText({ rounds, currentRoundId }: TourneyHea
           {tourney?.name}
         </Link>
       </Heading>
-      <HStack>
-        <Text>
-          Round:
-        </Text>
+
+      <HStack w={"full"}> 
+        {/* Previous Round Navigation */}
+        <Button
+          size="sm"
+          colorPalette="blue"
+          variant="outline"
+          visibility={prevRoundInList ? "visible" : "hidden"}
+          onClick={() => navigate(`/tourney/${tourney?.id}/round/${prevRoundInList?.id}`)}
+        >
+          <IoChevronBack />
+        </Button>
+
+        {/* Round Dropdown Navigation */}
+        <Text>Round:</Text>
         <Select.Root
           collection={roundOptions}
           size="sm"
-          width="280px"
+          flex="1"
+          minWidth="150px"
           onValueChange={(details) => {
             const href = details.value[0];
             if (href) navigate(href);
           }}
-          value={currentValue ? [currentValue] : []}
+          value={currentSelectValue ? [currentSelectValue] : []}
         >
           <Select.HiddenSelect />
           <Select.Control>
@@ -82,17 +104,18 @@ export default function TourneyHeaderText({ rounds, currentRoundId }: TourneyHea
                   <Select.Item key={item.value} item={item}>
                     <Box
                       color={
-                        item.value === currentValue ? "fg" :
-                        item.status === "Complete" ? "fg.muted" : 
-                        item.status === "In Progress" ? "fg" :
-                        item.status === "Not Started" ? "fg.muted" : ""
+                        item.value === currentSelectValue ? "fg"
+                        : item.status === "Not Started" ? "fg.muted"
+                        : item.status === "In Progress" ? "fg"
+                        : item.status === "Complete" ? "fg.muted"
+                        : ""
                       }
                     >
                       <HStack>
                         {item.parent && <Box w={2} />}
-                        {item.status === "Complete" && <BiSolidMedal />}
-                        {item.status === "In Progress" && <RiSwordLine />}
                         {item.status === "Not Started" && <></>}
+                        {item.status === "In Progress" && <RiSwordLine />}
+                        {item.status === "Complete" && <BiSolidMedal />}
                         {item.label}
                       </HStack>
                     </Box>
@@ -103,6 +126,17 @@ export default function TourneyHeaderText({ rounds, currentRoundId }: TourneyHea
             </Select.Positioner>
           </Portal>
         </Select.Root>
+
+        {/* Next Round Navigation */}
+        <Button
+          size="sm"
+          colorPalette="blue"
+          variant="outline"
+          visibility={nextRoundInList ? "visible" : "hidden"}
+          onClick={() => navigate(`/tourney/${tourney?.id}/round/${nextRoundInList?.id}`)}
+        >
+          <IoChevronForward />
+        </Button>
       </HStack>
     </Stack>
   );
