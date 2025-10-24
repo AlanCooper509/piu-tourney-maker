@@ -61,11 +61,11 @@ function RoundPage() {
   const {
     data: allRoundsInTourney,
     loading: loadingRounds,
-    error: errorRounds
-  } = getSupabaseTable<Round>(
-    "rounds",
-    { column: "tourney_id", value: tourneyId }
-  );
+    error: errorRounds,
+  } = getSupabaseTable<Round>("rounds", {
+    column: "tourney_id",
+    value: tourneyId,
+  });
 
   // Stores tourney table details
   useEffect(() => {
@@ -77,7 +77,7 @@ function RoundPage() {
   // Stores current round if roundId is found in tourney's rounds
   useEffect(() => {
     if (allRoundsInTourney?.length) {
-      const found = allRoundsInTourney.find(r => r.id === Number(roundId));
+      const found = allRoundsInTourney.find((r) => r.id === Number(roundId));
       setRound(found ?? null);
     }
   }, [allRoundsInTourney, roundId]);
@@ -107,7 +107,11 @@ function RoundPage() {
   return (
     <Box mt={8}>
       <Toaster />
-      <TourneyHeaderText rounds={allRoundsInTourney} currentRoundId={Number(roundId)} />
+      <TourneyHeaderText
+        rounds={allRoundsInTourney}
+        currentRoundId={Number(roundId)}
+      />
+
       <Separator mt={2} mb={4} />
       <RoundDetails
         round={round}
