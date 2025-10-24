@@ -39,14 +39,11 @@ export function RoundDetails({
 
   // Local edit state only
   const [roundNameDraft, setRoundNameDraft] = useState<string | null>(null);
-  const [playersAdvancingDraft, setPlayersAdvancingDraft] = useState<
-    number | null
-  >(null);
+  const [playersAdvancingDraft, setPlayersAdvancingDraft] = useState<number | null>(null);
 
   // If not editing, fall back to props
   const roundName = roundNameDraft ?? round?.name ?? "";
-  const playersAdvancing =
-    playersAdvancingDraft ?? round?.players_advancing ?? -1;
+  const playersAdvancing = playersAdvancingDraft ?? round?.players_advancing ?? -1;
 
   const nextRound = rounds?.find((r) => r.id === round?.next_round_id);
 
@@ -93,9 +90,7 @@ export function RoundDetails({
                   tourneyId={tourneyId}
                   roundId={round?.id ?? 0}
                 />
-                {!loadingTourneyAdminStatus &&
-                  isTourneyAdmin &&
-                  round?.status === "Not Started" && (
+                {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Not Started" && (
                     <StartRoundButton
                       round={round}
                       setRound={setRound}
@@ -103,9 +98,7 @@ export function RoundDetails({
                       stages={stages}
                     />
                   )}
-                {!loadingTourneyAdminStatus &&
-                  isTourneyAdmin &&
-                  round?.status === "In Progress" && (
+                {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "In Progress" && (
                     <EndRoundButton
                       tourneyId={tourneyId}
                       round={round}
