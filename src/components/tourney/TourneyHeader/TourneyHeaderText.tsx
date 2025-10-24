@@ -61,7 +61,7 @@ export default function TourneyHeaderText({
         </Link>
       </Heading>
 
-      <HStack w={"full"}> 
+      <HStack w={"full"} align="center" justify="center"> 
         {/* Previous Round Navigation */}
         <Button
           size="sm"
@@ -80,6 +80,7 @@ export default function TourneyHeaderText({
           size="sm"
           flex="1"
           minWidth="150px"
+          maxWidth="xs"
           onValueChange={(details) => {
             const href = details.value[0];
             if (href) navigate(href);
