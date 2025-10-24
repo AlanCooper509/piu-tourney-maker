@@ -57,7 +57,7 @@ function TourneyPage() {
   return (
     <Box mt={8}>
       <Toaster />
-      <TourneyHeaderText rounds={rounds} currentRoundId={NaN} />
+      <TourneyHeaderText rounds={sortedRounds} currentRoundId={NaN} />
       <Separator mt={2} mb={4} />
       <VStack separator={<StackSeparator />}>
         <TourneyDetails

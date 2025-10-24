@@ -108,7 +108,7 @@ function RoundPage() {
     <Box mt={8}>
       <Toaster />
       <TourneyHeaderText
-        rounds={allRoundsInTourney}
+        rounds={sortedRounds}
         currentRoundId={Number(roundId)}
       />
 
