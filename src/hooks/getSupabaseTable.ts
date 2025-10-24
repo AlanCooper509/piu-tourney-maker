@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabaseClient } from '../lib/supabaseClient';
 
-function getSupabaseTable<T>(tableName: string, filter?: { column: string; value: any }, selectClause: string = '*') {
+function getSupabaseTable<T>(
+  tableName: string,
+  filter?: { column: string; value: any },
+  selectClause: string = '*'
+) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
@@ -11,9 +15,11 @@ function getSupabaseTable<T>(tableName: string, filter?: { column: string; value
       setLoading(true);
 
       let query = supabaseClient.from(tableName).select(selectClause);
+
       if (filter && filter.column && filter.value !== undefined) {
         query = query.eq(filter.column, filter.value);
       }
+
       const { data, error } = await query;
 
       if (error) {
@@ -22,12 +28,19 @@ function getSupabaseTable<T>(tableName: string, filter?: { column: string; value
       } else {
         setData(data as T[]);
       }
+
       setLoading(false);
     };
+
     fetchTable();
-  }, [tableName]);
+  }, [
+    tableName,
+    filter?.column,
+    filter?.value,
+    selectClause
+  ]);
 
   return { data, loading, error };
 }
 
-export default getSupabaseTable
+export default getSupabaseTable;

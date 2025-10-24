@@ -1,4 +1,4 @@
-import { Flex, Box, Container, Separator, Heading } from "@chakra-ui/react";
+import { Flex, Box, Container, Separator } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -6,8 +6,7 @@ import getSupabaseTable from "../hooks/getSupabaseTable";
 import { RoundDetails } from "../components/round/details/RoundDetails";
 import { PlayersList } from "../components/round/PlayersList";
 import { StagesList } from "../components/stages/StagesList";
-import RoundHeaderText from "../components/round/RoundHeaderText";
-import RoundsSidebar from "../components/round/RoundsSidebar/RoundsSidebar";
+import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeaderText";
 import { Toaster } from "../components/ui/toaster";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
 
@@ -29,6 +28,13 @@ function RoundPage() {
   const [round, setRound] = useState<Round | null>(null);
   const [players, setPlayers] = useState<PlayerRound[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
+
+  useEffect(() => {
+    // Clear state whenever round changes, before new data arrives
+    setRound(null);
+    setPlayers([]);
+    setStages([]);
+  }, [roundId]);
 
   const { data: tourneys } = getSupabaseTable<Tourney>("tourneys", {
     column: "id",
@@ -101,8 +107,7 @@ function RoundPage() {
   return (
     <Box mt={8}>
       <Toaster />
-      <RoundHeaderText roundName={round?.name ?? "Loading..."}></RoundHeaderText>
-
+      <TourneyHeaderText rounds={allRoundsInTourney} currentRoundId={Number(roundId)} />
       <Separator mt={2} mb={4} />
       <RoundDetails
         round={round}
@@ -117,21 +122,6 @@ function RoundPage() {
       <Separator mt={"24px"} mb={"24px"} />
       <Container maxW="4xl">
         <Flex direction={["column", "column", "column", "row"]} gap={4}>
-          {/* Rounds List Code */}
-          <Box
-            flex="1"
-            width={["100%", "100%", "100%", "50%"]}
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-          >
-            <Heading mb={2}>Rounds</Heading>
-            <RoundsSidebar
-              tourneyId={Number(tourneyId)}
-              rounds={sortedRounds}
-              currentRound={round}
-            />
-          </Box>
           {/* Players List Code */}
           <Box
             flex="1"

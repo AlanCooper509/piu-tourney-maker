@@ -1,19 +1,18 @@
 import { useEffect, useState } from "react";
-import { VStack, StackSeparator, Heading, Link, Separator, Box } from "@chakra-ui/react"
+import { VStack, StackSeparator, Separator, Box } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
 
 import getSupabaseTable from '../hooks/getSupabaseTable';
 
+import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeaderText";
 import { TourneyDetails } from "../components/tourney/TourneyDetails";
 import { PlayersList } from "../components/tourney/PlayersList";
-import { RoundsList } from "../components/tourney/RoundsList";
 import { Toaster } from "../components/ui/toaster";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
 
 import type { Tourney } from '../types/Tourney';
 import type { PlayerTourney } from "../types/PlayerTourney";
 import type { Round } from "../types/Round";
-import RoundsNavbar from "../components/round/RoundsNavbar";
 
 function TourneyPage() {
   const { tourneyId } = useParams();
@@ -30,7 +29,7 @@ function TourneyPage() {
     'player_tourneys',
     { column: 'tourney_id', value: tourneyId }
   );
-  const { data: rounds, loading: loadingRounds, error: errorRounds } = getSupabaseTable<Round>(
+  const { data: rounds } = getSupabaseTable<Round>(
     'rounds',
     { column: 'tourney_id', value: tourneyId }
   );
@@ -58,18 +57,7 @@ function TourneyPage() {
   return (
     <Box mt={8}>
       <Toaster />
-      <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]}>
-        <Link
-          href={`/tourney/${tourneyId}`}
-          color="cyan.solid"
-          variant="underline"
-          _hover={{ color: 'cyan.focusRing' }}
-          _focus={{ color: 'cyan.solid', boxShadow: 'none' }}
-        >
-          {tourney?.name}
-        </Link>
-      </Heading>
-      <RoundsNavbar tourneyId={Number(tourneyId)} rounds={sortedRounds}></RoundsNavbar>
+      <TourneyHeaderText rounds={rounds} currentRoundId={NaN} />
       <Separator mt={2} mb={4} />
       <VStack separator={<StackSeparator />}>
         <TourneyDetails
@@ -83,11 +71,6 @@ function TourneyPage() {
           setPlayers={setPlayers}
           loading={loadingPlayers}
           error={errorPlayers}
-        />
-        <RoundsList
-          rounds={sortedRounds}
-          loading={loadingRounds}
-          error={errorRounds}
         />
       </VStack>
     </Box>
