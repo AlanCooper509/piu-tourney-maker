@@ -32,7 +32,7 @@ function App() {
         <AdminEventProvider>
           <AdminTourneyProvider>
             <CurrentTourneyProvider>
-              <Box bg="gray.900" color="white" minH="100vh">
+              <Box bg="gray.900" color="white" minH="100vh" className="dark">
                 <BrowserRouter>
                   {/* HeroTitle Card on all pages */}
                   <HeroTitle />
