@@ -6,6 +6,7 @@ import {
   useFilter,
   useListCollection,
   Portal,
+  Box,
 } from "@chakra-ui/react";
 import { IoAddCircleSharp } from "react-icons/io5";
 
@@ -98,20 +99,22 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
           </Combobox.IndicatorGroup>
         </Combobox.Control>
         <Portal>
-          <Combobox.Positioner>
-            <Combobox.Content>
-              <Combobox.Empty>No charts found</Combobox.Empty>
-              {collection.items.map((item) => (
-                <Combobox.Item
-                  key={item.value}
-                  item={item}
-                >
-                  {item.label}
-                  <Combobox.ItemIndicator />
-                </Combobox.Item>
-              ))}
-            </Combobox.Content>
-          </Combobox.Positioner>
+          <Box className="dark">
+            <Combobox.Positioner>
+              <Combobox.Content>
+                <Combobox.Empty>No charts found</Combobox.Empty>
+                {collection.items.map((item) => (
+                  <Combobox.Item
+                    key={item.value}
+                    item={item}
+                  >
+                    {item.label}
+                    <Combobox.ItemIndicator />
+                  </Combobox.Item>
+                ))}
+              </Combobox.Content>
+            </Combobox.Positioner>
+          </Box>
         </Portal>
       </Combobox.Root>
 

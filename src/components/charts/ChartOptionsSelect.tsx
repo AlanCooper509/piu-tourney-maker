@@ -1,4 +1,4 @@
-import { Portal, Select, createListCollection } from "@chakra-ui/react";
+import { Box, Portal, Select, createListCollection } from "@chakra-ui/react";
 
 interface ChartTypeLevelSelectProps {
   value: "" | { type: string; level: number };
@@ -41,16 +41,18 @@ export function ChartTypeLevelSelect({ value, onChange, options }: ChartTypeLeve
         </Select.IndicatorGroup>
       </Select.Control>
       <Portal>
-        <Select.Positioner>
-          <Select.Content>
-            {collection.items.map((item) => (
-              <Select.Item key={item.value} item={item}>
-                {item.label}
-                <Select.ItemIndicator />
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Positioner>
+        <Box className="dark">
+          <Select.Positioner>
+            <Select.Content>
+              {collection.items.map((item) => (
+                <Select.Item key={item.value} item={item}>
+                  {item.label}
+                  <Select.ItemIndicator />
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Positioner>
+        </Box>
       </Portal>
     </Select.Root>
   );

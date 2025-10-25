@@ -99,32 +99,34 @@ export default function TourneyHeaderText({
           </Select.Control>
 
           <Portal>
-            <Select.Positioner>
-              <Select.Content>
-                {roundOptions.items.map((item) => (
-                  <Select.Item key={item.value} item={item}>
-                    <Box
-                      color={
-                        item.value === currentSelectValue ? "fg"
-                        : item.status === "Not Started" ? "fg.muted"
-                        : item.status === "In Progress" ? "fg"
-                        : item.status === "Complete" ? "fg.muted"
-                        : ""
-                      }
-                    >
-                      <HStack>
-                        {item.parent && <Box w={2} />}
-                        {item.status === "Not Started" && <></>}
-                        {item.status === "In Progress" && <RiSwordLine />}
-                        {item.status === "Complete" && <BiSolidMedal />}
-                        {item.label}
-                      </HStack>
-                    </Box>
-                    <Select.ItemIndicator />
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Positioner>
+            <Box className="dark">
+              <Select.Positioner>
+                <Select.Content>
+                  {roundOptions.items.map((item) => (
+                    <Select.Item key={item.value} item={item}>
+                      <Box
+                        color={
+                          item.value === currentSelectValue ? "fg"
+                          : item.status === "Not Started" ? "fg.muted"
+                          : item.status === "In Progress" ? "fg"
+                          : item.status === "Complete" ? "fg.muted"
+                          : ""
+                        }
+                      >
+                        <HStack>
+                          {item.parent && <Box w={2} />}
+                          {item.status === "Not Started" && <></>}
+                          {item.status === "In Progress" && <RiSwordLine />}
+                          {item.status === "Complete" && <BiSolidMedal />}
+                          {item.label}
+                        </HStack>
+                      </Box>
+                      <Select.ItemIndicator />
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Positioner>
+            </Box>
           </Portal>
         </Select.Root>
 
