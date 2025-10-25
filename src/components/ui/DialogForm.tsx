@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   CloseButton,
   Dialog,
@@ -26,48 +25,46 @@ export default function DialogForm({ title, trigger, formBody, showSubmit = true
         {trigger}
       </Dialog.Trigger>
       <Portal>
-        <Box className="dark">
-          <Dialog.Backdrop />
-          <Dialog.Positioner pointerEvents="none">
-            <Dialog.Content>
-              <Dialog.Header>
-                <Dialog.Title>{title}</Dialog.Title>
-              </Dialog.Header>
+        <Dialog.Backdrop />
+        <Dialog.Positioner pointerEvents="none">
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>{title}</Dialog.Title>
+            </Dialog.Header>
 
-              <Dialog.Body>{formBody}</Dialog.Body>
+            <Dialog.Body>{formBody}</Dialog.Body>
 
-              <Dialog.Footer>
-                <Dialog.ActionTrigger asChild>
-                  <Button variant="outline" borderWidth="2px" colorPalette={"red"} onClick={onCancel}>
-                    Cancel
-                  </Button>
-                </Dialog.ActionTrigger>
-
-                <Button
-                  variant="outline"
-                  borderWidth="2px"
-                  display={showSubmit ? 'inline-flex' : 'none'}
-                  colorPalette={"green"} 
-                  onClick={async () => {
-                    const shouldClose = await onSubmit();
-                    if (shouldClose) setOpen(false);
-                  }}>
-                  Submit
+            <Dialog.Footer>
+              <Dialog.ActionTrigger asChild>
+                <Button variant="outline" borderWidth="2px" colorPalette={"red"} onClick={onCancel}>
+                  Cancel
                 </Button>
-              </Dialog.Footer>
+              </Dialog.ActionTrigger>
 
-              <Dialog.CloseTrigger asChild>
-                <CloseButton
-                  size="sm"
-                  onClick={() => {
-                    onCancel();
-                    setOpen(false);
-                  }}
-                />
-              </Dialog.CloseTrigger>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Box>
+              <Button
+                variant="outline"
+                borderWidth="2px"
+                display={showSubmit ? 'inline-flex' : 'none'}
+                colorPalette={"green"} 
+                onClick={async () => {
+                  const shouldClose = await onSubmit();
+                  if (shouldClose) setOpen(false);
+                }}>
+                Submit
+              </Button>
+            </Dialog.Footer>
+
+            <Dialog.CloseTrigger asChild>
+              <CloseButton
+                size="sm"
+                onClick={() => {
+                  onCancel();
+                  setOpen(false);
+                }}
+              />
+            </Dialog.CloseTrigger>
+          </Dialog.Content>
+        </Dialog.Positioner>
       </Portal>
     </Dialog.Root>
   );
