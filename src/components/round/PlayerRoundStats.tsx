@@ -45,6 +45,7 @@ export default function PlayerRoundStats({ player, stages, handleDeletePlayer }:
         borderStyle="solid"
         borderColor="gray.100"
         borderRadius="4px"
+        mb={ isOpen ? 2 : 0 }
       >
         <Collapsible.Trigger
           asChild
