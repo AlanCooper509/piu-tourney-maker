@@ -9,6 +9,7 @@ import { getScoresForPlayer } from "../helpers/getScoresForPlayer";
 import type { Round } from "../types/Round";
 import RoundLink from "../components/tourney/RoundLink";
 import { IoReturnDownBack } from "react-icons/io5";
+import React from "react";
 
 interface Song {
   name: string;
@@ -20,6 +21,7 @@ interface Song {
 interface Player {
   name: string;
   songs: Song[];
+  total: number;
 }
 
 function PlayerRow({
@@ -46,8 +48,6 @@ function PlayerRow({
   const contentRef = useRef<HTMLDivElement>(null);
   const rowRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState("0px");
-
-  const totalScore = player.songs.reduce((sum, s) => sum + (s.score ?? 0), 0);
 
   const getBgColor = () => {
     if (isEliminated) return "red.emphasized";
@@ -130,7 +130,7 @@ function PlayerRow({
 
       {/* Right side: total score */}
       <Text fontSize={rowFontSize} flexShrink={0}>
-        {totalScore.toLocaleString()}
+        {player.total.toLocaleString()}
       </Text>
     </HStack>
 
@@ -169,8 +169,10 @@ function Leaderboard() {
   const { tourneyId, roundId } = useParams<{ tourneyId: string; roundId: string }>();
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
   if (!roundId) return <div>Invalid Round ID</div>;
+  const scoring = [1, 0];
 
   // leaderboard formatted data
+  const [round, setRound] = useState<Round | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [updatedPlayer, _setUpdatedPlayer] = useState<string | null>(null);
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set());
@@ -178,6 +180,12 @@ function Leaderboard() {
   // raw input data
   const [p, setP] = useState<PlayerRound[]>([]);
   const [s, setS] = useState<Stage[]>([]);
+  const advancingThreshold = round?.players_advancing ?? null;
+
+  const { data: rounds } = getSupabaseTable<Round>(
+    'rounds',
+    { column: 'id', value: roundId }
+  );
   const { data: playersData } = getSupabaseTable<PlayerRound>(
     "player_rounds",
     { column: "round_id", value: roundId },
@@ -188,12 +196,14 @@ function Leaderboard() {
     { column: "round_id", value: roundId },
     "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)"
   );
-  const { data: rounds } = getSupabaseTable<Round>(
-    'rounds',
-    { column: 'id', value: roundId }
-  );
 
-  const advancingThreshold = rounds?.[0]?.players_advancing ?? null;
+  // Sync round when roundId changes
+  useEffect(() => {
+    if (rounds?.length) {
+      const found = rounds.find((r) => r.id === Number(roundId));
+      setRound(found ?? null);
+    }
+  }, [rounds, roundId]);
 
   // Sync players when playersData changes
   useEffect(() => {
@@ -215,30 +225,63 @@ function Leaderboard() {
 
   // Build formatted leaderboard players when p or s changes
   useEffect(() => {
-    const plist: Player[] = p.map((player) => {
-      const scores = getScoresForPlayer(player, s);
-
-      const songs = scores.map((entry) => ({
-        name: entry.chart?.name_en ?? "",
-        score: entry.score?.score ?? null,
-        level: entry.chart?.level ?? 0,
-        type: entry.chart?.type ?? "??",
-      }));
-
+    if (!p.length || !round) return;
+    const stageScores = p.map(player => {
+      const entries = getScoresForPlayer(player, s);
       return {
         name: player.player_tourneys.player_name,
-        songs,
+        scores: entries.map(e => ({
+          stageId: e.stage.id,
+          score: e.score?.score ?? null,
+          chart: e.chart ?? null
+        }))
       };
     });
 
-    // sort by total score (descending)
-    plist.sort((a, b) => {
-      const totalA = a.songs.reduce((sum, s) => sum + (s.score ?? 0), 0);
-      const totalB = b.songs.reduce((sum, s) => sum + (s.score ?? 0), 0);
-      return totalB - totalA;
-    });
+    let results;
+    if (round.scoring_method === "Points") {
+      const pointsMap = new Map(stageScores.map(p => [p.name, 0]));
 
-    setPlayers(plist);
+      s.forEach(stage => {
+        const ranked = stageScores
+          .map(p => ({
+            name: p.name,
+            score: p.scores.find(s => s.stageId === stage.id)?.score ?? null
+          }))
+          .filter((p): p is { name: string; score: number } => p.score !== null)
+          .sort((a, b) => b.score - a.score);
+
+        ranked.forEach(r => {
+          const firstRankIndex = ranked.findIndex(x => x.score === r.score);
+          const awardedPoints = scoring[firstRankIndex] ?? 0;
+          pointsMap.set(r.name, (pointsMap.get(r.name) || 0) + awardedPoints);
+        });
+      });
+
+      results = stageScores.map(p => ({
+        name: p.name,
+        songs: p.scores.map(s => ({
+          name: s.chart?.name_en ?? "",
+          score: s.score,
+          level: s.chart?.level ?? 0,
+          type: s.chart?.type ?? "??",
+        })),
+        total: pointsMap.get(p.name) ?? 0
+      }));
+    } else /* if (round?.scoring_method == "Cumulative") */ {
+      results = stageScores.map(p => ({
+        name: p.name,
+        songs: p.scores.map(s => ({
+          name: s.chart?.name_en ?? "",
+          score: s.score,
+          level: s.chart?.level ?? 0,
+          type: s.chart?.type ?? "??",
+        })),
+        total: p.scores.reduce((sum, s) => sum + (s.score ?? 0), 0)
+      }));
+    }
+    results.sort((a, b) => b.total - a.total);
+    setPlayers(results);
   }, [p, s]);
 
   const toggleExpand = (playerName: string) => {
@@ -327,7 +370,7 @@ function Leaderboard() {
             <RoundLink
               tourneyId={tourneyId}
               roundId={roundId}
-              roundName={rounds[0]?.name}
+              roundName={round?.name ?? ""}
               fontSize="4xl"
             />
           </HStack>
@@ -348,7 +391,7 @@ function Leaderboard() {
               color="white"
               textShadow="0px 2px 6px rgba(0,0,0,0.5)"
             >
-              Scoreboard
+              {round?.scoring_method === "Points" ? "Points Leaderboard" : "Scoreboard"}
             </Text>
             <Spacer />
             <Button
@@ -368,21 +411,22 @@ function Leaderboard() {
           {players.map((player, index) => {
             const isEliminated = advancingThreshold !== null && index >= advancingThreshold;
             return (
-              <>
-                {index === advancingThreshold && <Separator borderWidth={"5px"} my={2} borderColor={"black"}/>}
-                <PlayerRow
-                  key={player.name}
-                  player={player}
-                  index={index}
-                  isExpanded={expandedPlayers.has(player.name)}
-                  toggleExpand={toggleExpand}
-                  updatedPlayer={updatedPlayer}
-                  positionsRef={positionsRef}
-                  rowFontSize={rowFontSize}
-                  songFontSize={songFontSize}
-                  isEliminated={isEliminated}
-                />
-              </>
+            <React.Fragment key={player.name}>
+              {index === advancingThreshold && (
+                <Separator borderWidth="5px" my={2} borderColor="black" />
+              )}
+              <PlayerRow
+                player={player}
+                index={index}
+                isExpanded={expandedPlayers.has(player.name)}
+                toggleExpand={toggleExpand}
+                updatedPlayer={updatedPlayer}
+                positionsRef={positionsRef}
+                rowFontSize={rowFontSize}
+                songFontSize={songFontSize}
+                isEliminated={isEliminated}
+              />
+            </React.Fragment>
             )
           })}
         </Box>
