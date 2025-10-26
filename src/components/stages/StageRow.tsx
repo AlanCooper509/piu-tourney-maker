@@ -40,7 +40,7 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
       p={2}
       w="md"
       maxWidth="100vw"
-      borderWidth="2px"
+      borderWidth="1px"
       borderRadius="md"
       borderColor="gray.400"
     >

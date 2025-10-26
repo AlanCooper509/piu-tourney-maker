@@ -43,8 +43,8 @@ export default function PlayerRoundStats({ player, stages, handleDeletePlayer }:
         textAlign="left"
         borderWidth={ isOpen ? "1px" : "0px" }
         borderStyle="solid"
-        borderColor="gray.100"
-        borderRadius="4px"
+        borderColor="gray.400"
+        borderRadius="md"
         mb={ isOpen ? 2 : 0 }
       >
         <Collapsible.Trigger
@@ -91,6 +91,7 @@ export default function PlayerRoundStats({ player, stages, handleDeletePlayer }:
           borderTopWidth="1px"
           borderTopStyle="solid"
           borderTopColor="gray.500"
+          borderBottomRadius="md"
           py={2}
           px={4}
         >
