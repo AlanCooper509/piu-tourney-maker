@@ -1,5 +1,5 @@
 import { Checkbox, Field, Input, NumberInput, Select, VStack, createListCollection } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import DialogForm from "../../ui/DialogForm";
@@ -14,18 +14,47 @@ interface RoundModalProps {
   playersAdvancing: number;
   setPlayersAdvancing: (count: number) => void;
   trigger: React.ReactNode;
-  onSubmitForm: (name: string, advancing: number, nextId: number | undefined, parentId: number | undefined) => void;
+  onSubmitForm: (
+    name: string,
+    advancing: number,
+    nextId: number | undefined,
+    parentId: number | undefined,
+    pointsPerStage: string | undefined
+  ) => void;
 }
 
-export default function RoundModal({ round, rounds, roundName, setRoundName, playersAdvancing, setPlayersAdvancing, trigger, onSubmitForm }: RoundModalProps) {
+export default function RoundModal({
+  round,
+  rounds,
+  roundName,
+  setRoundName,
+  playersAdvancing,
+  setPlayersAdvancing,
+  trigger,
+  onSubmitForm,
+}: RoundModalProps) {
   const { tourney } = useCurrentTourney();
-
   const [open, setOpen] = useState(false);
+
+  // Form state
   const [formRoundName, setFormRoundName] = useState(roundName);
   const [formPlayersAdvancing, setFormPlayersAdvancing] = useState(playersAdvancing.toString());
-  const [formNextRound, setFormNextRound] = useState(round?.next_round_id ? [round.next_round_id.toString()] : []);
-  const [formParentRoundId, setFormParentRound] = useState(round?.parent_round_id ? [round.parent_round_id.toString()] : []);
-  const [checked, setChecked] = useState(round?.parent_round_id != null);
+  const [formNextRound, setFormNextRound] = useState<string[]>([]);
+  const [formParentRoundId, setFormParentRound] = useState<string[]>([]);
+  const [formPointsPerStage, setFormPointsPerStage] = useState<string | undefined>(undefined);
+  const [redemptionChecked, setRedemptionChecked] = useState(false);
+  const [pointsScoringChecked, setPointsScoringChecked] = useState(false);
+
+  // Sync form state whenever the round changes
+  useEffect(() => {
+    setFormRoundName(roundName);
+    setFormPlayersAdvancing(playersAdvancing.toString());
+    setFormNextRound(round?.next_round_id ? [round.next_round_id.toString()] : []);
+    setFormParentRound(round?.parent_round_id ? [round.parent_round_id.toString()] : []);
+    setFormPointsPerStage(round?.points_per_stage);
+    setRedemptionChecked(round?.parent_round_id != null);
+    setPointsScoringChecked(round?.points_per_stage != null);
+  }, [round, roundName, playersAdvancing]);
 
   const submitWithGuards = async () => {
     if (!formRoundName.trim()) {
@@ -35,42 +64,34 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
         type: "error",
         closable: true,
       });
-      return false; // Prevent form submission
+      return false;
     }
+
     const advancing = Number(formPlayersAdvancing);
-    if (isNaN(advancing)) {
+    if (isNaN(advancing) || advancing < 1) {
       toaster.create({
         title: "Invalid Players Advancing",
-        description: "Players advancing must be a number.",
+        description: "Players advancing must be a number >= 1.",
         type: "error",
         closable: true,
       });
-      return false; // Prevent form submission
+      return false;
     }
-    if (advancing < 1) {
-      toaster.create({
-        title: "Invalid Players Advancing",
-        description: "Players advancing must be at least 1.",
-        type: "error",
-        closable: true,
-      });
-      return false; // Prevent form submission
-    }
-    const nextRoundId = formNextRound ? Number(formNextRound[0]) : undefined;
-    const parentRoundId = formParentRoundId ? Number(formParentRoundId[0]) : undefined;
+
+    const nextRoundId = formNextRound?.[0] ? Number(formNextRound[0]) : undefined;
+    const parentRoundId = formParentRoundId?.[0] ? Number(formParentRoundId[0]) : undefined;
+
     setRoundName(formRoundName);
     setPlayersAdvancing(advancing);
-    onSubmitForm(formRoundName, advancing, nextRoundId, parentRoundId);
-    return true; // Close the form
-  }
+
+    onSubmitForm(formRoundName, advancing, nextRoundId, parentRoundId, formPointsPerStage);
+    return true;
+  };
 
   const otherRounds = createListCollection({
     items: (rounds ?? [])
-      .filter(r => r.id !== round?.id) // also guard round being undefined
-      .map(r => ({
-        label: r.name,
-        value: r.id.toString(),
-      })),
+      .filter(r => r.id !== round?.id)
+      .map(r => ({ label: r.name, value: r.id.toString() })),
   });
 
   const defaultNextRoundField = rounds?.find(r => r.id === round?.next_round_id);
@@ -80,24 +101,19 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
     <VStack gap={4} align="stretch">
       <Field.Root>
         <Field.Label>Round Name</Field.Label>
-        <Input
-          value={formRoundName}
-          onChange={(e) => setFormRoundName(e.target.value)}
-          placeholder="Enter round name"
-        />
+        <Input value={formRoundName} onChange={(e) => setFormRoundName(e.target.value)} />
       </Field.Root>
 
       <Field.Root>
         <Field.Label>Players Advancing</Field.Label>
         <NumberInput.Root
-          defaultValue={formPlayersAdvancing}
+          value={formPlayersAdvancing}
           onValueChange={(e) => setFormPlayersAdvancing(e.value)}
           min={1}
         >
           <NumberInput.Control />
           <NumberInput.Input />
         </NumberInput.Root>
-        {/* <Field.HelperText ms={1}>Number of players advancing</Field.HelperText> */}
       </Field.Root>
 
       <Field.Root>
@@ -121,7 +137,7 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
           <Select.Positioner>
             <Select.Content>
               {otherRounds.items.map((otherRound) => (
-                <Select.Item item={otherRound} key={otherRound.value}>
+                <Select.Item key={otherRound.value} item={otherRound}>
                   {otherRound.label}
                   <Select.ItemIndicator />
                 </Select.Item>
@@ -131,17 +147,18 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
         </Select.Root>
       </Field.Root>
 
-      {(tourney?.type == "Waterfall (Redemption)" || round?.parent_round_id != null) && (
+      {(tourney?.type === "Waterfall (Redemption)" || round?.parent_round_id != null) && (
         <>
           <Checkbox.Root
-            checked={checked}
-            onCheckedChange={(e) => setChecked(!!e.checked)}
+            checked={redemptionChecked}
+            onCheckedChange={(e) => setRedemptionChecked(!!e.checked)}
           >
             <Checkbox.HiddenInput />
             <Checkbox.Control />
             <Checkbox.Label>Is this a Redemption round?</Checkbox.Label>
           </Checkbox.Root>
-          { checked &&  (
+
+          {redemptionChecked && (
             <Field.Root>
               <Select.Root
                 collection={otherRounds}
@@ -163,7 +180,7 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
                 <Select.Positioner>
                   <Select.Content>
                     {otherRounds.items.map((otherRound) => (
-                      <Select.Item item={otherRound} key={otherRound.value}>
+                      <Select.Item key={otherRound.value} item={otherRound}>
                         {otherRound.label}
                         <Select.ItemIndicator />
                       </Select.Item>
@@ -175,6 +192,31 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
           )}
         </>
       )}
+
+      {/* Points Based Scoring */}
+      <>
+        <Checkbox.Root
+          checked={pointsScoringChecked}
+          onCheckedChange={(e) => {
+            setPointsScoringChecked(!!e.checked);
+            if (!e.checked) setFormPointsPerStage(undefined);
+          }}
+        >
+          <Checkbox.HiddenInput />
+          <Checkbox.Control />
+          <Checkbox.Label>Points based scoring?</Checkbox.Label>
+        </Checkbox.Root>
+        {pointsScoringChecked && (
+          <Field.Root>
+            <Field.Label>Points Per Player</Field.Label>
+            <Input
+              value={formPointsPerStage}
+              onChange={(e) => setFormPointsPerStage(e.target.value)}
+              placeholder="Ex: 5,3,2,1 will assign 1st: 5 / 2nd: 3 / 3rd: 2 / 4th: 1 / Remaining: 0"
+            />
+          </Field.Root>
+        )}
+      </>
     </VStack>
   );
 
@@ -182,15 +224,8 @@ export default function RoundModal({ round, rounds, roundName, setRoundName, pla
     <DialogForm
       title="Round Information"
       trigger={trigger}
-      onSubmit={async () => submitWithGuards()}
-      onCancel={() => {
-        // Reset form fields to current props values
-        setFormRoundName(roundName);
-        setFormPlayersAdvancing(playersAdvancing.toString());
-        setFormNextRound(round?.next_round_id ? [round.next_round_id.toString()] : []);
-        setFormParentRound(round?.parent_round_id ? [round.parent_round_id.toString()] : []);
-        setOpen(false);
-      }}
+      onSubmit={submitWithGuards}
+      onCancel={() => setOpen(false)}
       formBody={formBody}
       open={open}
       setOpen={setOpen}

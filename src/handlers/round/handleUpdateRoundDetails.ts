@@ -6,7 +6,8 @@ export async function handleUpdateRoundDetails(
   newName: string,
   playersAdvancing: number,
   nextRoundId: number | undefined,
-  parentRoundId: number | undefined
+  parentRoundId: number | undefined,
+  pointsPerStage: string | undefined
 ): Promise<Round> {
   if (!roundId) {
     throw new Error('Round ID is required');
@@ -17,7 +18,7 @@ export async function handleUpdateRoundDetails(
 
   const { data, error } = await supabaseClient
     .from('rounds')
-    .update({ name: newName.trim(), players_advancing: playersAdvancing, next_round_id: nextRoundId, parent_round_id: parentRoundId })
+    .update({ name: newName.trim(), players_advancing: playersAdvancing, next_round_id: nextRoundId, parent_round_id: parentRoundId, points_per_stage: pointsPerStage ?? null })
     .eq('id', roundId)
     .select()
     .single();
