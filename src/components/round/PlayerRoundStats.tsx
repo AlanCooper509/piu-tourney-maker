@@ -41,16 +41,18 @@ export default function PlayerRoundStats({ player, stages, handleDeletePlayer }:
     <Box w={["xs", "md", "md", "sm"]}>
       <Collapsible.Root
         textAlign="left"
-        backgroundColor={isOpen ? "gray.900" : "transparent"}
-        borderRadius="lg"
-        py={isOpen ? 2 : 0}
-        px={isOpen ? 4 : 0}
-        mb={isOpen ? 2 : 0}
-        borderColor="border.emphasized"
-        borderWidth={isOpen ? 1 : 0}
+        borderWidth={ isOpen ? "1px" : "0px" }
+        borderStyle="solid"
+        borderColor="gray.100"
+        borderRadius="4px"
       >
-        <Collapsible.Trigger asChild onClick={toggleOpen} mb={isOpen ? 2 : 0} cursor="pointer" w="full">
-          <HStack w="full" align="center" justify="space-between">
+        <Collapsible.Trigger
+          asChild
+          onClick={toggleOpen}
+          cursor="pointer"
+          w="full"
+        >
+          <HStack w="full" align="center" justify="space-between" px={2} py={1}>
             <IoChevronForward
               style={{
                 transform: isOpen ? 'rotate(90deg)' : 'rotate(0)',
@@ -64,7 +66,6 @@ export default function PlayerRoundStats({ player, stages, handleDeletePlayer }:
                 </Checkbox.Root>
               )}
               <Text
-                fontWeight={isOpen ? "bold" : "normal"}
                 truncate
                 title={player.player_tourneys.player_name}
               >
@@ -84,7 +85,14 @@ export default function PlayerRoundStats({ player, stages, handleDeletePlayer }:
             )}
           </HStack>
         </Collapsible.Trigger>
-        <Collapsible.Content w="xs">
+        <Collapsible.Content
+          backgroundColor={isOpen ? "gray.800" : "transparent"}
+          borderTopWidth="1px"
+          borderTopStyle="solid"
+          borderTopColor="gray.500"
+          py={2}
+          px={4}
+        >
           {!loadingTourneyAdminStatus && isTourneyAdmin ? 
             <EditablePlayerScores
               player={player}
