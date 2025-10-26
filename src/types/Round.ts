@@ -5,6 +5,7 @@ export interface Round {
   created_at: string;                // ISO timestamp string
   name: string;                      // text
   players_advancing: number;         // bigint -> number
+  scoring_method?: string;           // text
   status: RoundStatus | null;        // enum type
   next_round_id?: number;            // bigint -> number
   parent_round_id?: number;          // bigint -> number

@@ -75,7 +75,7 @@ export function RoundDetails({
                 playersAdvancing={playersAdvancing}
                 roundStatus={round?.status}
               />
-              <Text>Scoring: Cumulative</Text>
+              <Text>Scoring: {round?.scoring_method}</Text>
               {round && round.next_round_id && nextRound && (
                 <Text>
                   Next Round:{" "}
