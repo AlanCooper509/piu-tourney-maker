@@ -88,7 +88,7 @@ function getPlayerTourneysIds({
   stages,
   advancing = true,
 }: GetPlayerTourneysOptions): number[] {
-  const rankings: PlayerRoundWithScore[] = calculatePlayerRankingsInRound({ players, stages });
+  const rankings: PlayerRoundWithScore[] = calculatePlayerRankingsInRound({ players, stages, round });
 
   // Determine cutoff index
   const cutoff = round.players_advancing > rankings.length ? rankings.length : round.players_advancing;

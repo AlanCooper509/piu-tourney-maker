@@ -1,16 +1,18 @@
 import { Box, VStack, HStack, Link, Text, useBreakpointValue, Button, Spacer, Tag, IconButton, Heading, Container, Separator } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
-import { keyframes } from "@emotion/react";
 import type { PlayerRound } from "../types/PlayerRound";
 import type { Stage } from "../types/Stage";
+import type { Round } from "../types/Round";
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import { useParams } from "react-router-dom";
 import { getScoresForPlayer } from "../helpers/getScoresForPlayer";
-import type { Round } from "../types/Round";
 import RoundLink from "../components/tourney/RoundLink";
 import { IoReturnDownBack } from "react-icons/io5";
 import React from "react";
 
+// --------------------
+// Types
+// --------------------
 interface Song {
   name: string;
   level: number | null;
@@ -24,6 +26,25 @@ interface Player {
   total: number;
 }
 
+// --------------------
+// Helpers
+// --------------------
+function mapScoresToSongs(scores: any[]) {
+  return scores.map(s => ({
+    name: s.chart?.name_en ?? "",
+    score: s.score,
+    level: s.chart?.level ?? 0,
+    type: s.chart?.type ?? "??",
+  }));
+}
+
+function calculateTotalScore(songs: { score: number | null }[]) {
+  return songs.reduce((sum, s) => sum + (s.score ?? 0), 0);
+}
+
+// --------------------
+// Components
+// --------------------
 function PlayerRow({
   player,
   index,
@@ -51,17 +72,15 @@ function PlayerRow({
 
   const getBgColor = () => {
     if (isEliminated) return "red.emphasized";
-    if (index === 0) return undefined;
-    if (index === 1) return undefined;
-    if (index === 2) return undefined;
+    if ([0,1,2].includes(index)) return undefined;
     return "gray.700";
   };
 
   const getBgGradient = () => {
     if (isEliminated) return undefined;
-    if (index === 0) return "linear-gradient({colors.yellow.300}, {colors.yellow.600})"; // shiny gold
-    if (index === 1) return "linear-gradient({colors.gray.300}, {colors.gray.700})";     // shiny silver
-    if (index === 2) return "linear-gradient({colors.yellow.700}, {colors.yellow.900})"; // shiny bronze
+    if (index === 0) return "linear-gradient({colors.yellow.300}, {colors.yellow.600})";
+    if (index === 1) return "linear-gradient({colors.gray.300}, {colors.gray.700})";
+    if (index === 2) return "linear-gradient({colors.yellow.700}, {colors.yellow.900})";
     return undefined;
   };
 
@@ -94,45 +113,37 @@ function PlayerRow({
 
   return (
     <Box
-      key={player.name}
       ref={rowRef}
       animation={updatedPlayer === player.name ? `highlight 0.5s ease` : undefined}
       mb={2}
     >
-    <HStack
-      bg={getBgColor()}
-      bgImage={getBgGradient()}
-      color={index === 0 ? "white" : "gray.100"}
-      px={6}
-      py={4}
-      cursor="pointer"
-      justify="space-between"
-      onClick={() => toggleExpand(player.name)}
-      transition="all 0.3s ease"
-      _hover={{ transform: "scale(1.02)", shadow: "md" }}
-      borderRadius="md"
-      textShadow={index === 0 ? "0px 2px 4px rgba(0,0,0,0.5)" : undefined}
-      overflow="visible"
-    >
-      {/* Left side: rank + name */}
-      <HStack flex="1" overflow="hidden">
-        <Text fontSize={rowFontSize} fontWeight="bold" flexShrink={0}>
-          #{index + 1}
-        </Text>
-        <Text
-          fontSize={rowFontSize}
-          truncate
-          title={player.name}
-        >
-          {player.name}
+      <HStack
+        bg={getBgColor()}
+        bgImage={getBgGradient()}
+        color={index === 0 ? "white" : "gray.100"}
+        px={6}
+        py={4}
+        cursor="pointer"
+        justify="space-between"
+        onClick={() => toggleExpand(player.name)}
+        transition="all 0.3s ease"
+        _hover={{ transform: "scale(1.02)", shadow: "md" }}
+        borderRadius="md"
+        textShadow={index === 0 ? "0px 2px 4px rgba(0,0,0,0.5)" : undefined}
+        overflow="visible"
+      >
+        <HStack flex="1" overflow="hidden">
+          <Text fontSize={rowFontSize} fontWeight="bold" flexShrink={0}>
+            #{index + 1}
+          </Text>
+          <Text fontSize={rowFontSize} truncate title={player.name}>
+            {player.name}
+          </Text>
+        </HStack>
+        <Text fontSize={rowFontSize} flexShrink={0}>
+          {player.total.toLocaleString()}
         </Text>
       </HStack>
-
-      {/* Right side: total score */}
-      <Text fontSize={rowFontSize} flexShrink={0}>
-        {player.total.toLocaleString()}
-      </Text>
-    </HStack>
 
       <Box
         ref={contentRef}
@@ -149,7 +160,7 @@ function PlayerRow({
               borderBottom={idx !== player.songs.length - 1 ? "1px solid gray" : "none"}
               py={3}
             >
-              <HStack justify={"space-between"}>
+              <HStack justify="space-between">
                 <Tag.Root colorPalette={song.type?.startsWith("D") ? "green" : song.type?.startsWith("S") ? "red" : song.type?.startsWith("C") ? "yellow" : "blue"}>
                   <Tag.Label>{song.level}</Tag.Label>
                 </Tag.Root>
@@ -165,67 +176,73 @@ function PlayerRow({
   );
 }
 
+function LeaderboardHeader({
+  round,
+  expandedPlayers,
+  toggleAll,
+  headerFontSize
+}: {
+  round: Round | null;
+  expandedPlayers: Set<string>;
+  toggleAll: () => void;
+  headerFontSize: string | undefined;
+}) {
+  return (
+    <HStack py={4} px={6} bgGradient="linear(to-r, teal.400, green.400)" borderTopRadius="2xl">
+      <Text fontSize={headerFontSize} color="white" textShadow="0px 2px 6px rgba(0,0,0,0.5)">
+        {round?.points_per_stage ? "Leaderboard (Points)" : "Leaderboard (Cumulative)"}
+      </Text>
+      <Spacer />
+      <Button
+        size="md"
+        px={6}
+        py={4}
+        bg="gray.700"
+        color="white"
+        borderRadius="md"
+        _hover={{ bg: "gray.600" }}
+        onClick={toggleAll}
+      >
+        {expandedPlayers.size > 0 ? "Collapse All" : "Expand All"}
+      </Button>
+    </HStack>
+  );
+}
+
+// --------------------
+// Leaderboard Component
+// --------------------
 function Leaderboard() {
   const { tourneyId, roundId } = useParams<{ tourneyId: string; roundId: string }>();
-  if (!tourneyId) return <div>Invalid Tourney ID</div>;
-  if (!roundId) return <div>Invalid Round ID</div>;
-  const scoring = [1, 0];
+  if (!tourneyId || !roundId) return <div>Invalid Tourney or Round ID</div>;
 
-  // leaderboard formatted data
   const [round, setRound] = useState<Round | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [updatedPlayer, _setUpdatedPlayer] = useState<string | null>(null);
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set());
-
-  // raw input data
   const [p, setP] = useState<PlayerRound[]>([]);
   const [s, setS] = useState<Stage[]>([]);
   const advancingThreshold = round?.players_advancing ?? null;
 
-  const { data: rounds } = getSupabaseTable<Round>(
-    'rounds',
-    { column: 'id', value: roundId }
-  );
-  const { data: playersData } = getSupabaseTable<PlayerRound>(
-    "player_rounds",
-    { column: "round_id", value: roundId },
-    "*, player_tourneys(player_name)"
-  );
-  const { data: stagesData } = getSupabaseTable<Stage>(
-    "stages",
-    { column: "round_id", value: roundId },
-    "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)"
-  );
+  const positionsRef = useRef<Map<string, number>>(new Map());
 
-  // Sync round when roundId changes
-  useEffect(() => {
-    if (rounds?.length) {
-      const found = rounds.find((r) => r.id === Number(roundId));
-      setRound(found ?? null);
-    }
-  }, [rounds, roundId]);
+  const { data: rounds } = getSupabaseTable<Round>('rounds', { column: 'id', value: roundId });
+  const { data: playersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: roundId }, "*, player_tourneys(player_name)");
+  const { data: stagesData } = getSupabaseTable<Stage>("stages", { column: "round_id", value: roundId }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
 
-  // Sync players when playersData changes
-  useEffect(() => {
-    if (playersData) {
-      const sortedPlayers = [...playersData].sort(
-        (b, a) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-      setP(sortedPlayers);
-    }
-  }, [playersData]);
+  // --------------------
+  // Sync Supabase data
+  // --------------------
+  useEffect(() => { if (rounds?.length) setRound(rounds.find(r => r.id === Number(roundId)) ?? null); }, [rounds, roundId]);
+  useEffect(() => { if (playersData) setP([...playersData].sort((b, a) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())); }, [playersData]);
+  useEffect(() => { if (stagesData) setS([...stagesData].sort((a, b) => a.id - b.id)); }, [stagesData]);
 
-  // Sync stages when stagesData changes
-  useEffect(() => {
-    if (stagesData) {
-      const sortedStages = [...stagesData].sort((a, b) => a.id - b.id);
-      setS(sortedStages);
-    }
-  }, [stagesData]);
-
-  // Build formatted leaderboard players when p or s changes
+  // --------------------
+  // Build leaderboard
+  // --------------------
   useEffect(() => {
     if (!p.length || !round) return;
+
     const stageScores = p.map(player => {
       const entries = getScoresForPlayer(player, s);
       return {
@@ -238,196 +255,97 @@ function Leaderboard() {
       };
     });
 
-    let results;
-    if (round.scoring_method === "Points") {
+    let results: Player[] = [];
+    const scoring = round.points_per_stage ? round.points_per_stage.split(',').map(str => Number(str.trim())) : [];
+
+    if (round.points_per_stage) {
       const pointsMap = new Map(stageScores.map(p => [p.name, 0]));
 
       s.forEach(stage => {
         const ranked = stageScores
-          .map(p => ({
-            name: p.name,
-            score: p.scores.find(s => s.stageId === stage.id)?.score ?? null
-          }))
+          .map(p => ({ name: p.name, score: p.scores.find(s => s.stageId === stage.id)?.score ?? null }))
           .filter((p): p is { name: string; score: number } => p.score !== null)
           .sort((a, b) => b.score - a.score);
 
         ranked.forEach(r => {
-          const firstRankIndex = ranked.findIndex(x => x.score === r.score);
-          const awardedPoints = scoring[firstRankIndex] ?? 0;
-          pointsMap.set(r.name, (pointsMap.get(r.name) || 0) + awardedPoints);
+          const tieIndex = ranked.findIndex(x => x.score === r.score);
+          pointsMap.set(r.name, (pointsMap.get(r.name) || 0) + (scoring[tieIndex] ?? 0));
         });
       });
 
       results = stageScores.map(p => ({
         name: p.name,
-        songs: p.scores.map(s => ({
-          name: s.chart?.name_en ?? "",
-          score: s.score,
-          level: s.chart?.level ?? 0,
-          type: s.chart?.type ?? "??",
-        })),
+        songs: mapScoresToSongs(p.scores),
         total: pointsMap.get(p.name) ?? 0
       }));
-    } else /* if (round?.scoring_method == "Cumulative") */ {
+    } else {
       results = stageScores.map(p => ({
         name: p.name,
-        songs: p.scores.map(s => ({
-          name: s.chart?.name_en ?? "",
-          score: s.score,
-          level: s.chart?.level ?? 0,
-          type: s.chart?.type ?? "??",
-        })),
-        total: p.scores.reduce((sum, s) => sum + (s.score ?? 0), 0)
+        songs: mapScoresToSongs(p.scores),
+        total: calculateTotalScore(p.scores)
       }));
     }
+
     results.sort((a, b) => b.total - a.total);
     setPlayers(results);
-  }, [p, s]);
+  }, [p, s, round]);
 
-  const toggleExpand = (playerName: string) => {
-    setExpandedPlayers((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(playerName)) {
-        newSet.delete(playerName);
-      } else {
-        newSet.add(playerName);
-      }
-      return newSet;
-    });
-  };
+  // --------------------
+  // Expand / Collapse
+  // --------------------
+  const toggleExpand = (playerName: string) => setExpandedPlayers(prev => {
+    const newSet = new Set(prev);
+    newSet.has(playerName) ? newSet.delete(playerName) : newSet.add(playerName);
+    return newSet;
+  });
+  const toggleAll = () => setExpandedPlayers(prev => prev.size > 0 ? new Set() : new Set(players.map(p => p.name)));
 
-  const toggleAll = () => {
-    if (expandedPlayers.size > 0) {
-      setExpandedPlayers(new Set());
-    } else {
-      setExpandedPlayers(new Set(players.map((p) => p.name)));
-    }
-  };
-
-  const highlight = keyframes`
-    0% { transform: scale(1); background-color: #e3f4e1; }
-    50% { transform: scale(1.03); background-color: #cdeac0; }
-    100% { transform: scale(1); background-color: inherit; }
-  `;
-  void highlight; // to check later, not used anywhere currently
-
-  const positionsRef = useRef<Map<string, number>>(new Map());
-
-  // ------------------------
-  // Random score increment effect removed for Supabase integration
-  // ------------------------
-  /*
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPlayers((prevPlayers) => {
-        const newScores = [...prevPlayers];
-        const randIndex = Math.floor(Math.random() * newScores.length);
-        const randSong = Math.floor(Math.random() * newScores[randIndex].songs.length);
-
-        const increment = Math.floor(Math.random() * 90000) + 10000;
-        newScores[randIndex].songs[randSong].score += increment;
-
-        setUpdatedPlayer(newScores[randIndex].name);
-
-        return [...newScores].sort(
-          (a, b) =>
-            b.songs.reduce((acc, s) => acc + s.score, 0) -
-            a.songs.reduce((acc, s) => acc + s.score, 0)
-        );
-      });
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
-  */
-
+  // --------------------
+  // Responsive values
+  // --------------------
   const cardWidth = useBreakpointValue({ base: "90%", md: "70%", lg: "50%" });
   const headerFontSize = useBreakpointValue({ base: "xl", md: "2xl", lg: "3xl" });
   const rowFontSize = useBreakpointValue({ base: "md", md: "lg", lg: "xl" });
   const songFontSize = useBreakpointValue({ base: "sm", md: "md", lg: "lg" });
-
-  // Dynamic bottom padding based on viewport height
-  const bottomPadding = useBreakpointValue({
-    base: `${window.innerHeight * 0.15}px`, // 15% of viewport height on mobile
-    md: "3rem",
-    lg: "3rem",
-  });
+  const bottomPadding = useBreakpointValue({ base: `${window.innerHeight * 0.15}px`, md: "3rem", lg: "3rem" });
 
   return (
     <Container maxW="8xl">
       <VStack w="100%" align="center" mt={12} pb={bottomPadding}>
-        {/* Round Leaderboard */}
-        <Box 
-          fontWeight="bold"
-          textShadow="0px 2px 4px rgba(0,0,0,0.4)"
-        >
+        <Box fontWeight="bold" textShadow="0px 2px 4px rgba(0,0,0,0.4)">
           <HStack>
             <Link href={`/tourney/${tourneyId}/round/${roundId}`}>
               <IconButton variant="outline" colorPalette="cyan" borderWidth="2px" size="sm" px={2}>
                 <IoReturnDownBack />
               </IconButton>
             </Link>
-            <RoundLink
-              tourneyId={tourneyId}
-              roundId={roundId}
-              roundName={round?.name ?? ""}
-              fontSize="4xl"
-            />
+            <RoundLink tourneyId={tourneyId} roundId={roundId} roundName={round?.name ?? ""} fontSize="4xl" />
           </HStack>
         </Box>
-        <Heading size="2xl" mb={5}>
-          Players Advancing: {advancingThreshold}
-        </Heading>
-        <Box
-          w={cardWidth}
-          borderRadius="2xl"
-          overflow="visible"
-          shadow="xl"
-          bgGradient="linear(to-b, gray.900, gray.800)"
-        >
-          <HStack py={4} px={6} bgGradient="linear(to-r, teal.400, green.400)" borderTopRadius="2xl">
-            <Text
-              fontSize={headerFontSize}
-              color="white"
-              textShadow="0px 2px 6px rgba(0,0,0,0.5)"
-            >
-              {round?.scoring_method === "Points" ? "Points Leaderboard" : "Scoreboard"}
-            </Text>
-            <Spacer />
-            <Button
-              size="md"
-              px={6}
-              py={4}                // match row height
-              bg="gray.700"
-              color="white"
-              borderRadius="md"
-              _hover={{ bg: "gray.600" }}
-              onClick={toggleAll}
-            >
-              {expandedPlayers.size > 0 ? "Collapse All" : "Expand All"}
-            </Button>
-          </HStack>
+
+        <Heading size="2xl" mb={5}>Players Advancing: {advancingThreshold}</Heading>
+
+        <Box w={cardWidth} borderRadius="2xl" overflow="visible" shadow="xl" bgGradient="linear(to-b, gray.900, gray.800)">
+          <LeaderboardHeader round={round} expandedPlayers={expandedPlayers} toggleAll={toggleAll} headerFontSize={headerFontSize} />
 
           {players.map((player, index) => {
             const isEliminated = advancingThreshold !== null && index >= advancingThreshold;
             return (
-            <React.Fragment key={player.name}>
-              {index === advancingThreshold && (
-                <Separator borderWidth="5px" my={2} borderColor="black" />
-              )}
-              <PlayerRow
-                player={player}
-                index={index}
-                isExpanded={expandedPlayers.has(player.name)}
-                toggleExpand={toggleExpand}
-                updatedPlayer={updatedPlayer}
-                positionsRef={positionsRef}
-                rowFontSize={rowFontSize}
-                songFontSize={songFontSize}
-                isEliminated={isEliminated}
-              />
-            </React.Fragment>
-            )
+              <React.Fragment key={player.name}>
+                {index === advancingThreshold && <Separator borderWidth="5px" my={2} borderColor="black" />}
+                <PlayerRow
+                  player={player}
+                  index={index}
+                  isExpanded={expandedPlayers.has(player.name)}
+                  toggleExpand={toggleExpand}
+                  updatedPlayer={updatedPlayer}
+                  positionsRef={positionsRef}
+                  rowFontSize={rowFontSize}
+                  songFontSize={songFontSize}
+                  isEliminated={isEliminated}
+                />
+              </React.Fragment>
+            );
           })}
         </Box>
       </VStack>

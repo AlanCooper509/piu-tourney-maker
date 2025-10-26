@@ -53,7 +53,7 @@ export function PlayersList({ round, players, setPlayers, stages, loading, error
   };
 
   if (round && round.status === "Complete" && players && stages) {
-    players = sortPlayers(players, stages);
+    players = sortPlayers(players, stages, round);
   }
 
   return (
@@ -82,8 +82,8 @@ export function PlayersList({ round, players, setPlayers, stages, loading, error
   )
 }
 
-function sortPlayers(players: PlayerRound[], stages: Stage[]) {
-  const rankings = calculatePlayerRankingsInRound({ players, stages });
+function sortPlayers(players: PlayerRound[], stages: Stage[], round: Round) {
+  const rankings = calculatePlayerRankingsInRound({ players, stages, round });
   let sortedPlayers = [];
   for (let i = 0; i < rankings.length; i++) {
     const playerId = rankings[i][0];
