@@ -98,6 +98,10 @@ export default function TourneyHeaderText({
     });
   }
 
+  // logic to show either the Add Round or Next Round button (never both at the same time)
+  const showAddRoundButton = tourney && tourney.status !="Complete" && !loadingTourneyAdminStatus && isTourneyAdmin;
+  const showNextRoundButton = !showAddRoundButton;
+
   return (
     <Stack align="center" justify="center" direction="column" gap={6}>
       <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]}>
@@ -125,7 +129,6 @@ export default function TourneyHeaderText({
         </Button>
 
         {/* Round Dropdown Navigation */}
-        <Text>Round:</Text>
         <Select.Root
           collection={roundOptions}
           size="sm"
@@ -185,14 +188,14 @@ export default function TourneyHeaderText({
           colorPalette="blue"
           variant="outline"
           visibility={nextRoundInList ? "visible" : "hidden"}
-          display={nextRoundInList || loadingTourneyAdminStatus || !isTourneyAdmin ? "inline-block" : "none"}
+          display={showNextRoundButton ? "inline-block" : "none"}
           onClick={() => navigate(`/tourney/${tourney?.id}/round/${nextRoundInList?.id}`)}
         >
           <IoChevronForward />
         </Button>
 
         {/* Add Round Trigger and Form */}
-        {!loadingTourneyAdminStatus && isTourneyAdmin && (
+        {showAddRoundButton && (
           <RoundModal
             rounds={rounds}
             trigger={addRoundButton}
