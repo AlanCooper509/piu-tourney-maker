@@ -7,8 +7,7 @@ import {
   Link,
   Portal,
   Select,
-  Stack,
-  Text,
+  Stack
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { BiSolidMedal } from "react-icons/bi";
