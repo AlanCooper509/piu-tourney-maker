@@ -21,18 +21,21 @@ interface Song {
   level: number | null;
   type: string | null;
   score: number | null;
+  points: number;
 }
 
 interface Player {
   name: string;
   songs: Song[];
-  total: number;
+  total: number; // points total OR cumulative total depending on round
+  cumulative: number; // raw cumulative total score
 }
 
 // --------------------
 // Components
 // --------------------
 function PlayerRow({
+  round,
   player,
   index,
   isExpanded,
@@ -43,6 +46,7 @@ function PlayerRow({
   songFontSize,
   isEliminated
 }: {
+  round: Round | null;
   player: Player;
   index: number;
   isExpanded: boolean;
@@ -127,9 +131,19 @@ function PlayerRow({
             {player.name}
           </Text>
         </HStack>
-        <Text fontSize={rowFontSize} flexShrink={0}>
-          {player.total.toLocaleString()}
-        </Text>
+        <HStack flexShrink={0} alignItems="center">
+          {/* Cumulative Score (only shown when round.points_per_stage is specified) */}
+          {round?.points_per_stage && (
+            <Text fontSize={"sm"} mr={2}>
+              {player.cumulative.toLocaleString()}
+            </Text>
+          )}
+
+          {/* Total Points (or total score in cumulative mode when round.points_per_stage is null) */}
+          <Text fontSize={rowFontSize} fontWeight="medium">
+            {player.total.toLocaleString()}
+          </Text>
+        </HStack>
       </HStack>
 
       <Box
@@ -153,7 +167,16 @@ function PlayerRow({
                 </Tag.Root>
                 <Text truncate fontSize={songFontSize} textAlign="left">{song.name}</Text>
                 <Spacer/>
-                <Text>{song.score?.toLocaleString()}</Text>
+                {round?.points_per_stage ? (
+                  <HStack>
+                    <Text fontSize={"sm"} mr={2}>{song.score?.toLocaleString()}</Text>
+                    <Text fontWeight="bold">{song.points}</Text>
+                  </HStack>
+                )
+                :
+                (
+                  <Text>{song.score?.toLocaleString()}</Text>
+                )}
               </HStack>
             </Box>
           ))}
@@ -177,7 +200,7 @@ function LeaderboardHeader({
   return (
     <HStack py={4} px={6} bgGradient="linear(to-r, teal.400, green.400)" borderTopRadius="2xl">
       <Text fontSize={headerFontSize} color="white" textShadow="0px 2px 6px rgba(0,0,0,0.5)">
-        {round?.points_per_stage ? "Leaderboard (Points)" : "Leaderboard (Cumulative)"}
+        {round ? round.points_per_stage ? "Leaderboard (Points)" : "Leaderboard (Cumulative)" : "Leaderboard"}
       </Text>
       <Spacer />
       <Button
@@ -230,26 +253,28 @@ function Leaderboard() {
   useEffect(() => {
     if (!p.length || !s.length || !round) return;
 
-    const rankings = calculatePlayerRankingsInRound({
-      players: p,
-      stages: s,
-      round
-    });
+  const { rankings, cumulativeScores, pointsMap } = calculatePlayerRankingsInRound({ players: p, stages: s, round });
 
     // Map back to a structure usable in the leaderboard UI
     const results: Player[] = rankings.map(([playerId, total]) => {
       const playerRound = p.find(pr => pr.id === playerId)!;
-      const scores = getScoresForPlayer(playerRound, s);
+      const scores = getScoresForPlayer(playerRound, s); // returns entries with entry.stage.id
 
       return {
         name: playerRound.player_tourneys.player_name,
-        songs: scores.map(entry => ({
-          name: entry.chart?.name_en ?? "",
-          score: entry.score?.score ?? null,
-          level: entry.chart?.level ?? 0,
-          type: entry.chart?.type ?? "??"
-        })),
-        total
+        songs: scores.map(entry => {
+          const stageId = entry.stage.id;
+          const points = pointsMap.get(`${playerRound.id}-${stageId}`) ?? 0;
+          return {
+            name: entry.chart?.name_en ?? "",
+            score: entry.score?.score ?? null,
+            level: entry.chart?.level ?? 0,
+            type: entry.chart?.type ?? "??",
+            points
+          };
+        }),
+        total,
+        cumulative: cumulativeScores[playerRound.id]
       };
     });
 
@@ -300,6 +325,7 @@ function Leaderboard() {
               <React.Fragment key={player.name}>
                 {index === advancingThreshold && <Separator borderWidth="5px" my={2} borderColor="black" />}
                 <PlayerRow
+                  round={round}
                   player={player}
                   index={index}
                   isExpanded={expandedPlayers.has(player.name)}

@@ -73,8 +73,6 @@ export default async function handleEndRound({ tourneyId, round }: handleStartRo
   }
 }
 
-type PlayerRoundWithScore = [number, number]; // [playerRoundId, score]
-
 interface GetPlayerTourneysOptions {
   round: Round;
   players: PlayerRound[];
@@ -88,10 +86,13 @@ function getPlayerTourneysIds({
   stages,
   advancing = true,
 }: GetPlayerTourneysOptions): number[] {
-  const rankings: PlayerRoundWithScore[] = calculatePlayerRankingsInRound({ players, stages, round });
+
+  const { rankings } = calculatePlayerRankingsInRound({ players, stages, round });
 
   // Determine cutoff index
-  const cutoff = round.players_advancing > rankings.length ? rankings.length : round.players_advancing;
+  const cutoff = round.players_advancing > rankings.length
+    ? rankings.length
+    : round.players_advancing;
 
   // Slice rankings based on advancing flag
   const selectedRankings = advancing ? rankings.slice(0, cutoff) : rankings.slice(cutoff);
