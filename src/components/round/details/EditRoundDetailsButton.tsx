@@ -2,7 +2,7 @@ import { IconButton } from "@chakra-ui/react";
 import { CiEdit } from "react-icons/ci";
 
 import RoundModal from "./RoundModal";
-import { handleUpdateRoundDetails } from "../../../handlers/round/handleUpdateRoundDetails";
+import { handleUpdateRoundDetails } from "../../../handlers/round/handleRoundRow";
 import { toaster } from "../../ui/toaster";
 
 import type { Round } from "../../../types/Round";
@@ -11,13 +11,10 @@ interface EditRoundDetailsButtonProps {
   round: Round;
   setRound: (round: Round) => void;
   rounds?: Round[];
-  roundName: string;
-  setRoundName: (name: string) => void;
-  playersAdvancing: number;
-  setPlayersAdvancing: (count: number) => void;
+  setRounds: React.Dispatch<React.SetStateAction<Round[]>>;
 }
 
-export default function EditRoundDetailsButton({ round, setRound, rounds, roundName, setRoundName, playersAdvancing, setPlayersAdvancing }: EditRoundDetailsButtonProps) {
+export default function EditRoundDetailsButton({ round, setRound, rounds, setRounds }: EditRoundDetailsButtonProps) {
   async function onAdminClick(
     name: string,
     advancing: number,
@@ -35,6 +32,11 @@ export default function EditRoundDetailsButton({ round, setRound, rounds, roundN
     );
 
     setRound(updatedRound);
+    setRounds((prev) =>
+      prev.some(r => r.id === updatedRound.id)
+        ? prev.map(r => r.id === updatedRound.id ? updatedRound : r) // update
+        : [...prev, updatedRound] // add new
+    )
 
     toaster.create({
       title: "Round Updated",
@@ -61,10 +63,6 @@ export default function EditRoundDetailsButton({ round, setRound, rounds, roundN
     <RoundModal
       round={round}
       rounds={rounds}
-      roundName={roundName}
-      setRoundName={setRoundName}
-      playersAdvancing={playersAdvancing}
-      setPlayersAdvancing={setPlayersAdvancing}
       trigger={button}
       onSubmitForm={onAdminClick}
     />

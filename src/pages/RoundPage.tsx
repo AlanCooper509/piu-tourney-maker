@@ -9,6 +9,7 @@ import { StagesList } from "../components/stages/StagesList";
 import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeaderText";
 import { Toaster } from "../components/ui/toaster";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
+import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 
 import type { Tourney } from "../types/Tourney";
 import type { Round } from "../types/Round";
@@ -26,6 +27,7 @@ function RoundPage() {
   const { tourney, setTourney } = useCurrentTourney();
 
   const [round, setRound] = useState<Round | null>(null);
+  const [tourneyRounds, setTourneyRounds] = useState<Round[]>([]);
   const [players, setPlayers] = useState<PlayerRound[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
 
@@ -38,6 +40,14 @@ function RoundPage() {
 
   const { data: tourneys } = getSupabaseTable<Tourney>("tourneys", {
     column: "id",
+    value: tourneyId,
+  });
+  const {
+    data: allRoundsInTourney,
+    loading: loadingRounds,
+    error: errorRounds,
+  } = getSupabaseTable<Round>("rounds", {
+    column: "tourney_id",
     value: tourneyId,
   });
   const {
@@ -58,14 +68,6 @@ function RoundPage() {
     { column: "round_id", value: roundId },
     "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)"
   );
-  const {
-    data: allRoundsInTourney,
-    loading: loadingRounds,
-    error: errorRounds,
-  } = getSupabaseTable<Round>("rounds", {
-    column: "tourney_id",
-    value: tourneyId,
-  });
 
   // Stores tourney table details
   useEffect(() => {
@@ -74,13 +76,24 @@ function RoundPage() {
     }
   }, [tourneys, tourney?.id, setTourney]);
 
-  // Stores current round if roundId is found in tourney's rounds
+  // Store rounds to state variable
   useEffect(() => {
     if (allRoundsInTourney?.length) {
-      const found = allRoundsInTourney.find((r) => r.id === Number(roundId));
-      setRound(found ?? null);
+      setTourneyRounds(prev => {
+        const { sorted } = mergeAndFlattenRounds(prev, allRoundsInTourney);
+        return sorted;
+      });
     }
-  }, [allRoundsInTourney, roundId]);
+  }, [allRoundsInTourney]);
+
+  // Stores current round based on tourneyRounds
+  useEffect(() => {
+      if (tourneyRounds.length > 0) {
+        // Stores current round if roundId is found in tourney's rounds
+        const found = tourneyRounds.find((r) => r.id === Number(roundId));
+        setRound(found ?? null);
+      }
+  }, [tourneyRounds, roundId]);
 
   // Sync players when playersData changes
   useEffect(() => {
@@ -101,14 +114,12 @@ function RoundPage() {
     }
   }, [stagesData]);
 
-  // sort rounds for navbar
-  const sortedRounds = allRoundsInTourney?.slice().sort((a, b) => a.id - b.id);
-
   return (
     <Box mt={8}>
       <Toaster />
       <TourneyHeaderText
-        rounds={sortedRounds}
+        rounds={tourneyRounds}
+        setRounds={setTourneyRounds}
         currentRoundId={Number(roundId)}
       />
 
@@ -116,7 +127,8 @@ function RoundPage() {
       <RoundDetails
         round={round}
         setRound={setRound}
-        rounds={sortedRounds}
+        rounds={tourneyRounds}
+        setRounds={setTourneyRounds}
         players={players}
         stages={stages}
         loading={loadingRounds}

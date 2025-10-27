@@ -9,6 +9,7 @@ import { TourneyDetails } from "../components/tourney/TourneyDetails";
 import { PlayersList } from "../components/tourney/PlayersList";
 import { Toaster } from "../components/ui/toaster";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
+import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 
 import type { Tourney } from '../types/Tourney';
 import type { PlayerTourney } from "../types/PlayerTourney";
@@ -19,6 +20,7 @@ function TourneyPage() {
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
 
   const { tourney, setTourney } = useCurrentTourney();
+  const [tourneyRounds, setTourneyRounds] = useState<Round[]>([]);
   const [players, setPlayers] = useState<PlayerTourney[]>([]);
 
   const { data: tourneys, loading: loadingTourney, error: errorTourney } = getSupabaseTable<Tourney>(
@@ -29,7 +31,7 @@ function TourneyPage() {
     'player_tourneys',
     { column: 'tourney_id', value: tourneyId }
   );
-  const { data: rounds } = getSupabaseTable<Round>(
+  const { data: allRoundsInTourney } = getSupabaseTable<Round>(
     'rounds',
     { column: 'tourney_id', value: tourneyId }
   );
@@ -51,18 +53,25 @@ function TourneyPage() {
     }
   }, [playersData]);
 
-  // sort rounds
-  const sortedRounds = rounds?.slice().sort((a, b) => a.id - b.id);
+  // Store rounds details
+  useEffect(() => {
+    if (allRoundsInTourney?.length) {
+       setTourneyRounds(prev => {
+         const { sorted } = mergeAndFlattenRounds(prev, allRoundsInTourney);
+         return sorted;
+       });
+    }
+  }, [allRoundsInTourney]);
 
   return (
     <Box mt={8}>
       <Toaster />
-      <TourneyHeaderText rounds={sortedRounds} currentRoundId={NaN} />
+      <TourneyHeaderText rounds={tourneyRounds} setRounds={setTourneyRounds} currentRoundId={NaN} />
       <Separator mt={2} mb={4} />
       <VStack separator={<StackSeparator />}>
         <TourneyDetails
           players={players}
-          rounds={sortedRounds}
+          rounds={tourneyRounds}
           loading={loadingTourney}
           error={errorTourney}
         />

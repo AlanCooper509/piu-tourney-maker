@@ -9,10 +9,6 @@ import type { Round } from "../../../types/Round";
 interface RoundModalProps {
   round?: Round;
   rounds?: Round[];
-  roundName: string;
-  setRoundName: (name: string) => void;
-  playersAdvancing: number;
-  setPlayersAdvancing: (count: number) => void;
   trigger: React.ReactNode;
   onSubmitForm: (
     name: string,
@@ -26,10 +22,6 @@ interface RoundModalProps {
 export default function RoundModal({
   round,
   rounds,
-  roundName,
-  setRoundName,
-  playersAdvancing,
-  setPlayersAdvancing,
   trigger,
   onSubmitForm,
 }: RoundModalProps) {
@@ -37,27 +29,27 @@ export default function RoundModal({
   const [open, setOpen] = useState(false);
 
   // Form state
-  const [formRoundName, setFormRoundName] = useState(roundName);
-  const [formPlayersAdvancing, setFormPlayersAdvancing] = useState(playersAdvancing.toString());
-  const [formNextRound, setFormNextRound] = useState<string[]>([]);
-  const [formParentRoundId, setFormParentRound] = useState<string[]>([]);
-  const [formPointsPerStage, setFormPointsPerStage] = useState<string | undefined>(undefined);
-  const [redemptionChecked, setRedemptionChecked] = useState(false);
-  const [pointsScoringChecked, setPointsScoringChecked] = useState(false);
+  const [formRoundName, setFormRoundName] = useState(round?.name ?? "");
+  const [formPlayersAdvancing, setFormPlayersAdvancing] = useState(round?.players_advancing?.toString() ?? "");
+  const [formNextRound, setFormNextRound] = useState<string[]>(round?.next_round_id ? [round.next_round_id.toString()] : []);
+  const [formParentRoundId, setFormParentRound] = useState<string[]>(round?.parent_round_id ? [round.parent_round_id.toString()] : []);
+  const [formPointsPerStage, setFormPointsPerStage] = useState<string>(round?.points_per_stage ?? "");
+  const [redemptionChecked, setRedemptionChecked] = useState(round?.parent_round_id != null);
+  const [pointsScoringChecked, setPointsScoringChecked] = useState(round?.points_per_stage != null);
 
-  // Sync form state whenever the round changes
+  // Sync form state whenever the round or rounds changes
   useEffect(() => {
-    setFormRoundName(roundName);
-    setFormPlayersAdvancing(playersAdvancing.toString());
+    setFormRoundName(round?.name ?? "");
+    setFormPlayersAdvancing(round?.players_advancing?.toString() ?? "1");
     setFormNextRound(round?.next_round_id ? [round.next_round_id.toString()] : []);
     setFormParentRound(round?.parent_round_id ? [round.parent_round_id.toString()] : []);
-    setFormPointsPerStage(round?.points_per_stage);
-    setRedemptionChecked(round?.parent_round_id != null);
-    setPointsScoringChecked(round?.points_per_stage != null);
-  }, [round, roundName, playersAdvancing]);
+    setFormPointsPerStage(round?.points_per_stage ?? "");
+    setRedemptionChecked(!!round?.parent_round_id);
+    setPointsScoringChecked(!!round?.points_per_stage);
+  }, [round, rounds]);
 
   const submitWithGuards = async () => {
-    if (!formRoundName.trim()) {
+    if (!formRoundName) {
       toaster.create({
         title: "Invalid Round Name",
         description: "Round name cannot be empty.",
@@ -80,10 +72,6 @@ export default function RoundModal({
 
     const nextRoundId = formNextRound?.[0] ? Number(formNextRound[0]) : undefined;
     const parentRoundId = formParentRoundId?.[0] ? Number(formParentRoundId[0]) : undefined;
-
-    setRoundName(formRoundName);
-    setPlayersAdvancing(advancing);
-
     onSubmitForm(formRoundName, advancing, nextRoundId, parentRoundId, formPointsPerStage);
     return true;
   };
@@ -94,9 +82,12 @@ export default function RoundModal({
       .map(r => ({ label: r.name, value: r.id.toString() })),
   });
 
-  const defaultNextRoundField = rounds?.find(r => r.id === round?.next_round_id);
-  const defaultParentRoundField = rounds?.find(r => r.id === round?.parent_round_id);
-
+  const allParentRounds = createListCollection({
+    items: (rounds ?? [])
+      .filter(r => r.parent_round_id === null && r.id !== round?.id)
+      .map(r => ({ label: r.name, value: r.id.toString() })),
+  });
+  
   const formBody = (
     <VStack gap={4} align="stretch">
       <Field.Root>
@@ -119,7 +110,7 @@ export default function RoundModal({
       <Field.Root>
         <Select.Root
           collection={otherRounds}
-          defaultValue={defaultNextRoundField ? [defaultNextRoundField.id.toString()] : []}
+          value={formNextRound}
           onValueChange={({ value }) => setFormNextRound(value)}
           size="sm"
         >
@@ -161,8 +152,8 @@ export default function RoundModal({
           {redemptionChecked && (
             <Field.Root>
               <Select.Root
-                collection={otherRounds}
-                defaultValue={defaultParentRoundField ? [defaultParentRoundField.id.toString()] : []}
+                collection={allParentRounds}
+                value={formParentRoundId}
                 onValueChange={({ value }) => setFormParentRound(value)}
                 size="sm"
               >
@@ -179,7 +170,7 @@ export default function RoundModal({
                 </Select.Control>
                 <Select.Positioner>
                   <Select.Content>
-                    {otherRounds.items.map((otherRound) => (
+                    {allParentRounds.items.map((otherRound) => (
                       <Select.Item key={otherRound.value} item={otherRound}>
                         {otherRound.label}
                         <Select.ItemIndicator />
@@ -199,7 +190,7 @@ export default function RoundModal({
           checked={pointsScoringChecked}
           onCheckedChange={(e) => {
             setPointsScoringChecked(!!e.checked);
-            if (!e.checked) setFormPointsPerStage(undefined);
+            if (!e.checked) setFormPointsPerStage("");
           }}
         >
           <Checkbox.HiddenInput />

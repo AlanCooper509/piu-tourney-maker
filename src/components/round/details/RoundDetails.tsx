@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Box, HStack, Link, Text, VStack } from "@chakra-ui/react";
+import { Box, HStack, Text, VStack } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 
 import StartRoundButton from "../StartRoundButton";
 import EndRoundButton from "../EndRoundButton/EndRoundButton";
@@ -16,7 +16,8 @@ import type { Stage } from "../../../types/Stage";
 interface RoundDetailsProps {
   round: Round | null;
   setRound: (round: Round | null) => void;
-  rounds?: Round[];
+  rounds: Round[];
+  setRounds: React.Dispatch<React.SetStateAction<Round[]>>;
   players: PlayerRound[] | null;
   stages: Stage[] | null;
   loading: boolean;
@@ -28,6 +29,7 @@ export function RoundDetails({
   round,
   setRound,
   rounds,
+  setRounds,
   players,
   stages,
   loading,
@@ -35,16 +37,11 @@ export function RoundDetails({
   tourneyId,
 }: RoundDetailsProps) {
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourneyId);
+  const navigate = useNavigate();
 
-  // Local edit state only
-  const [roundNameDraft, setRoundNameDraft] = useState<string | null>(null);
-  const [playersAdvancingDraft, setPlayersAdvancingDraft] = useState<number | null>(null);
-
-  // If not editing, fall back to props
-  const roundName = roundNameDraft ?? round?.name ?? "";
-  const playersAdvancing = playersAdvancingDraft ?? round?.players_advancing ?? -1;
-
-  const nextRound = rounds?.find((r) => r.id === round?.next_round_id);
+  const roundName = round?.name ?? "";
+  const playersAdvancing = round?.players_advancing ?? -1;
+  const nextRound = rounds.find((r) => r.id === round?.next_round_id);
 
   return (
     <>
@@ -62,10 +59,7 @@ export function RoundDetails({
                     round={round}
                     setRound={setRound}
                     rounds={rounds}
-                    roundName={roundName}
-                    setRoundName={setRoundNameDraft}
-                    playersAdvancing={playersAdvancing}
-                    setPlayersAdvancing={setPlayersAdvancingDraft}
+                    setRounds={setRounds}
                   />
                 </Box>
               )}
@@ -75,13 +69,19 @@ export function RoundDetails({
                 playersAdvancing={playersAdvancing}
                 roundStatus={round?.status}
               />
-              <Text>Scoring: {round.points_per_stage ? "Points" : "Cumulative"}</Text>
+              <Text>Scoring: {round.points_per_stage ? `Points (${round.points_per_stage.replaceAll(',', ', ')})` : "Cumulative"}</Text>
               {round && round.next_round_id && nextRound && (
                 <Text>
                   Next Round:{" "}
-                  <Link href={`/tourney/${tourneyId}/round/${nextRound.id}`}>
+                  <Text
+                    as="span"
+                    color="cyan.solid"
+                    cursor="pointer"
+                    fontWeight="bold"
+                    onClick={() => navigate(`/tourney/${tourneyId}/round/${nextRound.id}`)}
+                  >
                     {nextRound.name}
-                  </Link>
+                  </Text>
                 </Text>
               )}
               <HStack mt={2}>
