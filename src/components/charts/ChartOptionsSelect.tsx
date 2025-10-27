@@ -10,7 +10,7 @@ export function ChartTypeLevelSelect({ value, onChange, options }: ChartTypeLeve
   // create the collection dynamically based on options
   const collection = createListCollection({
     items: options.map((opt) => ({
-      label: `${opt.type} ${opt.level}`,
+      label: `${opt.type[0]}${opt.level}`,
       value: JSON.stringify(opt), // serialize object for Select
     })),
   });
@@ -19,7 +19,7 @@ export function ChartTypeLevelSelect({ value, onChange, options }: ChartTypeLeve
     <Select.Root
       collection={collection}
       size="sm"
-      width="200px"
+      width="120px"
       value={value === "" ? [] : [JSON.stringify(value)]}
       onValueChange={(details) => {
         const val = details.value[0];
@@ -33,7 +33,7 @@ export function ChartTypeLevelSelect({ value, onChange, options }: ChartTypeLeve
     >
       <Select.HiddenSelect />
       <Select.Control>
-        <Select.Trigger>
+        <Select.Trigger fontSize="xs">
           <Select.ValueText placeholder="Type / Lv." />
         </Select.Trigger>
         <Select.IndicatorGroup>
