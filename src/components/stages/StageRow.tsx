@@ -38,7 +38,7 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
       key={stage.id}
       mb={2}
       p={2}
-      w={["xs", "md", "md", "sm"]}
+      w="full"
       borderWidth="1px"
       borderRadius="md"
       borderColor="gray.400"

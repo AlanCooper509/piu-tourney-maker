@@ -19,7 +19,7 @@ export function ChartTypeLevelSelect({ value, onChange, options }: ChartTypeLeve
     <Select.Root
       collection={collection}
       size="sm"
-      width="140px"
+      width="200px"
       value={value === "" ? [] : [JSON.stringify(value)]}
       onValueChange={(details) => {
         const val = details.value[0];
@@ -44,7 +44,7 @@ export function ChartTypeLevelSelect({ value, onChange, options }: ChartTypeLeve
         <Select.Positioner>
           <Select.Content>
             {collection.items.map((item) => (
-              <Select.Item key={item.value} item={item}>
+              <Select.Item key={item.value} item={item} fontSize="sm">
                 {item.label}
                 <Select.ItemIndicator />
               </Select.Item>

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import {
+  useBreakpointValue,
   Combobox,
   HStack,
   IconButton,
@@ -80,6 +81,12 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
     resetInput();
   };
 
+  const submitLabel = useBreakpointValue({
+    base: "",       // icon only
+    sm: "Add",      // small -> just "Add"
+    md: "Add to Pool", // medium+ -> full text
+  });
+
   return (
     <HStack my={2} gap={2} alignContent="center" justifyContent="center" borderRadius="md">
       {/* Chart name Combobox */}
@@ -87,7 +94,6 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
         collection={collection}
         onInputValueChange={(e) => filter(e.inputValue)}
         onValueChange={(e) => setChartName(e.value[0] ?? "")}
-        width="180px"
         size="sm"
       >
         <Combobox.Control>
@@ -105,6 +111,7 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
                 <Combobox.Item
                   key={item.value}
                   item={item}
+                  fontSize="sm"
                 >
                   {item.label}
                   <Combobox.ItemIndicator />
@@ -140,7 +147,8 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
         px={2}
         onClick={handleSubmit}
       >
-        Add to Pool <IoAddCircleSharp />
+        {submitLabel}
+        <IoAddCircleSharp />
       </IconButton>
     </HStack>
   );
