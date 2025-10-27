@@ -1,4 +1,4 @@
-import { Box, Heading, Text, HStack } from '@chakra-ui/react';
+import { Box, Heading, Text, HStack, VStack } from '@chakra-ui/react';
 
 import { handleAssignRandomChartToStage } from '../../handlers/handleAssignChartToStage';
 import { handleAssignChartToStage } from '../../handlers/handleAssignChartToStage';
@@ -101,7 +101,7 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
 
   const sortedStages = stages?.slice().sort((a, b) => a.id - b.id) ?? [];
   return (
-    <Box maxWidth="100vw">
+    <Box w={"md"}>
       <HStack mb={2} justifyContent="center" alignItems="center">
         <Heading mb={2}>Stages</Heading>
         {/* Add Stage Button */}
@@ -111,9 +111,10 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
       </HStack>
       {loading && <Text>Loading stages...</Text>}
       {error && <Text color="red">Error: {error.message}</Text>}
-      {!loading && !error && sortedStages.length ? (
-        sortedStages.map(stage => (
-          <StageRow
+      <VStack align={{ base: "center", md: "center", lg: "start" }} justify="center" gap={0}>
+        {!loading && !error && sortedStages.length ? (
+          sortedStages.map(stage => (
+            <StageRow
             key={stage.id}
             stage={stage}
             round={round}
@@ -121,11 +122,12 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
             onChooseChart={onChooseChart}
             onRollChart={onRollChart}
             onAddChartToPool={onAddChartToPool}
-          />
-        ))
-      ) : (
-        !loading && !error && <Text mt={2}>No stages yet.</Text>
-      )}
+            />
+          ))
+        ) : (
+          !loading && !error && <Text mt={2}>No stages yet.</Text>
+        )}
+      </VStack>
     </Box>
   );
 }

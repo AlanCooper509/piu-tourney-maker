@@ -175,7 +175,7 @@ export default function EditablePlayerScores({ player, stages, incrementStagesPl
             />
           ) : (
             <>
-              <Text w="5xl" truncate>
+              <Text w="5xl" truncate fontSize="sm">
                 {chartName}
               </Text>
               <Input
