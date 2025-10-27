@@ -1,14 +1,17 @@
+import React from "react";
 import { Box, VStack, HStack, Link, Text, useBreakpointValue, Button, Spacer, Tag, IconButton, Heading, Container, Separator } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
+import { IoReturnDownBack } from "react-icons/io5";
+
+import getSupabaseTable from "../hooks/getSupabaseTable";
+import calculatePlayerRankingsInRound from "../helpers/calculatePlayerRankingsInRound";
+import { getScoresForPlayer } from "../helpers/getScoresForPlayer";
+import RoundLink from "../components/tourney/RoundLink";
+
 import type { PlayerRound } from "../types/PlayerRound";
 import type { Stage } from "../types/Stage";
 import type { Round } from "../types/Round";
-import getSupabaseTable from "../hooks/getSupabaseTable";
-import { useParams } from "react-router-dom";
-import { getScoresForPlayer } from "../helpers/getScoresForPlayer";
-import RoundLink from "../components/tourney/RoundLink";
-import { IoReturnDownBack } from "react-icons/io5";
-import React from "react";
 
 // --------------------
 // Types
@@ -24,22 +27,6 @@ interface Player {
   name: string;
   songs: Song[];
   total: number;
-}
-
-// --------------------
-// Helpers
-// --------------------
-function mapScoresToSongs(scores: any[]) {
-  return scores.map(s => ({
-    name: s.chart?.name_en ?? "",
-    score: s.score,
-    level: s.chart?.level ?? 0,
-    type: s.chart?.type ?? "??",
-  }));
-}
-
-function calculateTotalScore(songs: { score: number | null }[]) {
-  return songs.reduce((sum, s) => sum + (s.score ?? 0), 0);
 }
 
 // --------------------
@@ -241,52 +228,31 @@ function Leaderboard() {
   // Build leaderboard
   // --------------------
   useEffect(() => {
-    if (!p.length || !round) return;
+    if (!p.length || !s.length || !round) return;
 
-    const stageScores = p.map(player => {
-      const entries = getScoresForPlayer(player, s);
+    const rankings = calculatePlayerRankingsInRound({
+      players: p,
+      stages: s,
+      round
+    });
+
+    // Map back to a structure usable in the leaderboard UI
+    const results: Player[] = rankings.map(([playerId, total]) => {
+      const playerRound = p.find(pr => pr.id === playerId)!;
+      const scores = getScoresForPlayer(playerRound, s);
+
       return {
-        name: player.player_tourneys.player_name,
-        scores: entries.map(e => ({
-          stageId: e.stage.id,
-          score: e.score?.score ?? null,
-          chart: e.chart ?? null
-        }))
+        name: playerRound.player_tourneys.player_name,
+        songs: scores.map(entry => ({
+          name: entry.chart?.name_en ?? "",
+          score: entry.score?.score ?? null,
+          level: entry.chart?.level ?? 0,
+          type: entry.chart?.type ?? "??"
+        })),
+        total
       };
     });
 
-    let results: Player[] = [];
-    const scoring = round.points_per_stage ? round.points_per_stage.split(',').map(str => Number(str.trim())) : [];
-
-    if (round.points_per_stage) {
-      const pointsMap = new Map(stageScores.map(p => [p.name, 0]));
-
-      s.forEach(stage => {
-        const ranked = stageScores
-          .map(p => ({ name: p.name, score: p.scores.find(s => s.stageId === stage.id)?.score ?? null }))
-          .filter((p): p is { name: string; score: number } => p.score !== null)
-          .sort((a, b) => b.score - a.score);
-
-        ranked.forEach(r => {
-          const tieIndex = ranked.findIndex(x => x.score === r.score);
-          pointsMap.set(r.name, (pointsMap.get(r.name) || 0) + (scoring[tieIndex] ?? 0));
-        });
-      });
-
-      results = stageScores.map(p => ({
-        name: p.name,
-        songs: mapScoresToSongs(p.scores),
-        total: pointsMap.get(p.name) ?? 0
-      }));
-    } else {
-      results = stageScores.map(p => ({
-        name: p.name,
-        songs: mapScoresToSongs(p.scores),
-        total: calculateTotalScore(p.scores)
-      }));
-    }
-
-    results.sort((a, b) => b.total - a.total);
     setPlayers(results);
   }, [p, s, round]);
 
