@@ -12,7 +12,7 @@ import { IoAddCircleSharp } from "react-icons/io5";
 
 import { toaster } from "../ui/toaster";
 import type { ChartQuery } from "../../types/ChartQuery";
-import chartsData from "../../data/charts-v2_11_0.json";
+import chartsData from "../../data/charts-v2_12_0.json";
 import { ChartTypeLevelSelect } from "./ChartOptionsSelect";
 
 interface AddChartFormProps {
