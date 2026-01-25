@@ -98,7 +98,7 @@ export default function TourneyHeaderText({
   }
 
   // logic to show either the Add Round or Next Round button (never both at the same time)
-  const showAddRoundButton = tourney && tourney.status !="Complete" && !loadingTourneyAdminStatus && isTourneyAdmin;
+  const showAddRoundButton = tourney && tourney.status !="Complete" && !loadingTourneyAdminStatus && isTourneyAdmin && !nextRoundInList;
   const showNextRoundButton = !showAddRoundButton;
 
   return (
