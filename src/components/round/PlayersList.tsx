@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Box, Heading, HStack, Text, VStack } from '@chakra-ui/react'
+import { useEffect, useMemo, useState } from 'react'
+import { Box, createListCollection, Heading, HStack, Text, useFilter, useListCollection, VStack, type UseListCollectionReturn } from '@chakra-ui/react'
 
 import { handleAddPlayerToRound } from '../../handlers/round/handleAddPlayerToRound'
 import DeletablePlayerRow from './DeletablePlayerRow'
@@ -19,17 +19,17 @@ interface PlayersListProps {
   players: PlayerRound[] | null
   setPlayers: React.Dispatch<React.SetStateAction<PlayerRound[]>>
   stages: Stage[] | null
-  tourneyPlayers?: PlayerTourney[] | null;
+  tourneyPlayers: PlayerTourney[] | null;
   loading: boolean
   error: Error | null
 }
-
 export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers, loading, error }: PlayersListProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
 
   const [addingPlayer, setAddingPlayer] = useState(false);
-
+  const [newName, setNewName] = useState("");
+  
   const onAddPlayer = async (name: string) => {
     if (!round) return;
     try {
@@ -58,6 +58,8 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
     players = sortPlayers(players, stages, round);
   }
 
+  const collection = usePlayerCollection({ players, tourneyPlayers, searchTerm: newName });
+
   return (
     <Box w={"md"}>
       <HStack mb={2} justifyContent="center">
@@ -65,9 +67,10 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
         {!loadingTourneyAdminStatus && isTourneyAdmin &&
           <AddPlayer
             onAdd={onAddPlayer}
+            newName={newName}
+            setNewName={setNewName}
             loading={addingPlayer}
-            tourneyPlayers={tourneyPlayers}
-            roundPlayers={players}
+            collection={collection}
             />
         }
       </HStack>
@@ -100,4 +103,41 @@ function sortPlayers(players: PlayerRound[], stages: Stage[], round: Round) {
     if (player) sortedPlayers.push(player);
   }
   return sortedPlayers;
+}
+
+interface UsePlayerCollectionProps {
+  players: any[] | null;
+  tourneyPlayers: any[] | null;
+  searchTerm: string;
+}
+function usePlayerCollection({ players, tourneyPlayers, searchTerm }: UsePlayerCollectionProps) {
+  const { contains } = useFilter({ sensitivity: "base" });
+
+  // 1. Memoize existing names
+  const roundPlayerNames = useMemo(() => {
+    if (!players) return new Set<string>();
+    return new Set(players.map((p) => p.player_tourneys.player_name));
+  }, [players]);
+
+  // 2. Memoize the base list (filtered by round exclusion)
+  const playerOptions = useMemo(() => {
+    if (!tourneyPlayers) return [];
+    return tourneyPlayers
+      .filter((p) => !roundPlayerNames.has(p.player_name))
+      .map((p) => ({ label: p.player_name, value: p.player_name }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [tourneyPlayers, roundPlayerNames]);
+
+  // 3. Memoize the final collection (filtered by search term)
+  const collection = useMemo(() => {
+    const filtered = !searchTerm 
+      ? playerOptions 
+      : playerOptions.filter((item) => contains(item.label, searchTerm));
+
+    return createListCollection({
+      items: filtered,
+    });
+  }, [playerOptions, searchTerm, contains]);
+
+  return collection;
 }

@@ -21,6 +21,7 @@ export function PlayersList({ players, setPlayers, loading, error }: PlayersList
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
   const [addingPlayer, setAddingPlayer] = useState(false);
+  const [newName, setNewName] = useState("");
 
   const onAddPlayer = async (name: string) => {
     if (!tourney) return;
@@ -57,7 +58,14 @@ export function PlayersList({ players, setPlayers, loading, error }: PlayersList
       <Box>
         <HStack mb={2} justifyContent="center" alignItems="center">
           <Heading mb={2}>Players</Heading>
-          {!loadingTourneyAdminStatus && isTourneyAdmin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
+          {!loadingTourneyAdminStatus && isTourneyAdmin &&
+            <AddPlayer
+              onAdd={onAddPlayer}
+              newName={newName}
+              setNewName={setNewName}
+              loading={addingPlayer}
+            />
+          }
         </HStack>
         {loading && <Text>Loading players...</Text>}
         {error && <Text color="red">Error: {error.message}</Text>}
