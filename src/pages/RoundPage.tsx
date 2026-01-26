@@ -15,6 +15,7 @@ import type { Tourney } from "../types/Tourney";
 import type { Round } from "../types/Round";
 import type { Stage } from "../types/Stage";
 import type { PlayerRound } from "../types/PlayerRound";
+import type { PlayerTourney } from "../types/PlayerTourney";
 
 function RoundPage() {
   const { tourneyId, roundId } = useParams<{
@@ -67,6 +68,14 @@ function RoundPage() {
     "stages",
     { column: "round_id", value: roundId },
     "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)"
+  );
+  const {
+    data: tourneyPlayers,
+    loading: loadingTourneyPlayers,
+    error: errorTourneyPlayers,
+  } = getSupabaseTable<PlayerTourney>(
+    "player_tourneys",
+    { column: "tourney_id", value: tourneyId }
   );
 
   // Stores tourney table details
@@ -150,8 +159,9 @@ function RoundPage() {
               players={players}
               setPlayers={setPlayers}
               stages={stages}
-              loading={loadingPlayers}
-              error={errorPlayers}
+              tourneyPlayers={tourneyPlayers}
+              loading={loadingPlayers || loadingTourneyPlayers}
+              error={errorPlayers || errorTourneyPlayers}
             />
           </Box>
 

@@ -10,6 +10,7 @@ import { useCurrentTourney } from '../../context/CurrentTourneyContext'
 import calculatePlayerRankingsInRound from '../../helpers/calculatePlayerRankingsInRound'
 
 import type { PlayerRound } from '../../types/PlayerRound'
+import type { PlayerTourney } from '../../types/PlayerTourney'
 import type { Round } from '../../types/Round'
 import type { Stage } from '../../types/Stage'
 
@@ -18,11 +19,12 @@ interface PlayersListProps {
   players: PlayerRound[] | null
   setPlayers: React.Dispatch<React.SetStateAction<PlayerRound[]>>
   stages: Stage[] | null
+  tourneyPlayers?: PlayerTourney[] | null;
   loading: boolean
   error: Error | null
 }
 
-export function PlayersList({ round, players, setPlayers, stages, loading, error }: PlayersListProps) {
+export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers, loading, error }: PlayersListProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
 
@@ -60,7 +62,14 @@ export function PlayersList({ round, players, setPlayers, stages, loading, error
     <Box w={"md"}>
       <HStack mb={2} justifyContent="center">
         <Heading mb={2}>Players</Heading>
-        {!loadingTourneyAdminStatus && isTourneyAdmin && <AddPlayer onAdd={onAddPlayer} loading={addingPlayer} />}
+        {!loadingTourneyAdminStatus && isTourneyAdmin &&
+          <AddPlayer
+            onAdd={onAddPlayer}
+            loading={addingPlayer}
+            tourneyPlayers={tourneyPlayers}
+            roundPlayers={players}
+            />
+        }
       </HStack>
       {loading && <Text>Loading players...</Text>}
       {error && <Text color="red">Error: {error.message}</Text>}
