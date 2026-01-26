@@ -55,7 +55,7 @@ export default function DeleteStageButton({ round, stageId, setStages }: AddStag
       mx={1}
       onClick={onDeleteStage}
     >
-      Remove Stage<FaTrash />
+      <FaTrash />
     </IconButton>
   );
 }

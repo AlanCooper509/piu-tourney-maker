@@ -48,14 +48,26 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
           <Box cursor="pointer" w="full">
             {/* Stage Header */}
             <Box w="full" fontWeight="bold" textAlign="start">
-              <HStack>
-                <IoChevronForward
-                  style={{
-                    transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.2s ease',
-                  }}
-                />
-                Chosen: {!stage.charts && <Span fontWeight="normal">???</Span>}
+              <HStack justify="space-between" w="full">
+                <HStack>
+                  <IoChevronForward
+                    style={{
+                      transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s ease',
+                    }}
+                  />
+                  <Text>
+                    Chosen: {!stage.charts && <Span fontWeight="normal">???</Span>}
+                  </Text>
+                </HStack>
+
+                {!loadingTourneyAdminStatus && isTourneyAdmin && (
+                  <DeleteStageButton
+                    round={round}
+                    stageId={stage.id}
+                    setStages={setStages}
+                  />                  
+                )}
               </HStack>
             </Box>
 
@@ -68,12 +80,6 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
             {/* Admin Buttons */}
             {!loadingTourneyAdminStatus && isTourneyAdmin && (
               <HStack alignContent="center" justify="center" mt={2}>
-                <DeleteStageButton
-                  round={round}
-                  stageId={stage.id}
-                  setStages={setStages}
-                />
-
                 {!stage.chart_id &&
                   stage.chart_pools &&
                   stage.chart_pools.length !== 0 && (
