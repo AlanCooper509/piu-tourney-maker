@@ -4,20 +4,28 @@ export function mergeAndFlattenRounds(
   existingRounds: Round[],
   newRounds: Round[]
 ): { sorted: Round[]; roundMap: Map<number, Round> } {
-  // Merge without duplicates
-  const merged = [...existingRounds];
-  newRounds.forEach(r => {
-    if (!existingRounds.find(er => er.id === r.id)) {
-      merged.push(r);
-    }
+
+  const roundById = new Map<number, Round>();
+
+  // Start with existing
+  existingRounds.forEach(r => {
+    roundById.set(r.id, r);
   });
 
-  // Build map for quick lookup
+  // OVERWRITE with fresh rows
+  newRounds.forEach(r => {
+    roundById.set(r.id, r);
+  });
+
+  const merged = Array.from(roundById.values());
+
+  // Build map for lookup
   const roundMap = new Map<number, Round>();
   merged.forEach(r => roundMap.set(r.id, r));
 
-  // Flatten rounds by parent
+  // sorting logic
   const sorted: Round[] = [];
+
   const pushRoundWithChildren = (r: Round) => {
     sorted.push(r);
     merged

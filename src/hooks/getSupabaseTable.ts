@@ -10,37 +10,32 @@ function getSupabaseTable<T>(
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
+  const fetchTable = async () => {
+    setLoading(true);
+
+    let query = supabaseClient.from(tableName).select(selectClause);
+
+    if (filter?.column && filter.value !== undefined) {
+      query = query.eq(filter.column, filter.value);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error(`Error fetching ${tableName}:`, error);
+      setError(error);
+    } else {
+      setData(data as T[]);
+    }
+
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchTable = async () => {
-      setLoading(true);
-
-      let query = supabaseClient.from(tableName).select(selectClause);
-
-      if (filter && filter.column && filter.value !== undefined) {
-        query = query.eq(filter.column, filter.value);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error(`Error fetching ${tableName}:`, error);
-        setError(error);
-      } else {
-        setData(data as T[]);
-      }
-
-      setLoading(false);
-    };
-
     fetchTable();
-  }, [
-    tableName,
-    filter?.column,
-    filter?.value,
-    selectClause
-  ]);
+  }, [tableName, filter?.column, filter?.value, selectClause]);
 
-  return { data, loading, error };
+  return { data, loading, error, refetch: fetchTable };
 }
 
 export default getSupabaseTable;

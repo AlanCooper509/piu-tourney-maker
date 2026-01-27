@@ -2,6 +2,7 @@ import { Flex, Box, Container, Separator } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
+import { supabaseClient } from "../lib/supabaseClient";
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import { RoundDetails } from "../components/round/details/RoundDetails";
 import { PlayersList } from "../components/round/PlayersList";
@@ -27,8 +28,8 @@ function RoundPage() {
 
   const { tourney, setTourney } = useCurrentTourney();
 
-  const [round, setRound] = useState<Round | null>(null);
   const [tourneyRounds, setTourneyRounds] = useState<Round[]>([]);
+  const [round, setRound] = useState<Round | null>(null);
   const [players, setPlayers] = useState<PlayerRound[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
 
@@ -47,6 +48,7 @@ function RoundPage() {
     data: allRoundsInTourney,
     loading: loadingRounds,
     error: errorRounds,
+    refetch: refetchRounds
   } = getSupabaseTable<Round>("rounds", {
     column: "tourney_id",
     value: tourneyId,
@@ -55,6 +57,7 @@ function RoundPage() {
     data: playersData,
     loading: loadingPlayers,
     error: errorPlayers,
+    refetch: refetchPlayers
   } = getSupabaseTable<PlayerRound>(
     "player_rounds",
     { column: "round_id", value: roundId },
@@ -64,6 +67,7 @@ function RoundPage() {
     data: stagesData,
     loading: loadingStages,
     error: errorStages,
+    refetch: refetchStages
   } = getSupabaseTable<Stage>(
     "stages",
     { column: "round_id", value: roundId },
@@ -73,6 +77,7 @@ function RoundPage() {
     data: tourneyPlayers,
     loading: loadingTourneyPlayers,
     error: errorTourneyPlayers,
+    refetch: refetchTourneyPlayers
   } = getSupabaseTable<PlayerTourney>(
     "player_tourneys",
     { column: "tourney_id", value: tourneyId }
@@ -97,12 +102,12 @@ function RoundPage() {
 
   // Stores current round based on tourneyRounds
   useEffect(() => {
-      if (tourneyRounds.length > 0) {
-        // Stores current round if roundId is found in tourney's rounds
-        const found = tourneyRounds.find((r) => r.id === Number(roundId));
-        setRound(found ?? null);
-      }
-  }, [tourneyRounds, roundId]);
+    if (!allRoundsInTourney?.length) return;
+    const fresh = allRoundsInTourney.find(
+      r => r.id === Number(roundId)
+    );
+    setRound(fresh ?? null);
+  }, [allRoundsInTourney, roundId]);
 
   // Sync players when playersData changes
   useEffect(() => {
@@ -122,6 +127,89 @@ function RoundPage() {
       setStages(sortedStages);
     }
   }, [stagesData]);
+
+  // Subscribe to scores table changes (to update player scores in real-time)
+  useEffect(() => {
+    const channel = supabaseClient
+      .channel('round-changes')
+      .on(
+        // Listen to all changes on scores table
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'scores' },
+        (payload) => {
+          const newRow = payload.new as { stage_id?: number };
+          const eventType = payload.eventType;
+          if (eventType === 'DELETE' || (newRow?.stage_id && stages.map(s => s.id).includes(newRow.stage_id))) {
+            refetchStages(); // scores table changed; re-run the joined query on stages table
+          }
+        }
+      )
+      .on(
+        // Listen to all changes on stages table
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'stages' },
+        (payload) => {
+          const newRow = payload.new as { round_id?: number };
+          const eventType = payload.eventType;
+          if (eventType === 'DELETE' || (newRow?.round_id && round?.id === newRow.round_id)) {
+            refetchStages();
+          }
+        }
+      )
+      .on(
+        // Listen to all changes on chart_pools table
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'chart_pools' },
+        (payload) => {
+          const newRow = payload.new as { stage_id?: number };
+          const eventType = payload.eventType;
+          if (eventType === 'DELETE' || (newRow?.stage_id && stages.map(s => s.id).includes(newRow.stage_id))) {
+            refetchStages();
+          }
+        }
+      )
+      .on(
+        // Listen to all changes on player_rounds table
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'player_rounds' },
+        (payload) => {
+          const newRow = payload.new as { round_id?: number };
+          const eventType = payload.eventType;
+          if (eventType === 'DELETE' || (newRow?.round_id && round?.id === newRow.round_id)) {
+            refetchPlayers();
+          }
+        }
+      )
+      .on(
+        // Listen to all changes on rounds table
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'rounds' },
+        (payload) => {
+          const newRow = payload.new as { tourney_id?: number };
+          const eventType = payload.eventType;
+          if (eventType === 'DELETE' || (newRow?.tourney_id && Number(tourneyId) === newRow.tourney_id)) {
+            refetchRounds();
+          }
+        }
+      )
+      .on(
+        // Listen to all changes on player_tourneys table
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'player_tourneys' },
+        (payload) => {
+          const newRow = payload.new as { tourney_id?: number };
+          const eventType = payload.eventType;
+          if (eventType === 'DELETE' || (newRow?.tourney_id && Number(tourneyId) === newRow.tourney_id)) {
+            refetchTourneyPlayers();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabaseClient.removeChannel(channel);
+    };
+  }, [roundId, tourney, tourneyPlayers, round, stages, players]);
 
   return (
     <Box mt={8}>
