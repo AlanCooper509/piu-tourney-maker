@@ -132,40 +132,44 @@ function RoundPage() {
 
   // Subscribe to scores table changes (to update player scores in real-time)
   useEffect(() => {
-    const channel = supabaseClient
-      .channel('round-changes')
+    const scoresChannel = supabaseClient
+      .channel('scores-changes')
       .on(
-        // Listen to all changes on scores table
         'postgres_changes',
         { event: '*', schema: 'public', table: 'scores' },
-        (payload) => {
+        payload => {
           setStages(prev => {
             if (payload.eventType === 'DELETE') {
               return deleteScoreFromStages(prev, payload.old.id);
             }
-
             const incoming = payload.new as Score;
             return upsertScoreInStages(prev, incoming);
           });
         }
       )
+      .subscribe();
+    
+    const stagesChannel = supabaseClient
+      .channel('stages-changes')
       .on(
-        // Listen to all changes on stages table
         'postgres_changes',
         { event: '*', schema: 'public', table: 'stages' },
-          payload => {
-            setStages(prev => {
-              if (payload.eventType === 'DELETE') {
-                return deleteStage(prev, payload.old.id);
-              }
+        payload => {
+          setStages(prev => {
+            if (payload.eventType === 'DELETE') {
+              return deleteStage(prev, payload.old.id);
+            }
 
-              const incoming = payload.new as Stage;
-              return upsertStage(prev, incoming);
-            });
-          }
+            const incoming = payload.new as Stage;
+            return upsertStage(prev, incoming);
+          });
+        }
       )
+      .subscribe();
+    
+    const chartPoolsChannel = supabaseClient
+      .channel('chart-pools-changes')
       .on(
-        // Listen to all changes on chart_pools table
         'postgres_changes',
         { event: '*', schema: 'public', table: 'chart_pools' },
         (payload) => {
@@ -179,8 +183,11 @@ function RoundPage() {
           });
         }
       )
+      .subscribe();
+
+    const playerRoundsChannel = supabaseClient
+      .channel('player-rounds-changes')
       .on(
-        // Listen to all changes on player_rounds table
         'postgres_changes',
         { event: '*', schema: 'public', table: 'player_rounds' },
         (payload) => {
@@ -191,8 +198,11 @@ function RoundPage() {
           }
         }
       )
+      .subscribe();
+    
+    const roundsChannel = supabaseClient
+      .channel('tourney-rounds-changes')
       .on(
-        // Listen to all changes on rounds table
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rounds' },
         (payload) => {
@@ -203,8 +213,11 @@ function RoundPage() {
           }
         }
       )
+      .subscribe();
+    
+    const playerTourneyChannel = supabaseClient
+      .channel('tourney-players-changes')
       .on(
-        // Listen to all changes on player_tourneys table
         'postgres_changes',
         { event: '*', schema: 'public', table: 'player_tourneys' },
         (payload) => {
@@ -216,9 +229,14 @@ function RoundPage() {
         }
       )
       .subscribe();
-
+    
     return () => {
-      supabaseClient.removeChannel(channel);
+      supabaseClient.removeChannel(scoresChannel);
+      supabaseClient.removeChannel(stagesChannel);
+      supabaseClient.removeChannel(chartPoolsChannel);
+      supabaseClient.removeChannel(playerRoundsChannel);
+      supabaseClient.removeChannel(roundsChannel);
+      supabaseClient.removeChannel(playerTourneyChannel);
     };
   }, [roundId, tourney, tourneyPlayers, round, players]);
 
