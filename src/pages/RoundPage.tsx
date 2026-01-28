@@ -220,7 +220,7 @@ function RoundPage() {
     return () => {
       supabaseClient.removeChannel(channel);
     };
-  }, [roundId, tourney, tourneyPlayers, round, stages, players]);
+  }, [roundId, tourney, tourneyPlayers, round, players]);
 
   return (
     <Box mt={8}>
