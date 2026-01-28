@@ -33,7 +33,6 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
 
   const [isOpen, setIsOpen] = useState(!stage.chart_id);
-  const toggleOpen = () => setIsOpen(prev => !prev);
 
   useEffect(() => {
     setIsOpen(!stage.chart_id);
@@ -141,7 +140,6 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
             stage={stage}
             setStages={setStages}
             onChooseChart={onChooseChart}
-            toggleOpen={toggleOpen}
           />
         </Collapsible.Content>
       </Collapsible.Root>

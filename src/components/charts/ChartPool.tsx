@@ -13,10 +13,9 @@ interface ChartPoolProps {
   stage: Stage;
   setStages: React.Dispatch<React.SetStateAction<Stage[]>>;
   onChooseChart: (stageId: number, chartId: number) => Promise<void>;
-  toggleOpen: () => void;
 }
 
-export default function ChartPool({ stage, setStages, onChooseChart, toggleOpen }: ChartPoolProps) {
+export default function ChartPool({ stage, setStages, onChooseChart }: ChartPoolProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
 
@@ -81,7 +80,6 @@ export default function ChartPool({ stage, setStages, onChooseChart, toggleOpen 
                     mr={2}
                     onClick={async () => {
                       await onChooseChart(stage.id, chartInPool.charts!.id);
-                      toggleOpen();
                     }}
                   >
                     <MdOutlineCheck />
