@@ -10,6 +10,7 @@ import { StagesList } from "../components/stages/StagesList";
 import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeaderText";
 import { Toaster } from "../components/ui/toaster";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
+import { deleteScoreFromStages, upsertScoreInStages } from "../helpers/state/stages";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 
 import type { Tourney } from "../types/Tourney";
@@ -17,6 +18,7 @@ import type { Round } from "../types/Round";
 import type { Stage } from "../types/Stage";
 import type { PlayerRound } from "../types/PlayerRound";
 import type { PlayerTourney } from "../types/PlayerTourney";
+import type { Score } from "../types/Score";
 
 function RoundPage() {
   const { tourneyId, roundId } = useParams<{
@@ -137,11 +139,14 @@ function RoundPage() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'scores' },
         (payload) => {
-          const newRow = payload.new as { stage_id?: number };
-          const eventType = payload.eventType;
-          if (eventType === 'DELETE' || (newRow?.stage_id && stages.map(s => s.id).includes(newRow.stage_id))) {
-            refetchStages(); // scores table changed; re-run the joined query on stages table
-          }
+          setStages(prev => {
+            if (payload.eventType === 'DELETE') {
+              return deleteScoreFromStages(prev, payload.old.id);
+            }
+
+            const incoming = payload.new as Score;
+            return upsertScoreInStages(prev, incoming);
+          });
         }
       )
       .on(
