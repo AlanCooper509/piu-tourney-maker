@@ -43,3 +43,51 @@ export function deleteScoreFromStages(
     };
   });
 }
+
+// Used by RealTime updates on RoundPage
+export function upsertStage(
+  stages: Stage[],
+  incoming: Stage
+): Stage[] {
+  const existing = stages.find(s => s.id === incoming.id);
+
+  if (existing) {
+    return stages.map(stage =>
+      stage.id === incoming.id
+        ? {
+            // overwrite scalar fields from incoming
+            ...incoming,
+
+            // preserve hydrated relations
+            scores: stage.scores ?? [],
+            chart_pools: stage.chart_pools ?? [],
+
+            // hydrate charts only if chart_id exists
+            charts:
+              incoming.chart_id != null
+                ? stage.chart_pools?.find(pool => pool.chart_id === incoming.chart_id)?.charts ?? null
+                : null,
+          }
+        : stage
+    );
+  }
+
+  // INSERT (new stage from realtime)
+  return [
+    ...stages,
+    {
+      ...incoming,
+      scores: [],
+      chart_pools: [],
+      charts: null,
+    }
+  ];
+}
+
+// Used by RealTime updates on RoundPage
+export function deleteStage(
+  stages: Stage[],
+  stageId: number
+): Stage[] {
+  return stages.filter(stage => stage.id !== stageId);
+}

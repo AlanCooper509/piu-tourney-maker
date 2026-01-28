@@ -10,7 +10,7 @@ import { StagesList } from "../components/stages/StagesList";
 import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeaderText";
 import { Toaster } from "../components/ui/toaster";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
-import { deleteScoreFromStages, upsertScoreInStages } from "../helpers/state/stages";
+import { deleteScoreFromStages, deleteStage, upsertScoreInStages, upsertStage } from "../helpers/state/stages";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 
 import type { Tourney } from "../types/Tourney";
@@ -153,13 +153,16 @@ function RoundPage() {
         // Listen to all changes on stages table
         'postgres_changes',
         { event: '*', schema: 'public', table: 'stages' },
-        (payload) => {
-          const newRow = payload.new as { round_id?: number };
-          const eventType = payload.eventType;
-          if (eventType === 'DELETE' || (newRow?.round_id && round?.id === newRow.round_id)) {
-            refetchStages();
+          payload => {
+            setStages(prev => {
+              if (payload.eventType === 'DELETE') {
+                return deleteStage(prev, payload.old.id);
+              }
+
+              const incoming = payload.new as Stage;
+              return upsertStage(prev, incoming);
+            });
           }
-        }
       )
       .on(
         // Listen to all changes on chart_pools table

@@ -28,8 +28,15 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
     const updatedStage = await handleAssignChartToStage(stageId, chosenChartId,);
     if (!updatedStage) return;
 
-    setStages((prevStages) =>
-      prevStages.map((stage) => (stage.id === stageId ? updatedStage : stage))
+    setStages(prevStages =>
+      prevStages.map(stage =>
+        stage.id === stageId
+          ? {
+              ...stage,        // keep charts, pools, scores
+              ...updatedStage  // overwrite changed columns (chart_id)
+            }
+          : stage
+      )
     );
 
     toaster.create({
