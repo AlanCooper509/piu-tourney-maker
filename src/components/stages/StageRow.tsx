@@ -1,16 +1,18 @@
-import { useState } from "react";
-import type { Round } from "../../types/Round";
-import type { Stage } from "../../types/Stage";
+import { useEffect, useState } from "react";
 import { Box, Button, Collapsible, Text, HStack, Link, Separator, Span } from "@chakra-ui/react";
 import { IoArrowForward, IoChevronForward } from "react-icons/io5";
+
 import { ChartRow } from "../charts/ChartRow";
 import DeleteStageButton from "./DeleteStageButton";
 import { RollChartButton } from "./RollChartButton";
 import AddChartForm from "../charts/AddChartForm";
-import type { ChartQuery } from "../../types/ChartQuery";
 import ChartPool from "../charts/ChartPool";
 import { useIsAdminForTourney } from '../../context/admin/AdminTourneyContext';
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
+
+import type { ChartQuery } from "../../types/ChartQuery";
+import type { Round } from "../../types/Round";
+import type { Stage } from "../../types/Stage";
 
 interface StageRowProps {
   stage: Stage;
@@ -30,8 +32,12 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
 
-  const [isOpen, setIsOpen] = useState(!stage.charts);
+  const [isOpen, setIsOpen] = useState(!stage.chart_id);
   const toggleOpen = () => setIsOpen(prev => !prev);
+
+  useEffect(() => {
+    setIsOpen(!stage.chart_id);
+  }, [stage.chart_id]);
 
   return (
     <Box

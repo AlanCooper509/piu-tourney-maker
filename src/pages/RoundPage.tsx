@@ -10,15 +10,16 @@ import { StagesList } from "../components/stages/StagesList";
 import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeaderText";
 import { Toaster } from "../components/ui/toaster";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
-import { deleteScoreFromStages, deleteStage, upsertScoreInStages, upsertStage } from "../helpers/state/stages";
+import {deleteChartPoolFromStages, deleteScoreFromStages, deleteStage, upsertChartPoolInStages, upsertScoreInStages, upsertStage } from "../helpers/state/stages";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 
-import type { Tourney } from "../types/Tourney";
-import type { Round } from "../types/Round";
-import type { Stage } from "../types/Stage";
+import type { ChartPool } from "../types/ChartPool";
 import type { PlayerRound } from "../types/PlayerRound";
 import type { PlayerTourney } from "../types/PlayerTourney";
+import type { Tourney } from "../types/Tourney";
+import type { Round } from "../types/Round";
 import type { Score } from "../types/Score";
+import type { Stage } from "../types/Stage";
 
 function RoundPage() {
   const { tourneyId, roundId } = useParams<{
@@ -68,8 +69,7 @@ function RoundPage() {
   const {
     data: stagesData,
     loading: loadingStages,
-    error: errorStages,
-    refetch: refetchStages
+    error: errorStages
   } = getSupabaseTable<Stage>(
     "stages",
     { column: "round_id", value: roundId },
@@ -169,11 +169,14 @@ function RoundPage() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'chart_pools' },
         (payload) => {
-          const newRow = payload.new as { stage_id?: number };
-          const eventType = payload.eventType;
-          if (eventType === 'DELETE' || (newRow?.stage_id && stages.map(s => s.id).includes(newRow.stage_id))) {
-            refetchStages();
-          }
+          setStages(prev => {
+            if (payload.eventType === 'DELETE') {
+              return deleteChartPoolFromStages(prev, payload.old.id);
+            }
+
+            const incoming = payload.new as ChartPool;
+            return upsertChartPoolInStages(prev, incoming);
+          });
         }
       )
       .on(
