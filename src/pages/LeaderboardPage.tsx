@@ -2,16 +2,23 @@ import React from "react";
 import { Box, VStack, HStack, Link, Text, useBreakpointValue, Button, Spacer, Tag, IconButton, Heading, Container, Separator } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { supabaseClient } from "../lib/supabaseClient";
 import { IoReturnDownBack } from "react-icons/io5";
 
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import calculatePlayerRankingsInRound from "../helpers/calculatePlayerRankingsInRound";
 import { getScoresForPlayer } from "../helpers/getScoresForPlayer";
 import RoundLink from "../components/tourney/RoundLink";
+import { deleteScoreFromStages, upsertScoreInStages } from "../helpers/state/stages";
+import { deletePlayerFromRound, upsertPlayerInRound } from "../helpers/state/playerRounds";
+import { deletePlayerTourney, upsertPlayerTourney } from "../helpers/state/playerTourney";
 
 import type { PlayerRound } from "../types/PlayerRound";
 import type { Stage } from "../types/Stage";
 import type { Round } from "../types/Round";
+import type { Score } from "../types/Score";
+import type { ChartPool } from "../types/ChartPool";
+import type { PlayerTourney } from "../types/PlayerTourney";
 
 // --------------------
 // Types
@@ -225,9 +232,11 @@ function LeaderboardHeader({
 function Leaderboard() {
   const { tourneyId, roundId } = useParams<{ tourneyId: string; roundId: string }>();
   if (!tourneyId || !roundId) return <div>Invalid Tourney or Round ID</div>;
+  const activeRoundId = Number(roundId);
 
   const [round, setRound] = useState<Round | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [tourneyPlayers, setTourneyPlayers] = useState<PlayerTourney[]>([]);
   const [updatedPlayer, _setUpdatedPlayer] = useState<string | null>(null);
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set());
   const [p, setP] = useState<PlayerRound[]>([]);
@@ -238,7 +247,8 @@ function Leaderboard() {
 
   const { data: rounds } = getSupabaseTable<Round>('rounds', { column: 'id', value: roundId });
   const { data: playersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: roundId }, "*, player_tourneys(player_name)");
-  const { data: stagesData } = getSupabaseTable<Stage>("stages", { column: "round_id", value: roundId }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
+  const { data: stagesData, refetch: refetchStages } = getSupabaseTable<Stage>("stages", { column: "round_id", value: roundId }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
+  const { data: tourneyPlayersData } = getSupabaseTable<PlayerTourney>("player_tourneys", { column: "tourney_id", value: tourneyId });
 
   // --------------------
   // Sync Supabase data
@@ -246,6 +256,116 @@ function Leaderboard() {
   useEffect(() => { if (rounds?.length) setRound(rounds.find(r => r.id === Number(roundId)) ?? null); }, [rounds, roundId]);
   useEffect(() => { if (playersData) setP([...playersData].sort((b, a) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())); }, [playersData]);
   useEffect(() => { if (stagesData) setS([...stagesData].sort((a, b) => a.id - b.id)); }, [stagesData]);
+  useEffect(() => { if (tourneyPlayersData) setTourneyPlayers([...tourneyPlayersData]); }, [tourneyPlayersData]);
+
+  // --------------------
+  // Real-time subscriptions for highlighting updated players
+  // --------------------
+  useEffect(() => {
+    // ---- SCORES ----
+    const scoresChannel = supabaseClient
+      .channel('leaderboard-scores')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'scores' },
+        payload => {
+          if (payload.eventType === 'DELETE') {
+            setS(prev => deleteScoreFromStages(prev, payload.old.id));
+            return;
+          }
+
+          const incoming = payload.new as Score;
+          const stage = s.find(st => st.id === incoming.stage_id);
+          if (!stage || stage.round_id !== activeRoundId) return;
+
+          setS(prev => upsertScoreInStages(prev, incoming));
+        }
+      )
+      .subscribe();
+
+    // ---- PLAYER ROUNDS ----
+    const playerRoundsChannel = supabaseClient
+      .channel('leaderboard-player-rounds')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'player_rounds' },
+        payload => {
+          if (payload.eventType === 'DELETE') {
+            setP(prev => deletePlayerFromRound(prev, payload.old.id));
+            return;
+          }
+
+          const incoming = payload.new as PlayerRound;
+          if (incoming.round_id !== activeRoundId) return;
+
+          setP(prev =>
+            upsertPlayerInRound(prev, incoming, tourneyPlayers ?? [])
+          );
+        }
+      )
+      .subscribe();
+
+    // ---- STAGES / CHART POOLS ----
+    // These are complex joins → refetch instead of incremental
+    const stagesChannel = supabaseClient
+      .channel('leaderboard-stages')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'stages' },
+        payload => {
+          if (payload.eventType === 'DELETE' && s.find(stage => stage.id === payload.old.id)) {
+            refetchStages();
+            return;
+          }
+
+          const incoming = payload.new as Stage | null;
+          if (!incoming || incoming.round_id !== activeRoundId) return;
+          // trigger refetch
+          refetchStages();
+        }
+      )
+      .subscribe();
+
+    const chartPoolsChannel = supabaseClient
+      .channel('leaderboard-chart-pools')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'chart_pools' },
+        payload => {
+          const incoming = payload.new as ChartPool | null;
+          const stage = s.find(st => st.id === incoming?.stage_id);
+          if (!stage || stage.round_id !== activeRoundId) return;
+          refetchStages();
+        }
+      )
+      .subscribe();
+
+  const playerTourneyChannel = supabaseClient
+    .channel('tourney-players-changes')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'player_tourneys' },
+      (payload) => {
+        if (payload.eventType === 'DELETE') {
+          setTourneyPlayers(prev => deletePlayerTourney(prev, payload.old.id));
+          return;
+        }
+
+        const incoming = payload.new as PlayerTourney;
+        if (incoming.tourney_id !== Number(tourneyId)) return;
+
+        setTourneyPlayers(prev => upsertPlayerTourney(prev, incoming));
+      }
+    )
+    .subscribe();
+    return () => {
+      supabaseClient.removeChannel(scoresChannel);
+      supabaseClient.removeChannel(playerRoundsChannel);
+      supabaseClient.removeChannel(stagesChannel);
+      supabaseClient.removeChannel(chartPoolsChannel);
+      supabaseClient.removeChannel(playerTourneyChannel);
+    };
+  }, [activeRoundId, s, playersData]);
 
   // --------------------
   // Build leaderboard
