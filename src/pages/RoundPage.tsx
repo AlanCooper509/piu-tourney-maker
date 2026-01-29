@@ -11,6 +11,7 @@ import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeader
 import { Toaster } from "../components/ui/toaster";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
 import {deleteChartPoolFromStages, deleteScoreFromStages, deleteStage, upsertChartPoolInStages, upsertScoreInStages, upsertStage } from "../helpers/state/stages";
+import { deletePlayerFromRound, upsertPlayerInRound } from "../helpers/state/playerRounds";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 
 import type { ChartPool } from "../types/ChartPool";
@@ -59,8 +60,7 @@ function RoundPage() {
   const {
     data: playersData,
     loading: loadingPlayers,
-    error: errorPlayers,
-    refetch: refetchPlayers
+    error: errorPlayers
   } = getSupabaseTable<PlayerRound>(
     "player_rounds",
     { column: "round_id", value: roundId },
@@ -130,7 +130,7 @@ function RoundPage() {
     }
   }, [stagesData]);
 
-  // Subscribe to scores table changes (to update player scores in real-time)
+  // Subscribe to table changes (RealTime updates)
   useEffect(() => {
     const scoresChannel = supabaseClient
       .channel('scores-changes')
@@ -191,11 +191,14 @@ function RoundPage() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'player_rounds' },
         (payload) => {
-          const newRow = payload.new as { round_id?: number };
-          const eventType = payload.eventType;
-          if (eventType === 'DELETE' || (newRow?.round_id && round?.id === newRow.round_id)) {
-            refetchPlayers();
-          }
+          setPlayers(prev => {
+            if (payload.eventType === 'DELETE') {
+              return deletePlayerFromRound(prev, payload.old.id);
+            }
+
+            const incoming = payload.new as PlayerRound;
+            return upsertPlayerInRound(prev, incoming, tourneyPlayers);
+          });
         }
       )
       .subscribe();
