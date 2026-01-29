@@ -10,8 +10,10 @@ import { StagesList } from "../components/stages/StagesList";
 import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeaderText";
 import { Toaster } from "../components/ui/toaster";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
-import {deleteChartPoolFromStages, deleteScoreFromStages, deleteStage, upsertChartPoolInStages, upsertScoreInStages, upsertStage } from "../helpers/state/stages";
+import { deleteChartPoolFromStages, deleteScoreFromStages, deleteStage, upsertChartPoolInStages, upsertScoreInStages, upsertStage } from "../helpers/state/stages";
 import { deletePlayerFromRound, upsertPlayerInRound } from "../helpers/state/playerRounds";
+import { deletePlayerTourney, upsertPlayerTourney } from "../helpers/state/playerTourney";
+import { deleteRound, upsertRound } from "../helpers/state/rounds";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 
 import type { ChartPool } from "../types/ChartPool";
@@ -36,6 +38,7 @@ function RoundPage() {
   const [round, setRound] = useState<Round | null>(null);
   const [players, setPlayers] = useState<PlayerRound[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
+  const [tourneyPlayers, setTourneyPlayers] = useState<PlayerTourney[]>([]);
 
   useEffect(() => {
     // Clear state whenever round changes, before new data arrives
@@ -51,8 +54,7 @@ function RoundPage() {
   const {
     data: allRoundsInTourney,
     loading: loadingRounds,
-    error: errorRounds,
-    refetch: refetchRounds
+    error: errorRounds
   } = getSupabaseTable<Round>("rounds", {
     column: "tourney_id",
     value: tourneyId,
@@ -76,10 +78,9 @@ function RoundPage() {
     "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)"
   );
   const {
-    data: tourneyPlayers,
+    data: tourneyPlayersData,
     loading: loadingTourneyPlayers,
-    error: errorTourneyPlayers,
-    refetch: refetchTourneyPlayers
+    error: errorTourneyPlayers
   } = getSupabaseTable<PlayerTourney>(
     "player_tourneys",
     { column: "tourney_id", value: tourneyId }
@@ -104,12 +105,12 @@ function RoundPage() {
 
   // Stores current round based on tourneyRounds
   useEffect(() => {
-    if (!allRoundsInTourney?.length) return;
-    const fresh = allRoundsInTourney.find(
+    if (!tourneyRounds?.length) return;
+    const fresh = tourneyRounds.find(
       r => r.id === Number(roundId)
     );
     setRound(fresh ?? null);
-  }, [allRoundsInTourney, roundId]);
+  }, [tourneyRounds, roundId]);
 
   // Sync players when playersData changes
   useEffect(() => {
@@ -129,6 +130,10 @@ function RoundPage() {
       setStages(sortedStages);
     }
   }, [stagesData]);
+
+  useEffect(() => {
+    setTourneyPlayers(tourneyPlayersData ?? []);
+  }, [tourneyPlayersData]);
 
   // Subscribe to table changes (RealTime updates)
   useEffect(() => {
@@ -197,7 +202,7 @@ function RoundPage() {
             }
 
             const incoming = payload.new as PlayerRound;
-            return upsertPlayerInRound(prev, incoming, tourneyPlayers);
+            return upsertPlayerInRound(prev, incoming, tourneyPlayersData ?? null);
           });
         }
       )
@@ -209,11 +214,21 @@ function RoundPage() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rounds' },
         (payload) => {
-          const newRow = payload.new as { tourney_id?: number };
-          const eventType = payload.eventType;
-          if (eventType === 'DELETE' || (newRow?.tourney_id && Number(tourneyId) === newRow.tourney_id)) {
-            refetchRounds();
-          }
+          setTourneyRounds(prev => {
+            if (payload.eventType === 'DELETE') {
+              return deleteRound(prev, payload.old.id);
+            }
+
+            const incoming = payload.new as Round;
+            if (incoming.tourney_id !== Number(tourneyId)) return prev;
+            return upsertRound(prev, incoming);
+          });
+          setRound(prevRound => {
+            if (payload.eventType === 'UPDATE' && prevRound && payload.new.id === prevRound.id) {
+              return payload.new as Round;
+            }
+            return prevRound;
+          });
         }
       )
       .subscribe();
@@ -224,11 +239,15 @@ function RoundPage() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'player_tourneys' },
         (payload) => {
-          const newRow = payload.new as { tourney_id?: number };
-          const eventType = payload.eventType;
-          if (eventType === 'DELETE' || (newRow?.tourney_id && Number(tourneyId) === newRow.tourney_id)) {
-            refetchTourneyPlayers();
-          }
+          setTourneyPlayers(prev => {
+            if (payload.eventType === 'DELETE') {
+              return deletePlayerTourney(prev, payload.old.id);
+            }
+
+            const incoming = payload.new as PlayerTourney;
+            if (incoming.tourney_id !== Number(tourneyId)) return prev;
+            return upsertPlayerTourney(prev, incoming);
+          });
         }
       )
       .subscribe();

@@ -37,7 +37,6 @@ export default function TourneyHeaderText({
   const navigate = useNavigate();
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
-
   // values for Select dropdown
   const roundOptions = createListCollection({
     items: rounds
