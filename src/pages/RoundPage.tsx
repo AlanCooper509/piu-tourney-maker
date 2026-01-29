@@ -31,6 +31,7 @@ function RoundPage() {
   }>();
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
   if (!roundId) return <div>Invalid Round ID</div>;
+  const activeRoundId = Number(roundId);
 
   const { tourney, setTourney } = useCurrentTourney();
 
@@ -107,7 +108,7 @@ function RoundPage() {
   useEffect(() => {
     if (!tourneyRounds?.length) return;
     const fresh = tourneyRounds.find(
-      r => r.id === Number(roundId)
+      r => r.id === activeRoundId
     );
     setRound(fresh ?? null);
   }, [tourneyRounds, roundId]);
@@ -137,55 +138,55 @@ function RoundPage() {
 
   // Subscribe to table changes (RealTime updates)
   useEffect(() => {
-    const scoresChannel = supabaseClient
-      .channel('scores-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'scores' },
-        payload => {
-          setStages(prev => {
-            if (payload.eventType === 'DELETE') {
-              return deleteScoreFromStages(prev, payload.old.id);
-            }
-            const incoming = payload.new as Score;
-            return upsertScoreInStages(prev, incoming);
-          });
-        }
-      )
-      .subscribe();
-    
     const stagesChannel = supabaseClient
       .channel('stages-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'stages' },
         payload => {
-          setStages(prev => {
-            if (payload.eventType === 'DELETE') {
-              return deleteStage(prev, payload.old.id);
-            }
-
-            const incoming = payload.new as Stage;
-            return upsertStage(prev, incoming);
-          });
+          if (payload.eventType === 'DELETE') {
+            setStages(prev => deleteStage(prev, payload.old.id));
+            return;
+          }
+          const incoming = payload.new as Stage;
+          if (!incoming || (incoming.round_id !== activeRoundId)) return;
+          setStages(prev => upsertStage(prev, incoming));
         }
       )
       .subscribe();
-    
+
+    const scoresChannel = supabaseClient
+      .channel('scores-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'scores' },
+        payload => {
+          if (payload.eventType === 'DELETE') {
+            setStages(prev => deleteScoreFromStages(prev, payload.old.id));
+            return;
+          }
+          const incoming = payload.new as Score;
+          const stage = stages.find(s => s.id === incoming?.stage_id);
+          if (!stage || (stage.round_id !== activeRoundId)) return;
+          setStages(prev => upsertScoreInStages(prev, incoming));
+        }
+      )
+      .subscribe();
+        
     const chartPoolsChannel = supabaseClient
       .channel('chart-pools-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'chart_pools' },
         (payload) => {
-          setStages(prev => {
-            if (payload.eventType === 'DELETE') {
-              return deleteChartPoolFromStages(prev, payload.old.id);
-            }
-
-            const incoming = payload.new as ChartPool;
-            return upsertChartPoolInStages(prev, incoming);
-          });
+          if (payload.eventType === 'DELETE') {
+            setStages(prev => deleteChartPoolFromStages(prev, payload.old.id));
+            return;
+          }
+          const incoming = payload.new as ChartPool;
+          const stage = stages.find(s => s.id === incoming?.stage_id);
+          if (!stage || (stage.round_id !== activeRoundId)) return;
+          setStages(prev => upsertChartPoolInStages(prev, incoming));
         }
       )
       .subscribe();
@@ -196,14 +197,13 @@ function RoundPage() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'player_rounds' },
         (payload) => {
-          setPlayers(prev => {
-            if (payload.eventType === 'DELETE') {
-              return deletePlayerFromRound(prev, payload.old.id);
-            }
-
-            const incoming = payload.new as PlayerRound;
-            return upsertPlayerInRound(prev, incoming, tourneyPlayersData ?? null);
-          });
+          if (payload.eventType === 'DELETE') {
+            setPlayers(prev => deletePlayerFromRound(prev, payload.old.id));
+            return;
+          }
+          const incoming = payload.new as PlayerRound;
+          if (incoming.round_id !== activeRoundId) return;
+          setPlayers(prev => upsertPlayerInRound(prev, incoming, tourneyPlayersData ?? []));
         }
       )
       .subscribe();
@@ -239,15 +239,14 @@ function RoundPage() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'player_tourneys' },
         (payload) => {
-          setTourneyPlayers(prev => {
-            if (payload.eventType === 'DELETE') {
-              return deletePlayerTourney(prev, payload.old.id);
-            }
+          if (payload.eventType === 'DELETE') {
+            setTourneyPlayers(prev => deletePlayerTourney(prev, payload.old.id));
+            return;
+          }
 
-            const incoming = payload.new as PlayerTourney;
-            if (incoming.tourney_id !== Number(tourneyId)) return prev;
-            return upsertPlayerTourney(prev, incoming);
-          });
+          const incoming = payload.new as PlayerTourney;
+          if (incoming.tourney_id !== Number(tourneyId)) return;
+          setTourneyPlayers(prev => upsertPlayerTourney(prev, incoming));
         }
       )
       .subscribe();
@@ -260,7 +259,7 @@ function RoundPage() {
       supabaseClient.removeChannel(roundsChannel);
       supabaseClient.removeChannel(playerTourneyChannel);
     };
-  }, [roundId, tourney, tourneyPlayers, round, players]);
+  }, [roundId, tourney, tourneyPlayers, round, players, stages]);
 
   return (
     <Box mt={8}>
@@ -268,7 +267,7 @@ function RoundPage() {
       <TourneyHeaderText
         rounds={tourneyRounds}
         setRounds={setTourneyRounds}
-        currentRoundId={Number(roundId)}
+        currentRoundId={activeRoundId}
       />
 
       <Separator mt={2} mb={4} />
