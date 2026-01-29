@@ -1,6 +1,6 @@
-import React from "react";
 import { Box, VStack, HStack, Link, Text, useBreakpointValue, Button, Spacer, Tag, IconButton, Heading, Container, Separator } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useParams } from "react-router-dom";
 import { supabaseClient } from "../lib/supabaseClient";
 import { IoReturnDownBack } from "react-icons/io5";
@@ -19,6 +19,25 @@ import type { Round } from "../types/Round";
 import type { Score } from "../types/Score";
 import type { ChartPool } from "../types/ChartPool";
 import type { PlayerTourney } from "../types/PlayerTourney";
+import { keyframes } from "@emotion/react";
+
+const refinedPulse = keyframes`
+  0% { 
+    box-shadow: 0 0 0px 0px rgba(63, 63, 70, 1); 
+    background-color: rgba(63, 63, 70, 1);
+  }
+  30% { 
+    /* The Silver Effect: White core with a cool-gray outer bloom */
+    box-shadow: 
+      0 0 12px 3px rgba(255, 255, 255, 0.9), 
+      0 0 25px 10px rgba(200, 225, 255, 0.4); 
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  100% { 
+    box-shadow: 0 0 0px 0px rgba(63, 63, 70, 1); 
+    background-color: rgba(63, 63, 70, 1);
+  }
+`;
 
 // --------------------
 // Types
@@ -48,7 +67,6 @@ function PlayerRow({
   isExpanded,
   toggleExpand,
   updatedPlayer,
-  positionsRef,
   rowFontSize,
   songFontSize,
   isEliminated
@@ -59,13 +77,11 @@ function PlayerRow({
   isExpanded: boolean;
   toggleExpand: (name: string) => void;
   updatedPlayer: string | null;
-  positionsRef: React.MutableRefObject<Map<string, number>>;
   rowFontSize: string | undefined;
   songFontSize: string | undefined;
   isEliminated: boolean
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
-  const rowRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState("0px");
 
   const getBgColor = () => {
@@ -84,37 +100,12 @@ function PlayerRow({
 
   useEffect(() => {
     if (contentRef.current) {
-      const scrollHeight = contentRef.current.scrollHeight;
-      setHeight(isExpanded ? `${scrollHeight}px` : "0px");
+      setHeight(isExpanded ? `${contentRef.current.scrollHeight}px` : "0px");
     }
   }, [isExpanded, player.songs]);
 
-  useEffect(() => {
-    if (rowRef.current) {
-      const rect = rowRef.current.getBoundingClientRect();
-      const prevTop = positionsRef.current.get(player.name) || rect.top;
-      const diff = prevTop - rect.top;
-
-      if (diff) {
-        rowRef.current.style.transition = "none";
-        rowRef.current.style.transform = `translateY(${diff}px)`;
-
-        requestAnimationFrame(() => {
-          rowRef.current!.style.transition = "transform 0.5s ease";
-          rowRef.current!.style.transform = "translateY(0)";
-        });
-      }
-
-      positionsRef.current.set(player.name, rect.top);
-    }
-  }, [player, positionsRef]);
-
   return (
-    <Box
-      ref={rowRef}
-      animation={updatedPlayer === player.name ? `highlight 0.5s ease` : undefined}
-      mb={2}
-    >
+    <Box mb={2}>
       <HStack
         bg={getBgColor()}
         bgImage={getBgGradient()}
@@ -124,11 +115,17 @@ function PlayerRow({
         cursor="pointer"
         justify="space-between"
         onClick={() => toggleExpand(player.name)}
-        transition="all 0.3s ease"
         _hover={{ transform: "scale(1.02)", shadow: "md" }}
         borderRadius="md"
         textShadow={index === 0 ? "0px 2px 4px rgba(0,0,0,0.5)" : undefined}
         overflow="visible"
+        animation={updatedPlayer === player.name ? `${refinedPulse} 2s infinite` : undefined}
+        zIndex={updatedPlayer === player.name ? 10 : 1} // Bring to front while pulsing
+        position="relative"
+        style={{
+          transform: "translateZ(0)", // Forces GPU rendering
+          willChange: updatedPlayer === player.name ? "box-shadow, transform" : "auto",
+        }}
       >
         <HStack flex="1" overflow="hidden">
           <Text fontSize={rowFontSize} fontWeight="bold" flexShrink={0}>
@@ -157,14 +154,14 @@ function PlayerRow({
         ref={contentRef}
         height={height}
         overflow="hidden"
-        transition="height 0.5s ease, opacity 0.5s ease"
+        transition="height 0.3s ease"
         bg="gray.800"
         borderBottom={isExpanded ? "2px solid gray" : "none"}
       >
         <VStack align="stretch" py={3} px={6}>
           {player.songs.map((song, idx) => (
             <Box
-              key={song.name}
+              key={`${song.name}-${idx}`}
               borderBottom={idx !== player.songs.length - 1 ? "1px solid gray" : "none"}
               py={3}
             >
@@ -237,13 +234,11 @@ function Leaderboard() {
   const [round, setRound] = useState<Round | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [tourneyPlayers, setTourneyPlayers] = useState<PlayerTourney[]>([]);
-  const [updatedPlayer, _setUpdatedPlayer] = useState<string | null>(null);
+  const [updatedPlayer, setUpdatedPlayer] = useState<string | null>(null);
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set());
   const [p, setP] = useState<PlayerRound[]>([]);
   const [s, setS] = useState<Stage[]>([]);
   const advancingThreshold = round?.players_advancing ?? null;
-
-  const positionsRef = useRef<Map<string, number>>(new Map());
 
   const { data: rounds } = getSupabaseTable<Round>('rounds', { column: 'id', value: roundId });
   const { data: playersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: roundId }, "*, player_tourneys(player_name)");
@@ -265,10 +260,7 @@ function Leaderboard() {
     // ---- SCORES ----
     const scoresChannel = supabaseClient
       .channel('leaderboard-scores')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'scores' },
-        payload => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, payload => {
           if (payload.eventType === 'DELETE') {
             setS(prev => deleteScoreFromStages(prev, payload.old.id));
             return;
@@ -277,6 +269,13 @@ function Leaderboard() {
           const incoming = payload.new as Score;
           const stage = s.find(st => st.id === incoming.stage_id);
           if (!stage || stage.round_id !== activeRoundId) return;
+
+          const affectedPlayerRound = p.find(player => player.id === incoming.player_round_id);
+          if (affectedPlayerRound) {
+            const name = affectedPlayerRound.player_tourneys.player_name;
+            setUpdatedPlayer(name);
+            setTimeout(() => setUpdatedPlayer(null), 1500); 
+          }
 
           setS(prev => upsertScoreInStages(prev, incoming));
         }
@@ -436,29 +435,43 @@ function Leaderboard() {
 
         <Heading size="2xl" mb={5}>Players Advancing: {advancingThreshold}</Heading>
 
-        <Box w={cardWidth} borderRadius="2xl" overflow="visible" shadow="xl" bgGradient="linear(to-b, gray.900, gray.800)">
+        <Box w={cardWidth} borderRadius="2xl" shadow="xl" bgGradient="linear(to-b, gray.900, gray.800)">
           <LeaderboardHeader round={round} expandedPlayers={expandedPlayers} toggleAll={toggleAll} headerFontSize={headerFontSize} />
 
-          {players.map((player, index) => {
-            const isEliminated = advancingThreshold !== null && index >= advancingThreshold;
-            return (
-              <React.Fragment key={player.name}>
-                {index === advancingThreshold && <Separator borderWidth="5px" my={2} borderColor="black" />}
-                <PlayerRow
-                  round={round}
-                  player={player}
-                  index={index}
-                  isExpanded={expandedPlayers.has(player.name)}
-                  toggleExpand={toggleExpand}
-                  updatedPlayer={updatedPlayer}
-                  positionsRef={positionsRef}
-                  rowFontSize={rowFontSize}
-                  songFontSize={songFontSize}
-                  isEliminated={isEliminated}
-                />
-              </React.Fragment>
-            );
-          })}
+          <AnimatePresence mode="popLayout">
+            {players.map((player, index) => {
+              const isEliminated = advancingThreshold !== null && index >= advancingThreshold;
+              return (
+                <motion.div
+                  key={player.name} // Essential for tracking movement
+                  layout // This handles the sliding re-order
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{
+                    layout: { type: "spring", stiffness: 300, damping: 30 },
+                    opacity: { duration: 0.2 }
+                  }}
+                >
+                  {index === advancingThreshold && (
+                    <Separator borderWidth="5px" my={2} borderColor="black" />
+                  )}
+                  
+                  <PlayerRow
+                    round={round}
+                    player={player}
+                    index={index}
+                    isExpanded={expandedPlayers.has(player.name)}
+                    toggleExpand={toggleExpand}
+                    updatedPlayer={updatedPlayer}
+                    rowFontSize={rowFontSize}
+                    songFontSize={songFontSize}
+                    isEliminated={isEliminated}
+                  />
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         </Box>
       </VStack>
     </Container>
