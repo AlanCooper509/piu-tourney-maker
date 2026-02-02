@@ -26,7 +26,7 @@ const formatEventDateRange = (startStr: string, endStr?: string) => {
 
 export function SpotlightEventItem({ event, showButton = true }: Props) {
   return (
-    <Box mb={showButton ? 10 : 0}>
+    <Box pb={showButton ? 10 : 0}>
       <Flex
         direction={{ base: "column", lg: "row" }}
         align={{ base: "center", lg: "stretch" }} 

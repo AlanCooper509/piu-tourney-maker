@@ -65,7 +65,7 @@ function HomePage() {
       </MotionBox>
 
       {/* 2. Categorized Event Lists */}
-      <VStack mt={10} gap={10}>
+      <VStack mt={4} gap={10}>
         <EventSection 
           title="Active Events" 
           events={filteredEvents.active} 
