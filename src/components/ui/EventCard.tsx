@@ -91,28 +91,28 @@ const EventCard: React.FC<EventCardProps> = ({
                 <Link to={`/event/${event.id}`}>
                   <Heading
                     as="h3"
-                    fontSize={{ base: "xl", sm: "2xl", md: "3xl" }}
+                    fontSize={{ base: "xl", sm: "2xl", xl: "3xl" }}
                     _hover={{ textDecoration: "underline", color: "blue.300" }}
                     transition="color 0.2s"
+                    textAlign={"left"}
                   >
                     {event.name}
                   </Heading>
                 </Link>
               </HStack>
-              <Box w="100%" mt={2}>
-                {/* Dates of Event */}
-                <Text
-                  fontSize={{ base: "md", sm: "lg" }}
-                  color="gray.300"
-                  textAlign="left"
-                >
-                  Dates: {formatDate(event.start_date)}
-                  {event.end_date ? ` - ${formatDate(event.end_date)}` : ""}
-                </Text>
-              </Box>
+              {/* Dates of Event */}
+              <Text
+                mt={3}
+                fontSize={{ base: "md", sm: "lg" }}
+                color="gray.300"
+                textAlign="left"
+              >
+                Dates: {formatDate(event.start_date)}
+                {event.end_date ? ` - ${formatDate(event.end_date)}` : ""}
+              </Text>
               <Flex justify="space-between" mt={2}>
                 {/* Count of Tournaments */}
-                <Text fontSize={{ base: "md", sm: "lg" }} color="gray.300">
+                <Text fontSize={{ base: "sm", sm: "md" }} color="gray.300">
                   {tourneys.length} tournament{tourneys.length !== 1 ? "s" : ""}
                 </Text>
               </Flex>
