@@ -45,7 +45,7 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
         <Box
           position="absolute"
           inset={0}
-          bg="rgba(0,0,0,0.75)"
+          bg="rgba(0,0,0,0.30)"
           backdropFilter="brightness(0.85) contrast(1.1)"
         />
 
@@ -69,7 +69,6 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
         </Heading>
 
         {/* Info Section */}
-
         <VStack
           align="start"
           justify="center"
@@ -79,7 +78,10 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
           py={{ base: 5, lg: 12 }}
           w={{ base: "100%", lg: "600px" }}
           flex="1"
-          bg={{ base: "gray.800", lg: "transparent" }}
+          bg={{ 
+            base: "rgba(26, 32, 44, 0.60)", // gray.800 equivalent with alpha
+            lg: "rgba(0, 0, 0, 0.0)"        // no effect for desktop (can experiment with opacity later)
+          }}
           borderRadius={{ base: "2xl", lg: "none" }}
         >
           <HStack align="center" gap={1}>
