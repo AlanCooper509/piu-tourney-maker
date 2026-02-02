@@ -138,14 +138,12 @@ function HomePage() {
         overflow="hidden"
         borderRadius="2xl"
       >
-        <Box
-          position="absolute"
-          top="0"
-          left="0"
-          right="0"
-          bottom="0"
-          bg="blackAlpha.700"
-        />
+      <Box
+        position="absolute"
+        inset={0}
+        bg="rgba(0,0,0,0.75)"
+        backdropFilter="brightness(0.85) contrast(1.1)"
+      />
         <Heading
           as="h2"
           fontSize={{ base: "32px", md: "48px" }}
@@ -154,6 +152,7 @@ function HomePage() {
           mt="160px"
           zIndex="1"
           p={4}
+          lineHeight="1.2"
         >
           {event.name}
         </Heading>
@@ -227,11 +226,9 @@ function HomePage() {
       >
         <Box
           position="absolute"
-          top="0"
-          left="0"
-          right="0"
-          bottom="0"
-          bg="blackAlpha.700"
+          inset={0}
+          bg="rgba(0,0,0,0.75)"
+          backdropFilter="brightness(0.85) contrast(1.1)"
         />
 
         <Heading
@@ -241,7 +238,10 @@ function HomePage() {
           textAlign="left"
           zIndex="1"
           p={4}
-          flexShrink={0}
+          ml={14}
+          whiteSpace="normal"
+          wordBreak="break-word"
+          lineHeight="1.2"
         >
           {event.name}
         </Heading>
@@ -266,7 +266,7 @@ function HomePage() {
             </Text>
           </HStack>
 
-          <Text fontSize="16px" textAlign="left" mt="20px">
+          <Text fontSize="16px" textAlign="left">
             {event.description}
           </Text>
 

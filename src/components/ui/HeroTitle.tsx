@@ -19,7 +19,7 @@ export const HeroTitle: React.FC<HeroTitleProps> = ({
     <Box
       position="relative"
       w="100%"
-      h={{ base: "25vh", sm: "30vh", md: "25vh" }}
+      h={{ base: "5vh", sm: "10vh", md: "20vh" }}
     >
       {/* Background Image */}
       <Image
