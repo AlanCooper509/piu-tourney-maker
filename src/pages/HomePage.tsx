@@ -1,7 +1,5 @@
 import {
   Box,
-  Flex,
-  Heading,
   Text,
   VStack
 } from "@chakra-ui/react";
@@ -16,7 +14,6 @@ import "swiper/css/pagination";
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import { useHomeEvents } from "../hooks/useHomeEvents";
 import { getAdminTourneyIds } from "../hooks/AdminTourneyHelpers";
-import EventCard from "../components/ui/EventCard";
 import { SpotlightEventItem } from "../components/home/SpotlightEventItem";
 
 import type { Event } from "../types/Event";
@@ -25,8 +22,6 @@ import { EventSection } from "../components/home/EventSection";
 
 // Wrap Chakra components with motion
 const MotionBox = motion.create(Box);
-const MotionVStack = motion.create(VStack);
-const MotionFlex = motion.create(Flex);
 
 const fadeIn = {
   hidden: { opacity: 0, y: 33 },
