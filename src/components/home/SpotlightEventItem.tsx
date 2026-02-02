@@ -6,6 +6,7 @@ import type { Event } from "../../types/Event";
 
 interface Props {
   event: Event;
+  showButton?: boolean;
 }
 
 const formatEventDateRange = (startStr: string, endStr?: string) => {
@@ -23,14 +24,14 @@ const formatEventDateRange = (startStr: string, endStr?: string) => {
   return `${startFormatted} - ${endWithYear}`;
 };
 
-export function SpotlightEventItem({ event }: Props) {
+export function SpotlightEventItem({ event, showButton = true }: Props) {
   return (
-    <Box mb={10}>
+    <Box mb={showButton ? 10 : 0}>
       <Flex
         direction={{ base: "column", lg: "row" }}
         align={{ base: "center", lg: "stretch" }} 
         justify="center"
-        minH="400px"
+        minH={showButton ? "400px" : "300px"}
         width="100%"
         position="relative"
         bgImage={`url(${event.hero_img})`}
@@ -115,17 +116,19 @@ export function SpotlightEventItem({ event }: Props) {
             {event.description}
           </Text>
 
-          <Link to={`/event/${event.id}`}>
-            <Button
-              colorScheme="teal"
-              size="md"
-              borderRadius="lg"
-              mt={2}
-              _hover={{ transform: "scale(1.05)", transition: "0.2s" }}
-            >
-              View Event
-            </Button>
-          </Link>
+          {showButton && (
+            <Link to={`/event/${event.id}`}>
+              <Button
+                colorPalette="blue"
+                size="md"
+                borderRadius="lg"
+                mt={2}
+                _hover={{ transform: "scale(1.05)", transition: "0.2s" }}
+              >
+                 View Event
+               </Button>
+            </Link>
+          )}
         </VStack>
       </Flex>
     </Box>
