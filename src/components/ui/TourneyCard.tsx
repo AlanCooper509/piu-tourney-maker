@@ -1,4 +1,3 @@
-// src/components/ui/TourneyCard.tsx
 import {
   LinkBox,
   LinkOverlay,
@@ -8,11 +7,10 @@ import {
   Image,
   Heading,
   Text,
+  Badge,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
-
 import { useAuth } from "../../context/AuthContext";
-
 import type { Tourney } from "../../types/Tourney";
 
 interface TourneyCardProps {
@@ -30,6 +28,7 @@ const TourneyCard: React.FC<TourneyCardProps> = ({
 }) => {
   const { user } = useAuth();
   const userId = user?.id ?? null;
+  const isAdmin = adminTourneyIds.includes(row.id);
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "TBD";
@@ -45,106 +44,96 @@ const TourneyCard: React.FC<TourneyCardProps> = ({
     <LinkBox
       as="article"
       key={`${keyPrefix}-${row.id}`}
-      borderWidth="1px"
-      mb={isNested ? "0px" : "15px"}
-      borderRadius={isNested ? "none" : "lg"}
-      borderTopWidth={isNested ? "0" : "1px"}
+      // Layout Adjustments
+      w={{ base: "90%", md: "60%" }}
+      mx="auto"
       p={{ base: 4, sm: 5 }}
+      // Nested vs. Standalone Styling
       bg={isNested ? "gray.800" : "gray.900"}
-      color="white"
+      borderWidth="1px"
+      borderTopWidth={isNested ? "0" : "1px"}
+      borderRadius={isNested ? "none" : "lg"}
+      borderBottomRadius={isNested ? "none" : "lg"} // Keep it flat if nested
+      mb={isNested ? "0px" : "15px"}
+      // Interaction
       shadow={isNested ? "none" : "sm"}
       transition="all 0.2s"
       _hover={{
-        shadow: isNested ? "none" : "lg",
         bg: isNested ? "gray.700" : "gray.600",
         transform: isNested ? "none" : "scale(1.02)",
-        cursor: "pointer",
+        shadow: isNested ? "none" : "lg",
       }}
-      w={{ base: "90%", md: "60%" }}
-      mx="auto"
     >
       <LinkOverlay asChild>
         <Link to={`/tourney/${row.id}`}>
-          <HStack align="center" w="100%">
-            {/* Tourney Thumbnail Image */}
+          <HStack align="center" gap={4} w="100%">
+            {/* Image Section */}
             <Box
-              minW={{ base: "60px", sm: "80px", md: "90px" }}
-              minH={{ base: "60px", sm: "80px", md: "90px" }}
+              minW={{ base: "50px", sm: "70px" }}
+              minH={{ base: "50px", sm: "70px" }}
             >
               <Image
                 src={row.thumbnail_img ?? "/trophy.png"}
-                alt={`${row.name} image`}
-                boxSize={{ base: "60px", sm: "80px", md: "90px" }}
+                alt={row.name}
+                boxSize={{ base: "50px", sm: "70px" }}
                 objectFit="cover"
                 borderRadius="md"
+                opacity={isNested ? 0.8 : 1}
               />
             </Box>
-            <Flex
-              direction="column"
-              flex="1"
-              justify="space-between"
-              minH={{ base: "70px", sm: "90px" }}
-            >
-              <HStack justify="space-between" w="100%" align="start">
-                {/* Tourney Name */}
+
+            {/* Content Section */}
+            <Flex direction="column" flex="1" justify="center">
+              <HStack justify="space-between" align="baseline">
                 <Heading
-                  as="h3"
+                  as="h4"
                   fontSize={{
-                    base: "lg",
-                    sm: "xl",
-                    md: isNested ? "xl" : "3xl",
+                    base: "md",
+                    sm: "lg",
+                    md: isNested ? "xl" : "2xl",
                   }}
+                  color="white"
                 >
                   {row.name}
                 </Heading>
 
-                {/* Tourney Admin Badge */}
-                {adminTourneyIds.includes(row.id) && (
-                  <Text fontSize={{ base: "md", sm: "lg" }} color="green.400">
-                    (Admin)
-                  </Text>
+                {isAdmin && (
+                  <Badge colorPalette="green" variant="outline" fontSize="xs">
+                    Admin
+                  </Badge>
                 )}
               </HStack>
 
-              {/* Tourney Dates */}
-              <Box w="100%" mt={2}>
-                <Text
-                  fontSize={{ base: "sm", sm: "md" }}
-                  color="gray.300"
-                  textAlign="left"
-                >
-                  Dates: {formatDate(row.start_date)}
-                  {row.end_date ? ` - ${formatDate(row.end_date)}` : ""}
+              <HStack gap={4} mt={1} wrap="wrap">
+                <Text fontSize="sm" color="gray.400">
+                  {formatDate(row.start_date)}
+                  {row.end_date && ` - ${formatDate(row.end_date)}`}
                 </Text>
-              </Box>
 
-              {/* Tourney Status */}
-              <Box w="100%" mt={1}>
-                <Text
-                  fontSize={{ base: "sm", sm: "md" }}
-                  color={
+                <Badge
+                  variant="subtle"
+                  colorPalette={
                     row.status === "In Progress"
-                      ? "yellow.300"
+                      ? "yellow"
                       : row.status === "Not Started"
-                      ? "blue.300"
-                      : /* assume it's "Complete" */ "green.400"
+                      ? "blue"
+                      : "green"
                   }
-                  fontWeight="bold"
-                  textAlign="left"
+                  fontSize="2xs"
+                  px={2}
+                  borderRadius="full"
                 >
                   {row.status}
-                </Text>
-              </Box>
-
-              {/* Tourney ID */}
-              {userId && (
-                <Flex justify="flex-end" mt={2}>
-                  <Text fontSize={{ base: "sm", sm: "md" }} color="gray.300">
-                    ID: {row.id}
-                  </Text>
-                </Flex>
-              )}
+                </Badge>
+              </HStack>
             </Flex>
+
+            {/* Subtle ID for logged in users */}
+            {userId && !isNested && (
+              <Text fontSize="xs" color="gray.600" alignSelf="flex-end">
+                #{row.id}
+              </Text>
+            )}
           </HStack>
         </Link>
       </LinkOverlay>
