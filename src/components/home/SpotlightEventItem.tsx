@@ -113,7 +113,7 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
             color="gray.200"
             maxW={{ base: "100%", lg: "500px" }}
             lineHeight="tall"
-            lineClamp={{ base: 3, lg: 4 }}
+            lineClamp={showButton ? { base: 3, lg: 4 } : undefined}
           >
             {event.description}
           </Text>
