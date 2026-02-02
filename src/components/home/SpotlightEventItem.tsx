@@ -75,10 +75,10 @@ export function SpotlightEventItem({ event }: Props) {
           gap={4}
           zIndex="1"
           p={12}
+          py={{ base: 5, lg: 12 }}
           w={{ base: "100%", lg: "600px" }}
           flex="1"
           bg={{ base: "gray.800", lg: "transparent" }}
-          mt={{ base: "0px", lg: "0" }}
           borderRadius={{ base: "2xl", lg: "none" }}
         >
           <HStack align="center" gap={1}>
