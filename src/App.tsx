@@ -56,7 +56,7 @@ function App() {
 
               <Box w="100%" py={100}>
                 <Text textAlign="center" fontSize="lg" mb={5}>
-                  Piu Tourney Maker 2025 ©
+                  PIU Tourney Maker 2026 ©
                 </Text>
                 <Button
                   size="sm"
