@@ -8,5 +8,6 @@ export interface Round {
   points_per_stage?: string;         // text
   status: RoundStatus | null;        // enum type
   next_round_id?: number;            // bigint -> number
+  lost_next_round_id?: number;       // bigint -> number
   parent_round_id?: number;          // bigint -> number
 }
