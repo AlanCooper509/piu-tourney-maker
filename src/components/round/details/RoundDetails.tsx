@@ -42,6 +42,7 @@ export function RoundDetails({
   const roundName = round?.name ?? "";
   const playersAdvancing = round?.players_advancing ?? -1;
   const nextRound = rounds.find((r) => r.id === round?.next_round_id);
+  const nextLoserRound = rounds.find((r) => r.id === round?.lost_next_round_id);
 
   return (
     <>
@@ -81,6 +82,20 @@ export function RoundDetails({
                     onClick={() => navigate(`/tourney/${tourneyId}/round/${nextRound.id}`)}
                   >
                     {nextRound.name}
+                  </Text>
+                </Text>
+              )}
+              {round && round.lost_next_round_id && nextLoserRound && (
+                <Text>
+                  Next Loser Round:{" "}
+                  <Text
+                    as="span"
+                    color="cyan.solid"
+                    cursor="pointer"
+                    fontWeight="bold"
+                    onClick={() => navigate(`/tourney/${tourneyId}/round/${nextLoserRound.id}`)}
+                  >
+                    {nextLoserRound.name}
                   </Text>
                 </Text>
               )}
