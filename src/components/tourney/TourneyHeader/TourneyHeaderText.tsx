@@ -22,32 +22,39 @@ import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext
 import { toaster } from "../../ui/toaster";
 
 import type { Round } from "../../../types/Round";
+import type { RoundPool } from "../../../types/RoundPool";
 
 interface TourneyHeaderTextProps {
   rounds: Round[];
   setRounds: React.Dispatch<React.SetStateAction<Round[]>>;
   currentRoundId: number;
+  roundPools: RoundPool[] | null;
 }
 
 export default function TourneyHeaderText({
   rounds,
   setRounds,
-  currentRoundId
+  currentRoundId,
+  roundPools
 }: TourneyHeaderTextProps) {
   const navigate = useNavigate();
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
+  const currentSelectValue = currentRoundId && `/tourney/${tourney?.id}/round/${currentRoundId}`;
+
   // values for Select dropdown
   const roundOptions = createListCollection({
-    items: rounds
-    .map((round) => ({
-      label: round.name,
-      value: `/tourney/${tourney?.id}/round/${round.id}`,
-      parent: round.parent_round_id,
-      status: round.status,
-    })),
+    items: rounds.map((round) => {
+      const pool = roundPools?.find(p => p.id === round.round_pool_id);
+      return {
+        label: round.name,
+        value: `/tourney/${tourney?.id}/round/${round.id}`,
+        parent: round.parent_round_id,
+        poolName: pool?.name,
+        status: round.status,
+      };
+    }),
   });
-  const currentSelectValue = currentRoundId && `/tourney/${tourney?.id}/round/${currentRoundId}`;
 
   // setup for previous and next round navigation
   const currentRoundIndex = rounds.findIndex(r => r.id === currentRoundId) ?? null;
@@ -153,28 +160,57 @@ export default function TourneyHeaderText({
           <Portal>
             <Select.Positioner>
               <Select.Content>
-                {roundOptions.items.map((item) => (
-                  <Select.Item key={item.value} item={item}>
-                    <Box
-                      color={
-                        item.value === currentSelectValue ? "fg"
-                        : item.status === "Not Started" ? "fg.muted"
-                        : item.status === "In Progress" ? "fg"
-                        : item.status === "Complete" ? "fg.muted"
-                        : ""
-                      }
-                    >
-                      <HStack>
-                        {item.parent && <Box w={2} />}
-                        {item.status === "Not Started" && <></>}
-                        {item.status === "In Progress" && <RiSwordLine />}
-                        {item.status === "Complete" && <BiSolidMedal />}
-                        {item.label}
-                      </HStack>
+                {roundOptions.items.map((item, index) => {
+                  const prevItem = roundOptions.items[index - 1];
+                  
+                  // Only show a header if:
+                  // 1. This item has a poolName defined.
+                  // 2. It's different from the previous item's poolName.
+                  // 3. There are actually pools defined in the tournament context.
+                  const showPoolHeader = 
+                    item.poolName && // This will be false for ungrouped rounds
+                    item.poolName !== prevItem?.poolName && 
+                    roundPools && roundPools.length > 0;
+
+                  return (
+                    <Box key={item.value}>
+                      {showPoolHeader && item.poolName && (
+                        <Box 
+                          px={4} 
+                          py={2} 
+                          bg="bg.muted" 
+                          fontSize="xs" 
+                          fontWeight="bold" 
+                          color="cyan.solid"
+                          borderBottomWidth="1px"
+                          borderColor="border.subtle"
+                        >
+                          {item.poolName.toUpperCase()}
+                        </Box>
+                      )}
+                      <Select.Item item={item}>
+                        <HStack 
+                          // Use your existing color logic here
+                          color={
+                            item.value === currentSelectValue ? "fg"
+                            : item.status === "Not Started" ? "fg.muted"
+                            : item.status === "In Progress" ? "fg"
+                            : item.status === "Complete" ? "fg.muted"
+                            : ""
+                          }
+                        >
+                          {item.parent && <Box w={4} />}
+                          {!item.parent && item.poolName && <Box w={4} />}
+                          
+                          {item.status === "In Progress" && <RiSwordLine />}
+                          {item.status === "Complete" && <BiSolidMedal />}
+                          {item.label}
+                        </HStack>
+                        <Select.ItemIndicator />
+                      </Select.Item>
                     </Box>
-                    <Select.ItemIndicator />
-                  </Select.Item>
-                ))}
+                  );
+                })}
               </Select.Content>
             </Select.Positioner>
         </Portal>

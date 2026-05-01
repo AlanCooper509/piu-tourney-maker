@@ -12,6 +12,8 @@ import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext
 import type { Round } from "../../../types/Round";
 import type { PlayerRound } from "../../../types/PlayerRound";
 import type { Stage } from "../../../types/Stage";
+import type { TourneyType } from "../../../types/Tourney";
+import ScoringDetailsText from "./ScoringDetailsText";
 
 interface RoundDetailsProps {
   round: Round | null;
@@ -23,6 +25,7 @@ interface RoundDetailsProps {
   loading: boolean;
   error: Error | null;
   tourneyId: number;
+  tourneyType: TourneyType | null;
 }
 
 export function RoundDetails({
@@ -35,6 +38,7 @@ export function RoundDetails({
   loading,
   error,
   tourneyId,
+  tourneyType
 }: RoundDetailsProps) {
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourneyId);
   const navigate = useNavigate();
@@ -66,14 +70,23 @@ export function RoundDetails({
               )}
 
               <StatusElement element={round} />
-              <PlayersAdvancingElement
-                playersAdvancing={playersAdvancing}
-                roundStatus={round?.status}
-              />
-              <Text>Scoring: {round.points_per_stage ? `Points (${round.points_per_stage.replaceAll(',', ', ')})` : "Cumulative"}</Text>
+
+              {tourneyType && tourneyType !== "Double Elimination" && (
+                <PlayersAdvancingElement
+                  playersAdvancing={playersAdvancing}
+                  roundStatus={round?.status}
+                />
+              )}
+ 
+              {tourneyType !== "Double Elimination" || round.parent_round_id !== null && (
+                <ScoringDetailsText
+                  pointsPerStage={round?.points_per_stage}
+                />
+              )}
+
               {round && round.next_round_id && nextRound && (
                 <Text>
-                  Next Round:{" "}
+                  {tourneyType === "Double Elimination" ? "Next Round (Winner)" : "Next Round"}:{" "}
                   <Text
                     as="span"
                     color="cyan.solid"
@@ -85,9 +98,10 @@ export function RoundDetails({
                   </Text>
                 </Text>
               )}
+
               {round && round.lost_next_round_id && nextLoserRound && (
                 <Text>
-                  Next Loser Round:{" "}
+                  {tourneyType === "Double Elimination" ? "Next Round (Loser)" : "Next Round (Redemption)"}:{" "}
                   <Text
                     as="span"
                     color="cyan.solid"

@@ -14,6 +14,7 @@ import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 import type { Tourney } from '../types/Tourney';
 import type { PlayerTourney } from "../types/PlayerTourney";
 import type { Round } from "../types/Round";
+import type { RoundPool } from "../types/RoundPool";
 
 function TourneyPage() {
   const { tourneyId } = useParams();
@@ -34,6 +35,10 @@ function TourneyPage() {
   const { data: allRoundsInTourney } = getSupabaseTable<Round>(
     'rounds',
     { column: 'tourney_id', value: tourneyId }
+  );
+  const { data: allRoundPoolsInTourney } = getSupabaseTable<RoundPool>(
+    'round_pools',
+    { column: "tourney_id", value: tourneyId }
   );
 
   // Stores tourney table details
@@ -57,7 +62,7 @@ function TourneyPage() {
   useEffect(() => {
     if (allRoundsInTourney?.length) {
        setTourneyRounds(prev => {
-         const { sorted } = mergeAndFlattenRounds(prev, allRoundsInTourney);
+         const { sorted } = mergeAndFlattenRounds(prev, allRoundsInTourney, allRoundPoolsInTourney);
          return sorted;
        });
     }
@@ -66,7 +71,7 @@ function TourneyPage() {
   return (
     <Box mt={8}>
       <Toaster />
-      <TourneyHeaderText rounds={tourneyRounds} setRounds={setTourneyRounds} currentRoundId={NaN} />
+      <TourneyHeaderText rounds={tourneyRounds} setRounds={setTourneyRounds} currentRoundId={NaN} roundPools={allRoundPoolsInTourney} />
       <Separator mt={2} mb={4} />
       <VStack separator={<StackSeparator />}>
         <TourneyDetails

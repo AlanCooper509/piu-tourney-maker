@@ -17,6 +17,7 @@ import { deleteRound, upsertRound } from "../helpers/state/rounds";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 
 import type { ChartPool } from "../types/ChartPool";
+import type { RoundPool } from "../types/RoundPool";
 import type { PlayerRound } from "../types/PlayerRound";
 import type { PlayerTourney } from "../types/PlayerTourney";
 import type { Tourney } from "../types/Tourney";
@@ -37,6 +38,7 @@ function RoundPage() {
 
   const [tourneyRounds, setTourneyRounds] = useState<Round[]>([]);
   const [round, setRound] = useState<Round | null>(null);
+  const [roundPools, setRoundPools] = useState<RoundPool[]>([]);
   const [players, setPlayers] = useState<PlayerRound[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
   const [tourneyPlayers, setTourneyPlayers] = useState<PlayerTourney[]>([]);
@@ -57,6 +59,12 @@ function RoundPage() {
     loading: loadingRounds,
     error: errorRounds
   } = getSupabaseTable<Round>("rounds", {
+    column: "tourney_id",
+    value: tourneyId,
+  });
+  const {
+    data: allRoundPoolsInTourney
+  } = getSupabaseTable<RoundPool>("round_pools", {
     column: "tourney_id",
     value: tourneyId,
   });
@@ -98,7 +106,7 @@ function RoundPage() {
   useEffect(() => {
     if (allRoundsInTourney?.length) {
       setTourneyRounds(prev => {
-        const { sorted } = mergeAndFlattenRounds(prev, allRoundsInTourney);
+        const { sorted } = mergeAndFlattenRounds(prev, allRoundsInTourney, roundPools);
         return sorted;
       });
     }
@@ -112,6 +120,16 @@ function RoundPage() {
     );
     setRound(fresh ?? null);
   }, [tourneyRounds, roundId]);
+
+  // Stores round pools in the tourney to state variable
+  useEffect(() => {
+    if (allRoundPoolsInTourney) {
+      const sorted = [...allRoundPoolsInTourney].sort((a, b) => 
+        (a.sort_order ?? a.id) - (b.sort_order ?? b.id)
+      );
+      setRoundPools(sorted);
+    }
+  }, [allRoundPoolsInTourney]);
 
   // Sync players when playersData changes
   useEffect(() => {
@@ -232,7 +250,29 @@ function RoundPage() {
         }
       )
       .subscribe();
-    
+
+    const roundPoolsChannel = supabaseClient
+      .channel('round-pools-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'round_pools' },
+        (payload) => {
+          if (payload.eventType === 'DELETE') {
+            setRoundPools(prev => prev.filter(p => p.id !== payload.old.id));
+            return;
+          }
+
+          const incoming = payload.new as RoundPool;
+          if (incoming.tourney_id !== Number(tourneyId)) return;
+          setRoundPools(prev => {
+            const exists = prev.find(p => p.id === incoming.id);
+            if (exists) return prev.map(p => p.id === incoming.id ? incoming : p);
+            return [...prev, incoming];
+          });
+        }
+      )
+      .subscribe();
+
     const playerTourneyChannel = supabaseClient
       .channel('tourney-players-changes')
       .on(
@@ -250,13 +290,14 @@ function RoundPage() {
         }
       )
       .subscribe();
-    
+
     return () => {
       supabaseClient.removeChannel(scoresChannel);
       supabaseClient.removeChannel(stagesChannel);
       supabaseClient.removeChannel(chartPoolsChannel);
       supabaseClient.removeChannel(playerRoundsChannel);
       supabaseClient.removeChannel(roundsChannel);
+      supabaseClient.removeChannel(roundPoolsChannel);
       supabaseClient.removeChannel(playerTourneyChannel);
     };
   }, [roundId, tourney, tourneyPlayers, round, players, stages]);
@@ -268,6 +309,7 @@ function RoundPage() {
         rounds={tourneyRounds}
         setRounds={setTourneyRounds}
         currentRoundId={activeRoundId}
+        roundPools={roundPools}
       />
 
       <Separator mt={2} mb={4} />
@@ -281,6 +323,7 @@ function RoundPage() {
         loading={loadingRounds}
         error={errorRounds}
         tourneyId={Number(tourneyId)}
+        tourneyType={tourney?.type ?? null}
       />
       <Separator mt={"24px"} mb={"24px"} />
       <Container maxW="4xl">
