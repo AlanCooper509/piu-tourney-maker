@@ -129,6 +129,7 @@ export function RoundDetails({
                 {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "In Progress" && (
                     <EndRoundButton
                       tourneyId={tourneyId}
+                      tourneyType={tourneyType}
                       round={round}
                       setRound={setRound}
                     />

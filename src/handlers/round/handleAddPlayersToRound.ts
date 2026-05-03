@@ -1,6 +1,6 @@
 import { supabaseClient } from "../../lib/supabaseClient";
 
-export async function handleAddPlayersToRound(roundId: number, playerTourneysIds: number[]) {
+export async function handleAddPlayersToRound(playerTourneysIds: number[], roundId: number) {
   const entries = playerTourneysIds.map(id => ({
     round_id: roundId,
     player_tourney_id: id,
