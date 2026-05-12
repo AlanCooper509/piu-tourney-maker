@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Box, createListCollection, Heading, HStack, Text, useFilter, VStack } from '@chakra-ui/react'
+import { Box, Center, createListCollection, Heading, HStack, Text, useFilter, VStack } from '@chakra-ui/react'
 
 import { handleAddPlayerToRound } from '../../handlers/round/handleAddPlayerToRound'
 import DeletablePlayerRow from './DeletablePlayerRow'
@@ -87,7 +87,11 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
               />
             ): null)
         ) : (
-          !loading && !error && <Text>No players yet.</Text>
+          !loading && !error && (
+            <Center w="100%" mt={2}>
+              <Text>No players yet.</Text>
+            </Center>
+          )
         )}
       </VStack>
     </Box>

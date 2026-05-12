@@ -1,4 +1,4 @@
-import { Box, Heading, Text, HStack, VStack } from '@chakra-ui/react';
+import { Box, Heading, Text, HStack, VStack, Center } from '@chakra-ui/react';
 
 import { handleAssignRandomChartToStage } from '../../handlers/handleAssignChartToStage';
 import { handleAssignChartToStage } from '../../handlers/handleAssignChartToStage';
@@ -132,7 +132,11 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
             />
           ))
         ) : (
-          !loading && !error && <Text mt={2}>No stages yet.</Text>
+          !loading && !error && (
+            <Center w="100%" mt={2}>
+              <Text>No stages yet.</Text>
+            </Center>
+          )
         )}
       </VStack>
     </Box>

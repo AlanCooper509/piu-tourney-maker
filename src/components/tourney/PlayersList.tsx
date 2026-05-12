@@ -1,4 +1,4 @@
-import { Box, Heading, HStack, SimpleGrid, Text } from '@chakra-ui/react';
+import { Box, Center, Heading, HStack, SimpleGrid, Text } from '@chakra-ui/react';
 import { useState } from 'react';
 
 import AddPlayer from '../players/AddPlayer';
@@ -80,7 +80,11 @@ export function PlayersList({ players, setPlayers, loading, error }: PlayersList
                 />
               ))
             ) : (
-              !loading && !error && <Text>No players yet.</Text>
+              !loading && !error && (
+                <Center w="100%" mt={2}>
+                  <Text>No players yet.</Text>
+                </Center>
+              )
             )}
         </SimpleGrid>
       </Box>
