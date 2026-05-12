@@ -5,6 +5,7 @@ import { Box, Heading, VStack, Text, IconButton, HStack } from '@chakra-ui/react
 import { useCurrentTourney } from '../../context/CurrentTourneyContext'
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import EditableTourneyName from './EditableTourneyName'
+import GenerateBracketButton from './GenerateBracketButton/GenerateBracketButton';
 import SeedPlayersButton from './SeedPlayersButton/SeedPlayersButton'
 import { handleUpdateTourneyName } from '../../handlers/handleUpdateTourneyName'
 import { StatusElement } from '../StatusElement'
@@ -101,10 +102,18 @@ export function TourneyDetails({ players, rounds, loading, error }: TourneyDetai
           <>
             {!loadingTourneyAdminStatus && isTourneyAdmin && tourney?.status === "Not Started" && (
               <HStack mb={4}>
-                <SeedPlayersButton 
+                {tourney.type === "Double Elimination" && (
+                <GenerateBracketButton 
                   players={players}
-                  rounds={rounds}
                 />
+                )}
+                {/* TODO: Archive this Seed Players button after migrating existing Gauntlet/Waterfall functionality to GenerateBracketButton */}
+                {tourney.type !== "Double Elimination" && (
+                  <SeedPlayersButton 
+                    players={players}
+                    rounds={rounds}
+                  />
+                )}
                 <IconButton 
                   colorPalette="green"
                   variant="outline"
