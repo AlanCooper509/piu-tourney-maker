@@ -3,17 +3,18 @@ import { useNavigate } from "react-router-dom";
 
 import StartRoundButton from "../StartRoundButton";
 import EndRoundButton from "../EndRoundButton/EndRoundButton";
-import EditRoundDetailsButton from "./EditRoundDetailsButton";
 import { StatusElement } from "../../StatusElement";
 import LeaderboardLinkButton from "../LeaderboardLinkButton";
 import PlayersAdvancingElement from "./PlayersAdvancingElement";
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
+import DeleteRoundButton from "./DeleteRoundButton";
+import EditRoundDetailsButton from "./EditRoundDetailsButton";
+import ScoringDetailsText from "./ScoringDetailsText";
 
 import type { Round } from "../../../types/Round";
 import type { PlayerRound } from "../../../types/PlayerRound";
 import type { Stage } from "../../../types/Stage";
 import type { TourneyType } from "../../../types/Tourney";
-import ScoringDetailsText from "./ScoringDetailsText";
 
 interface RoundDetailsProps {
   round: Round | null;
@@ -60,12 +61,18 @@ export function RoundDetails({
             <>
               {!loadingTourneyAdminStatus && isTourneyAdmin && (
                 <Box my={2}>
-                  <EditRoundDetailsButton
-                    round={round}
-                    setRound={setRound}
-                    rounds={rounds}
-                    setRounds={setRounds}
-                  />
+                  <HStack gap={2}>
+                    <EditRoundDetailsButton 
+                      round={round} 
+                      rounds={rounds} 
+                      setRound={setRound} 
+                      setRounds={setRounds} 
+                    />
+                    <DeleteRoundButton 
+                      round={round} 
+                      setRounds={setRounds} 
+                    />
+                  </HStack>
                 </Box>
               )}
 
