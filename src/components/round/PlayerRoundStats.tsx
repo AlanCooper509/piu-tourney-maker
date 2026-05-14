@@ -23,8 +23,11 @@ export default function PlayerRoundStats({ player, stages, handleDeletePlayer }:
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
 
   const [isOpen, setIsOpen] = useState(false);
-  const toggleOpen = () => setIsOpen(prev => !prev);
   const [stagesPlayed, setStagesPlayed] = useState(0);
+
+  const hasStages = !!stages && stages.length > 0;
+
+  const toggleOpen = () => setIsOpen(prev => !prev);
 
   useEffect(() => {
     if (!stages) return;
@@ -61,7 +64,7 @@ export default function PlayerRoundStats({ player, stages, handleDeletePlayer }:
               }}
             />
             <HStack flex="1" overflow="hidden">
-              {!loadingTourneyAdminStatus && isTourneyAdmin && stagesPlayed == stages?.length && (
+              {!loadingTourneyAdminStatus && isTourneyAdmin && stagesPlayed == stages?.length && stages.length > 0 && (
                 <Checkbox.Root readOnly checked variant="outline" colorPalette="green">
                   <Checkbox.Control />
                 </Checkbox.Root>
@@ -95,17 +98,23 @@ export default function PlayerRoundStats({ player, stages, handleDeletePlayer }:
           py={2}
           px={4}
         >
-          {!loadingTourneyAdminStatus && isTourneyAdmin ? 
-            <EditablePlayerScores
-              player={player}
-              stages={stages}
-              incrementStagesPlayed={incrementStagesPlayed}
-            /> : 
-          (
-            <NonEditablePlayerScores
-              player={player}
-              stages={stages}
-            />
+          {hasStages ? (
+            !loadingTourneyAdminStatus && isTourneyAdmin ? (
+              <EditablePlayerScores
+                player={player}
+                stages={stages}
+                incrementStagesPlayed={incrementStagesPlayed}
+              />
+            ) : (
+              <NonEditablePlayerScores
+                player={player}
+                stages={stages}
+              />
+            )
+          ) : (
+            <Text fontSize="sm" color="gray.200" textAlign="center" py={1}>
+              No stages yet.
+            </Text>
           )}
         </Collapsible.Content>
       </Collapsible.Root>
