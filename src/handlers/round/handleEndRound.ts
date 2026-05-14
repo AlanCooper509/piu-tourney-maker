@@ -4,6 +4,7 @@ import calculatePlayerRankingsInRound from '../../helpers/calculatePlayerRanking
 import {handleAddPlayersToRound} from './handleAddPlayersToRound';
 import { handleUpdateTourneyStatus } from '../handleUpdateTourneyStatus';
 import { handleUpdateRoundName } from './handleUpdateRoundName';
+import { formatRoundName } from '../../helpers/formatRoundName';
 import { getRoundsInTourney } from '../../helpers/getRoundsInTourney';
 import getStagesInRound from '../../helpers/getstagesInRound';
 import getPlayersInRound from '../../helpers/getPlayersInRound';
@@ -103,18 +104,11 @@ interface GetPlayerTourneysOptions {
 }
 
 function renameRoundWithPlayerNames(round: Round | undefined, players: PlayerRound[] | null) {
-  if (!round || !players || players.length === 0) return;
-  const existingName = round.name;
-  const separator = ": ";
-  let updatedName = existingName.split(separator)[0] + separator;
+  if (!round || !players) return;
 
-  if (players.length === 1) {
-    const playerName = players[0].player_tourneys.player_name;
-    updatedName += playerName + " vs. ??";
-  } else {
-    const playerNames = players.map(p => p.player_tourneys.player_name).join(" vs. ");
-    updatedName += playerNames;
-  }
+  const playerNames = players.map(p => p.player_tourneys.player_name);
+  const updatedName = formatRoundName(round.name, playerNames);
+
   handleUpdateRoundName(round.id, updatedName);
 }
 

@@ -1,4 +1,6 @@
 import { supabaseClient } from "../../lib/supabaseClient";
+import { formatRoundName } from "../../helpers/formatRoundName";
+
 import type { PlayerTourney } from "../../types/PlayerTourney";
 
 /**
@@ -121,6 +123,7 @@ export async function seedInitialMatches(
   initialSeeding: [PlayerTourney | null, PlayerTourney | null][]
 ) {
   const seedInserts: { round_id: number; player_tourney_id: number }[] = [];
+  const nameUpdatePromises = [];
 
   // Iterate through all matches in all pools
   for (const pool of template.pools) {
@@ -132,24 +135,37 @@ export async function seedInitialMatches(
         const playerPair = initialSeeding[matchTemplate.seedIndex];
 
         if (roundId && playerPair) {
-          playerPair.forEach(player => {
-            if (player) {
-              seedInserts.push({
-                round_id: roundId,
-                player_tourney_id: player.id
-              });
-            }
+          const validPlayers = playerPair.filter((p): p is PlayerTourney => p !== null);
+          validPlayers.forEach(player => {
+            seedInserts.push({
+              round_id: roundId,
+              player_tourney_id: player.id
+            });
           });
+          const newName = formatRoundName(
+            matchTemplate.id, 
+            validPlayers.map(p => p.player_name),
+            true
+          );
+          nameUpdatePromises.push(
+            supabaseClient
+              .from("rounds")
+              .update({ name: newName })
+              .eq("id", roundId)
+          );
         }
       }
     }
   }
 
   if (seedInserts.length > 0) {
-    const { error } = await supabaseClient
+    const { error: seedErr } = await supabaseClient
       .from("player_rounds")
       .insert(seedInserts);
-    
-    if (error) throw error;
+    if (seedErr) throw seedErr;
+
+    const results = await Promise.all(nameUpdatePromises);
+    const firstError = results.find(r => r.error);
+    if (firstError) throw firstError.error;
   }
 }

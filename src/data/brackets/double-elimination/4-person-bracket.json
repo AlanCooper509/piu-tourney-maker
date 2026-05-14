@@ -1,0 +1,37 @@
+{
+  "bracketSize": 4,
+  "pools": [
+    {
+      "name": "Winners Semi-Finals",
+      "matches": [
+        { "id": "WSF:M1", "next": "Winners Finals", "loser": "Losers SF", "seedIndex": 0 },
+        { "id": "WSF:M2", "next": "Winners Finals", "loser": "Losers SF", "seedIndex": 1 }
+      ]
+    },
+    {
+      "name": "Winners Finals",
+      "matches": [
+        { "id": "Winners Finals", "next": "Grand Finals", "loser": "Losers Finals" }
+      ]
+    },
+    {
+      "name": "Losers Semi-Finals",
+      "matches": [
+        { "id": "Losers SF", "next": "Losers Finals" }
+      ]
+    },
+    {
+      "name": "Losers Finals",
+      "matches": [
+        { "id": "Losers Finals", "next": "Grand Finals" }
+      ]
+    },
+    {
+      "name": "Grand Finals",
+      "matches": [
+        { "id": "Grand Finals", "next": "RESET" },
+        { "id": "RESET", "next": null }
+      ]
+    }
+  ]
+}

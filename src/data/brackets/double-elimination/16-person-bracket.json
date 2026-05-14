@@ -1,0 +1,91 @@
+{
+  "bracketSize": 16,
+  "pools": [
+    {
+      "name": "Winners Round 1",
+      "matches": [
+        { "id": "WR1:M1", "next": "WQF:M1", "loser": "LR1:M1", "seedIndex": 0 },
+        { "id": "WR1:M2", "next": "WQF:M1", "loser": "LR1:M1", "seedIndex": 1 },
+        { "id": "WR1:M3", "next": "WQF:M2", "loser": "LR1:M2", "seedIndex": 2 },
+        { "id": "WR1:M4", "next": "WQF:M2", "loser": "LR1:M2", "seedIndex": 3 },
+        { "id": "WR1:M5", "next": "WQF:M3", "loser": "LR1:M3", "seedIndex": 4 },
+        { "id": "WR1:M6", "next": "WQF:M3", "loser": "LR1:M3", "seedIndex": 5 },
+        { "id": "WR1:M7", "next": "WQF:M4", "loser": "LR1:M4", "seedIndex": 6 },
+        { "id": "WR1:M8", "next": "WQF:M4", "loser": "LR1:M4", "seedIndex": 7 }
+      ]
+    },
+    {
+      "name": "Winners Quarter-Finals",
+      "matches": [
+        { "id": "WQF:M1", "next": "WSF:M1", "loser": "LR2:M4" },
+        { "id": "WQF:M2", "next": "WSF:M1", "loser": "LR2:M3" },
+        { "id": "WQF:M3", "next": "WSF:M2", "loser": "LR2:M2" },
+        { "id": "WQF:M4", "next": "WSF:M2", "loser": "LR2:M1" }
+      ]
+    },
+    {
+      "name": "Winners Semi-Finals",
+      "matches": [
+        { "id": "WSF:M1", "next": "Winners Finals", "loser": "LR4:M2" },
+        { "id": "WSF:M2", "next": "Winners Finals", "loser": "LR4:M1" }
+      ]
+    },
+    {
+      "name": "Winners Finals",
+      "matches": [
+        { "id": "Winners Finals", "next": "Grand Finals", "loser": "Losers Finals" }
+      ]
+    },
+    {
+      "name": "Losers Round 1",
+      "matches": [
+        { "id": "LR1:M1", "next": "LR2:M1" },
+        { "id": "LR1:M2", "next": "LR2:M2" },
+        { "id": "LR1:M3", "next": "LR2:M3" },
+        { "id": "LR1:M4", "next": "LR2:M4" }
+      ]
+    },
+    {
+      "name": "Losers Round 2",
+      "matches": [
+        { "id": "LR2:M1", "next": "LR3:M1" },
+        { "id": "LR2:M2", "next": "LR3:M1" },
+        { "id": "LR2:M3", "next": "LR3:M2" },
+        { "id": "LR2:M4", "next": "LR3:M2" }
+      ]
+    },
+    {
+      "name": "Losers Round 3",
+      "matches": [
+        { "id": "LR3:M1", "next": "LR4:M1" },
+        { "id": "LR3:M2", "next": "LR4:M2" }
+      ]
+    },
+    {
+      "name": "Losers Round 4",
+      "matches": [
+        { "id": "LR4:M1", "next": "Losers Semi-Finals" },
+        { "id": "LR4:M2", "next": "Losers Semi-Finals" }
+      ]
+    },
+    {
+      "name": "Losers Semi-Finals",
+      "matches": [
+        { "id": "Losers Semi-Finals", "next": "Losers Finals" }
+      ]
+    },
+    {
+      "name": "Losers Finals",
+      "matches": [
+        { "id": "Losers Finals", "next": "Grand Finals" }
+      ]
+    },
+    {
+      "name": "Grand Finals",
+      "matches": [
+        { "id": "Grand Finals", "next": "RESET" },
+        { "id": "RESET", "next": null }
+      ]
+    }
+  ]
+}

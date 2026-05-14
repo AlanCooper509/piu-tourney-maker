@@ -1,0 +1,12 @@
+{
+  "bracketSize": 2,
+  "pools": [
+    {
+      "name": "Grand Finals",
+      "matches": [
+        { "id": "Grand Finals", "next": "RESET", "seedIndex": 0 },
+        { "id": "RESET", "next": null }
+      ]
+    }
+  ]
+}
