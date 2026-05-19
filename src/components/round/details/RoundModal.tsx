@@ -15,6 +15,7 @@ interface RoundModalProps {
     advancing: number,
     nextId: number | undefined,
     parentId: number | undefined,
+    lostNextId: number | undefined,
     pointsPerStage: string | undefined
   ) => void;
 }
@@ -32,6 +33,7 @@ export default function RoundModal({
   const [formRoundName, setFormRoundName] = useState(round?.name ?? "");
   const [formPlayersAdvancing, setFormPlayersAdvancing] = useState(round?.players_advancing?.toString() ?? "");
   const [formNextRound, setFormNextRound] = useState<string[]>(round?.next_round_id ? [round.next_round_id.toString()] : []);
+  const [formLostNextRound, setFormLostNextRound] = useState<string[]>(round?.lost_next_round_id ? [round.lost_next_round_id.toString()] : []);
   const [formParentRoundId, setFormParentRound] = useState<string[]>(round?.parent_round_id ? [round.parent_round_id.toString()] : []);
   const [formPointsPerStage, setFormPointsPerStage] = useState<string>(round?.points_per_stage ?? "");
   const [redemptionChecked, setRedemptionChecked] = useState(round?.parent_round_id != null);
@@ -42,6 +44,7 @@ export default function RoundModal({
     setFormRoundName(round?.name ?? "");
     setFormPlayersAdvancing(round?.players_advancing?.toString() ?? "1");
     setFormNextRound(round?.next_round_id ? [round.next_round_id.toString()] : []);
+    setFormLostNextRound(round?.lost_next_round_id ? [round.lost_next_round_id.toString()] : []);
     setFormParentRound(round?.parent_round_id ? [round.parent_round_id.toString()] : []);
     setFormPointsPerStage(round?.points_per_stage ?? "");
     setRedemptionChecked(!!round?.parent_round_id);
@@ -71,8 +74,10 @@ export default function RoundModal({
     }
 
     const nextRoundId = formNextRound?.[0] ? Number(formNextRound[0]) : undefined;
+    const lostNextRoundId = formLostNextRound?.[0] ? Number(formLostNextRound[0]) : undefined;
     const parentRoundId = formParentRoundId?.[0] ? Number(formParentRoundId[0]) : undefined;
-    onSubmitForm(formRoundName, advancing, nextRoundId, parentRoundId, formPointsPerStage);
+
+    onSubmitForm(formRoundName, advancing, nextRoundId, parentRoundId, lostNextRoundId, formPointsPerStage);
     return true;
   };
 
@@ -95,18 +100,22 @@ export default function RoundModal({
         <Input value={formRoundName} onChange={(e) => setFormRoundName(e.target.value)} />
       </Field.Root>
 
-      <Field.Root>
-        <Field.Label>Players Advancing</Field.Label>
-        <NumberInput.Root
-          value={formPlayersAdvancing}
-          onValueChange={(e) => setFormPlayersAdvancing(e.value)}
-          min={1}
-        >
-          <NumberInput.Control />
-          <NumberInput.Input />
-        </NumberInput.Root>
-      </Field.Root>
+      {/* NUMBER OF PLAYERS ADVANCING */}
+      {(tourney?.type !== "Double Elimination") && (
+        <Field.Root>
+          <Field.Label>Players Advancing</Field.Label>
+          <NumberInput.Root
+            value={formPlayersAdvancing}
+            onValueChange={(e) => setFormPlayersAdvancing(e.value)}
+            min={1}
+          >
+            <NumberInput.Control />
+            <NumberInput.Input />
+          </NumberInput.Root>
+        </Field.Root>
+      )}
 
+      {/* WINNER NEXT ROUND */}
       <Field.Root>
         <Select.Root
           collection={otherRounds}
@@ -115,7 +124,7 @@ export default function RoundModal({
           size="sm"
         >
           <Select.HiddenSelect />
-          <Select.Label>Next Round</Select.Label>
+          <Select.Label>Next Round {tourney?.type === "Double Elimination" ? "(Winner)" : ""}</Select.Label>
           <Select.Control>
             <Select.Trigger>
               <Select.ValueText placeholder="Choose next round name" />
@@ -137,6 +146,40 @@ export default function RoundModal({
           </Select.Positioner>
         </Select.Root>
       </Field.Root>
+
+      {/* LOSER NEXT ROUND */}
+      {(tourney?.type === "Double Elimination") && (
+        <Field.Root>
+          <Select.Root
+            collection={otherRounds}
+            value={formLostNextRound}
+            onValueChange={({ value }) => setFormLostNextRound(value)}
+            size="sm"
+          >
+            <Select.HiddenSelect />
+            <Select.Label>Next Round (Loser)</Select.Label>
+            <Select.Control>
+              <Select.Trigger>
+                <Select.ValueText placeholder="Choose next round name" />
+              </Select.Trigger>
+              <Select.IndicatorGroup>
+                <Select.ClearTrigger />
+                <Select.Indicator />
+              </Select.IndicatorGroup>
+            </Select.Control>
+            <Select.Positioner>
+              <Select.Content>
+                {otherRounds.items.map((otherRound) => (
+                  <Select.Item key={otherRound.value} item={otherRound}>
+                    {otherRound.label}
+                    <Select.ItemIndicator />
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Positioner>
+          </Select.Root>
+        </Field.Root>
+      )}
 
       {(tourney?.type === "Waterfall (Redemption)" || round?.parent_round_id != null) && (
         <>

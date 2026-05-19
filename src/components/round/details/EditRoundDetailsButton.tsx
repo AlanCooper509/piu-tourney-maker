@@ -20,7 +20,8 @@ export default function EditRoundDetailsButton({ round, setRound, rounds, setRou
     advancing: number,
     nextRoundId: number | undefined,
     parentRoundId: number | undefined,
-    pointsPerStage: string | undefined
+    lostNextRoundId: number | undefined,
+    pointsPerStage: string | undefined,
   ) {
     const updatedRound = await handleUpdateRoundDetails(
       round.id,
@@ -28,6 +29,7 @@ export default function EditRoundDetailsButton({ round, setRound, rounds, setRou
       advancing,
       nextRoundId,
       parentRoundId,
+      lostNextRoundId,
       pointsPerStage
     );
 

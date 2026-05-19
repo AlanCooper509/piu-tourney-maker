@@ -7,6 +7,7 @@ export async function handleUpdateRoundDetails(
   playersAdvancing: number,
   nextRoundId: number | undefined,
   parentRoundId: number | undefined,
+  lostNextRoundId: number | undefined,
   pointsPerStage: string | undefined
 ): Promise<Round> {
   if (!roundId) {
@@ -24,6 +25,7 @@ export async function handleUpdateRoundDetails(
         players_advancing: playersAdvancing,
         next_round_id: nextRoundId ?? null,
         parent_round_id: parentRoundId ?? null,
+        lost_next_round_id: lostNextRoundId ?? null,
         points_per_stage: pointsPerStage ?? null
       }
     )
@@ -51,6 +53,7 @@ export async function handleAddRoundToTourney(
   playersAdvancing: number,
   nextRoundId: number | undefined,
   parentRoundId: number | undefined,
+  lostNextRoundId: number | undefined,
   pointsPerStage: string | undefined  
 ) {
   const { data, error } = await supabaseClient
@@ -62,6 +65,7 @@ export async function handleAddRoundToTourney(
         players_advancing: playersAdvancing,
         next_round_id: nextRoundId ?? null,
         parent_round_id: parentRoundId ?? null,
+        lost_next_round_id: lostNextRoundId ?? null,
         points_per_stage: pointsPerStage ?? null
       },
     ])

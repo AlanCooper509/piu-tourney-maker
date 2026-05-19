@@ -78,6 +78,7 @@ export default function TourneyHeaderText({
     advancing: number,
     nextRoundId: number | undefined,
     parentRoundId: number | undefined,
+    lostNextRoundId: number | undefined,
     pointsPerStage: string | undefined
   ) {
     if (!tourney) return;
@@ -87,6 +88,7 @@ export default function TourneyHeaderText({
       advancing,
       nextRoundId,
       parentRoundId,
+      lostNextRoundId,
       pointsPerStage
     );
 
