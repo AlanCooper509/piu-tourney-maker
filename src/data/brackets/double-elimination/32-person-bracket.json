@@ -1,5 +1,6 @@
 {
   "bracketSize": 32,
+  "format": "Double Elimination",
   "pools": [
     {
       "name": "Winners Round 1",

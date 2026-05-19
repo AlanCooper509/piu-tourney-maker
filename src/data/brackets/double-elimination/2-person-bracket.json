@@ -1,5 +1,6 @@
 {
   "bracketSize": 2,
+  "format": "Double Elimination",
   "pools": [
     {
       "name": "Grand Finals",

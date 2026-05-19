@@ -1,5 +1,6 @@
 {
   "bracketSize": 4,
+  "format": "Double Elimination",
   "pools": [
     {
       "name": "Winners Semi-Finals",

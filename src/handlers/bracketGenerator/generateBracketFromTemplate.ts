@@ -57,7 +57,8 @@ async function createPoolsAndRounds(tourneyId: number, template: any): Promise<R
       round_pool_id: pool.id,
       name: m.id, // Using the Logical ID as the initial name for mapping
       players_advancing: 1,
-      status: 'Not Started'
+      status: 'Not Started',
+      points_per_stage: template.format === "Double Elimination" ? 1 : undefined
     }));
 
     // 3. Insert all matches for this pool at once
