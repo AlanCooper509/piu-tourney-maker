@@ -1,23 +1,23 @@
 import { Box, Center, Heading, HStack, SimpleGrid, Text } from '@chakra-ui/react';
 import { useState } from 'react';
 
-import AddPlayer from '../players/AddPlayer';
-import EditablePlayerRow from './EditablePlayerRow';
-import { handleAddPlayerToTourney } from '../../handlers/handleAddPlayerToTourney';
-import { toaster } from "../../components/ui/toaster";
-import { useCurrentTourney } from '../../context/CurrentTourneyContext';
-import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
+import AddPlayer from '../../players/AddPlayer';
+import EditablePlayerRow from '../EditablePlayerRow';
+import { handleAddPlayerToTourney } from '../../../handlers/handleAddPlayerToTourney';
+import { toaster } from "../../ui/toaster";
+import { useCurrentTourney } from '../../../context/CurrentTourneyContext';
+import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 
-import type { PlayerTourney } from '../../types/PlayerTourney';
+import type { PlayerTourney } from '../../../types/PlayerTourney';
 
-interface PlayersListProps {
+interface ColumnarTourneyPlayersListProps {
   players: PlayerTourney[] | null;
   setPlayers: React.Dispatch<React.SetStateAction<PlayerTourney[]>>;
   loading: boolean;
   error: Error | null;
 }
 
-export function PlayersList({ players, setPlayers, loading, error }: PlayersListProps) {
+export function ColumnarTourneyPlayersList({ players, setPlayers, loading, error }: ColumnarTourneyPlayersListProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
   const [addingPlayer, setAddingPlayer] = useState(false);

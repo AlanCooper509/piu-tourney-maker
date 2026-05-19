@@ -1,0 +1,114 @@
+import { Box, Center, Heading, HStack, Text, VStack } from '@chakra-ui/react';
+import { useState } from 'react';
+
+import AddPlayer from '../../players/AddPlayer';
+import EditablePlayerRow from '../EditablePlayerRow';
+import { handleAddPlayerToTourney } from '../../../handlers/handleAddPlayerToTourney';
+import { toaster } from "../../ui/toaster";
+import { useCurrentTourney } from '../../../context/CurrentTourneyContext';
+import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
+
+import type { PlayerTourney } from '../../../types/PlayerTourney';
+
+interface SidebarTourneyPlayersListProps {
+  players: PlayerTourney[] | null;
+  setPlayers: React.Dispatch<React.SetStateAction<PlayerTourney[]>>;
+  loading: boolean;
+  error: Error | null;
+}
+
+export function SidebarTourneyPlayersList({ players, setPlayers, loading, error }: SidebarTourneyPlayersListProps) {
+  const { tourney } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
+  const [addingPlayer, setAddingPlayer] = useState(false);
+  const [newName, setNewName] = useState("");
+
+  const onAddPlayer = async (name: string) => {
+    if (!tourney) return;
+    try {
+      setAddingPlayer(true);
+      const newPlayer = await handleAddPlayerToTourney(tourney.id, name);
+      setPlayers((prev: PlayerTourney[]) => [...(prev ?? []), newPlayer]);
+      toaster.create({
+        title: "Player Added",
+        description: `Player "${newPlayer.player_name}" was added successfully.`,
+        type: "success",
+        closable: true,
+      });
+    } catch (err: any) {
+      toaster.create({
+        title: err.message.includes("already exists") ? "Duplicate Player" : "Failed to add player",
+        description: err.message,
+        type: "error",
+        closable: true,
+      });
+    } finally {
+      setAddingPlayer(false);
+    }
+  };
+
+  const updatePlayer = (updated: PlayerTourney) => {
+    setPlayers((prev) =>
+      prev?.map(p => (p.id === updated.id ? updated : p)) ?? []
+    );
+  };
+
+  // Sort players by their native listing/seed ordering if applicable
+  const sortedPlayers = players ? [...players] : [];
+
+  return (
+    <Box 
+      w={{ base: "100%", md: "320px" }} // Full width on mobile, sleek sidebar width on desktop
+      minW={{ md: "280px" }}
+      borderRight={{ base: "none", md: "1px solid" }} 
+      borderBottom={{ base: "1px solid", md: "none" }}
+      borderColor="whiteAlpha.200" 
+      pr={{ base: 0, md: 4 }}
+      pb={{ base: 4, md: 0 }}
+      h="fit-content"
+    >
+      {/* Header Area */}
+      <HStack mb={4} justifyContent="space-between" alignItems="center">
+        <Heading size="md">Players</Heading>
+        {!loadingTourneyAdminStatus && isTourneyAdmin && (
+          <AddPlayer
+            onAdd={onAddPlayer}
+            newName={newName}
+            setNewName={setNewName}
+            loading={addingPlayer}
+          />
+        )}
+      </HStack>
+
+      {loading && <Text fontSize="sm" color="gray.400">Loading players...</Text>}
+      {error && <Text fontSize="sm" color="red.400">Error: {error.message}</Text>}
+
+      {/* Roster Area forced to a single column */}
+      <VStack align="stretch" gap={2} maxH={{ md: "calc(100vh - 200px)" }} overflowY="auto" pr={1}>
+        {!loading && !error && sortedPlayers.length ? (
+          sortedPlayers.map((p) => (
+            <Box 
+              key={p.id} 
+              p={1} 
+              borderRadius="md" 
+              _hover={{ bg: "whiteAlpha.50" }}
+              transition="background 0.2s"
+            >
+              <EditablePlayerRow
+                player={p}
+                updatePlayer={updatePlayer}
+                removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
+              />
+            </Box>
+          ))
+        ) : (
+          !loading && !error && (
+            <Center w="100%" py={4}>
+              <Text fontSize="sm" color="gray.500">No players yet.</Text>
+            </Center>
+          )
+        )}
+      </VStack>
+    </Box>
+  );
+}
