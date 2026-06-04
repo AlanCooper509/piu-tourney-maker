@@ -2,6 +2,7 @@ import { Box, HStack, Text, VStack } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
 import StartRoundButton from "../StartRoundButton";
+import SkipRoundButton from "../SkipRoundButton/SkipRoundButton";
 import EndRoundButton from "../EndRoundButton/EndRoundButton";
 import { StatusElement } from "../../StatusElement";
 import LeaderboardLinkButton from "../LeaderboardLinkButton";
@@ -126,21 +127,30 @@ export function RoundDetails({
                   roundId={round?.id ?? 0}
                 />
                 {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Not Started" && (
-                    <StartRoundButton
-                      round={round}
-                      setRound={setRound}
-                      players={players}
-                      stages={stages}
-                    />
-                  )}
+                  <SkipRoundButton
+                    tourneyId={tourneyId}
+                    tourneyType={tourneyType}
+                    round={round}
+                    setRound={setRound}
+                    players={players}
+                  />
+                )}
+                {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Not Started" && (
+                  <StartRoundButton
+                    round={round}
+                    setRound={setRound}
+                    players={players}
+                    stages={stages}
+                  />
+                )}
                 {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "In Progress" && (
-                    <EndRoundButton
-                      tourneyId={tourneyId}
-                      tourneyType={tourneyType}
-                      round={round}
-                      setRound={setRound}
-                    />
-                  )}
+                  <EndRoundButton
+                    tourneyId={tourneyId}
+                    tourneyType={tourneyType}
+                    round={round}
+                    setRound={setRound}
+                  />
+                )}
               </HStack>
             </>
           )}

@@ -3,7 +3,7 @@ import { supabaseClient } from '../lib/supabaseClient';
 export default async function getPlayersInRound(roundId: number) {
   const { data, error } = await supabaseClient
     .from('player_rounds')
-    .select('*, player_tourneys(player_name)')
+    .select('*, player_tourneys(player_name, seed)')
     .eq('round_id', roundId)
     .order('id', { ascending: true })
 

@@ -241,7 +241,7 @@ function Leaderboard() {
   const advancingThreshold = round?.players_advancing ?? null;
 
   const { data: rounds } = getSupabaseTable<Round>('rounds', { column: 'id', value: roundId });
-  const { data: playersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: roundId }, "*, player_tourneys(player_name)");
+  const { data: playersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: roundId }, "*, player_tourneys(player_name, seed)");
   const { data: stagesData, refetch: refetchStages } = getSupabaseTable<Stage>("stages", { column: "round_id", value: roundId }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
   const { data: tourneyPlayersData } = getSupabaseTable<PlayerTourney>("player_tourneys", { column: "tourney_id", value: tourneyId });
 

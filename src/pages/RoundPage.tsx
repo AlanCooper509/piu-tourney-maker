@@ -1,6 +1,6 @@
 import { Flex, Box, Container, Separator } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { supabaseClient } from "../lib/supabaseClient";
 import getSupabaseTable from "../hooks/getSupabaseTable";
@@ -75,7 +75,7 @@ function RoundPage() {
   } = getSupabaseTable<PlayerRound>(
     "player_rounds",
     { column: "round_id", value: roundId },
-    "*, player_tourneys(player_name)"
+    "*, player_tourneys(player_name, seed)"
   );
   const {
     data: stagesData,
@@ -154,6 +154,11 @@ function RoundPage() {
     setTourneyPlayers(tourneyPlayersData ?? []);
   }, [tourneyPlayersData]);
 
+  const tourneyPlayersRef = useRef(tourneyPlayersData);
+  useEffect(() => {
+    tourneyPlayersRef.current = tourneyPlayersData;
+  }, [tourneyPlayersData]);
+
   // Subscribe to table changes (RealTime updates)
   useEffect(() => {
     const stagesChannel = supabaseClient
@@ -184,9 +189,11 @@ function RoundPage() {
             return;
           }
           const incoming = payload.new as Score;
-          const stage = stages.find(s => s.id === incoming?.stage_id);
-          if (!stage || (stage.round_id !== activeRoundId)) return;
-          setStages(prev => upsertScoreInStages(prev, incoming));
+          setStages(prev => {
+            const stage = prev.find(s => s.id === incoming?.stage_id);
+            if (!stage || stage.round_id !== activeRoundId) return prev;
+            return upsertScoreInStages(prev, incoming);
+          });
         }
       )
       .subscribe();
@@ -202,9 +209,11 @@ function RoundPage() {
             return;
           }
           const incoming = payload.new as ChartPool;
-          const stage = stages.find(s => s.id === incoming?.stage_id);
-          if (!stage || (stage.round_id !== activeRoundId)) return;
-          setStages(prev => upsertChartPoolInStages(prev, incoming));
+          setStages(prev => {
+            const stage = prev.find(s => s.id === incoming?.stage_id);
+            if (!stage || stage.round_id !== activeRoundId) return prev;
+            return upsertChartPoolInStages(prev, incoming);
+          });
         }
       )
       .subscribe();
@@ -221,7 +230,8 @@ function RoundPage() {
           }
           const incoming = payload.new as PlayerRound;
           if (incoming.round_id !== activeRoundId) return;
-          setPlayers(prev => upsertPlayerInRound(prev, incoming, tourneyPlayersData ?? []));
+          // mutable ref is used here to protect the socket boundary
+          setPlayers(prev => upsertPlayerInRound(prev, incoming, tourneyPlayersRef.current ?? []));
         }
       )
       .subscribe();
@@ -300,7 +310,7 @@ function RoundPage() {
       supabaseClient.removeChannel(roundPoolsChannel);
       supabaseClient.removeChannel(playerTourneyChannel);
     };
-  }, [roundId, tourney, tourneyPlayers, round, players, stages]);
+  }, [activeRoundId, tourneyId]);
 
   return (
     <Box mt={8}>

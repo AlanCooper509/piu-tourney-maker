@@ -3,7 +3,7 @@ import { useState } from "react";
 import { GrChapterNext } from "react-icons/gr";
 
 import { toaster } from "../../ui/toaster";
-import handleEndRound from "../../../handlers/round/handleEndRound";
+import handleEndRound from "../../../handlers/round/transition/handleEndRound";
 
 import type { Round } from "../../../types/Round";
 import type { TourneyType } from "../../../types/Tourney";
