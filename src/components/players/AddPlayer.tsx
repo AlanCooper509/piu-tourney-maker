@@ -1,130 +1,60 @@
 import { useState } from "react";
-import {
-  HStack,
-  Input,
-  IconButton,
-  Combobox,
-  Portal,
-  type ListCollection
-} from "@chakra-ui/react";
-import { FaCheck } from "react-icons/fa";
+import { Popover, Portal, Button, type ListCollection } from "@chakra-ui/react";
 import { MdOutlinePersonAddAlt } from "react-icons/md";
-import { IoCloseSharp } from "react-icons/io5";
+
+import { PlayerForm } from "./PlayerEntry/PlayerForm";
 
 interface AddPlayerProps {
-  onAdd: (name: string) => Promise<any>;
+  onAdd: (name: string, seed: number | null) => Promise<void>;
   newName: string;
-  setNewName: React.Dispatch<React.SetStateAction<string>>;
+  setNewName: (name: string) => void;
   loading: boolean;
   collection?: ListCollection<{ label: string; value: string }>;
+  hideSeed?: boolean;
 }
 
-function AddPlayer({
-  onAdd,
-  newName,
-  setNewName,
-  loading,
-  collection
-}: AddPlayerProps) {
-  const [isAdding, setIsAdding] = useState(false);
+export default function AddPlayer({ onAdd, newName, setNewName, loading, collection, hideSeed = false }: AddPlayerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [newSeed, setNewSeed] = useState<string>("");
 
-  const handleSave = async () => {
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!newName.trim()) return;
-    await onAdd(newName.trim());
-    setNewName("");
-    setIsAdding(false);
-  };
 
-  const handleCancel = () => {
+    const seedValue = newSeed.trim() !== "" ? Number(newSeed) : null;
+    await onAdd(newName.trim(), seedValue);
+    
     setNewName("");
-    setIsAdding(false);
+    setNewSeed("");
+    setIsOpen(false);
   };
 
   return (
-    <HStack align="center" justify="center">
-      {isAdding ? (
-        <>
-          {collection ? (
-            <Combobox.Root
-              collection={collection}
-              inputValue={newName}
-              onInputValueChange={(e) => {
-                setNewName(e.inputValue);
-              }}
-              onValueChange={(e) =>
-                setNewName(e.value[0] ?? "")
-              }
-              size="sm"
-            >
-              <Combobox.Control>
-                <Combobox.Input placeholder="Select or type..." />
-                <Combobox.IndicatorGroup>
-                  <Combobox.ClearTrigger />
-                  <Combobox.Trigger />
-                </Combobox.IndicatorGroup>
-              </Combobox.Control>
-              <Portal>
-                <Combobox.Positioner>
-                  <Combobox.Content>
-                    <Combobox.Empty>No players found</Combobox.Empty>
-                    {collection.items.map((item) => (
-                      <Combobox.Item key={item.value} item={item}>
-                        {item.label}
-                        <Combobox.ItemIndicator />
-                      </Combobox.Item>
-                    ))}
-                  </Combobox.Content>
-                </Combobox.Positioner>
-              </Portal>
-            </Combobox.Root>
-          ) : (
-            <Input
-              size="sm"
-              placeholder="New Player Name"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              autoFocus
-            />
-          )}
-
-          <IconButton
-            aria-label="Save player"
-            variant="outline"
-            borderWidth={2}
-            size="sm"
-            loading={loading}
-            onClick={handleSave}
-            colorPalette="green"
-          >
-            <FaCheck />
-          </IconButton>
-
-          <IconButton
-            aria-label="Cancel edit"
-            variant="outline"
-            borderWidth={2}
-            size="sm"
-            onClick={handleCancel}
-            colorPalette="red"
-          >
-            <IoCloseSharp />
-          </IconButton>
-        </>
-      ) : (
-        <IconButton
-          aria-label="Add player"
-          variant="outline"
-          borderWidth={2}
-          size="sm"
-          px={2}
-          colorPalette="green"
-          onClick={() => setIsAdding(true)}
-        >
+    <Popover.Root open={isOpen} onOpenChange={(e) => setIsOpen(e.open)} positioning={{ placement: "bottom" }}>
+      <Popover.Trigger asChild>
+        <Button variant="outline" borderWidth={2} size="sm" colorPalette="green">
           Add Player <MdOutlinePersonAddAlt />
-        </IconButton>
-      )}
-    </HStack>
+        </Button>
+      </Popover.Trigger>
+      <Portal>
+        <Popover.Positioner>
+          <Popover.Content p={4} w="300px" boxShadow="md">
+            <Popover.Arrow />
+            <PlayerForm
+              name={newName}
+              setName={setNewName}
+              seed={newSeed}
+              setSeed={setNewSeed}
+              onSubmit={handleSave}
+              onCancel={() => setIsOpen(false)}
+              submitLabel="Add"
+              loading={loading}
+              collection={collection}
+              hideSeed={hideSeed}
+            />
+          </Popover.Content>
+        </Popover.Positioner>
+      </Portal>
+    </Popover.Root>
   );
 }
-
-export default AddPlayer;

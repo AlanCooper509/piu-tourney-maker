@@ -23,20 +23,22 @@ export function ColumnarTourneyPlayersList({ players, setPlayers, loading, error
   const [addingPlayer, setAddingPlayer] = useState(false);
   const [newName, setNewName] = useState("");
 
-  const onAddPlayer = async (name: string) => {
+  const onAddPlayer = async (name: string, seed: number | null) => {
     if (!tourney) return;    
     try {
       setAddingPlayer(true);
-      const playerExists = players?.some((p) => p.player_name === name);
+      const playerExists = players?.some((p) => p.player_name.toLowerCase() === name.toLowerCase());
       if (playerExists) {
         throw new Error(`Player "${name}" already exists in this tournament.`);
       }
-      const newPlayer = await handleAddPlayerToTourney(tourney.id, name);
+      const newPlayer = await handleAddPlayerToTourney(tourney.id, name, seed);
+      
       setPlayers((prev: PlayerTourney[]) => {
         const existingList = prev ?? [];
         if (existingList.some((p) => p.id === newPlayer.id)) return existingList;
         return [...existingList, newPlayer];
       });
+      
       toaster.create({
         title: "Player Added",
         description: `Player "${newPlayer.player_name}" was added successfully.`,

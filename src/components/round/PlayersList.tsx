@@ -71,7 +71,8 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
             setNewName={setNewName}
             loading={addingPlayer}
             collection={collection}
-            />
+            hideSeed={true}
+          />
         }
       </HStack>
       {loading && <Text>Loading players...</Text>}

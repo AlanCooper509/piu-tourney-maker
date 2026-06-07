@@ -1,9 +1,9 @@
 import { supabaseClient } from "../lib/supabaseClient";
 
-export async function handleAddPlayerToTourney(tourneyId: number, playerName: string) {
+export async function handleAddPlayerToTourney(tourneyId: number, playerName: string, seed?: number | null) {
   const { data, error } = await supabaseClient
     .from('player_tourneys')
-    .insert([{ tourney_id: tourneyId, player_name: playerName }])
+    .insert([{ tourney_id: tourneyId, player_name: playerName, seed: seed ?? null }])
     .select()
     .single();
 
