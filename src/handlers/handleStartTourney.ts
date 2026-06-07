@@ -97,7 +97,6 @@ async function insertPlayersIntoEarliestRound(tourneyId: number) {
       }));
 
     if (rowsToInsert.length === 0) {
-      console.log("All players already inserted for this round.");
       return [];
     }
 
