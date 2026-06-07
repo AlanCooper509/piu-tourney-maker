@@ -13,8 +13,6 @@ export async function handleAddPlayersToRound(playerTourneysIds: number[], round
 
   if (error) {
     console.error("Error inserting players into round:", error.message);
-  } else {
-    console.log("Successfully added players to round:", data);
   }
 
   return { data, error };
