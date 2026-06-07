@@ -26,23 +26,23 @@
     {
       "name": "Winners Round 2",
       "matches": [
-        { "id": "WR2:M1", "next": "WQF:M1", "loser": "LR2:M8" },
-        { "id": "WR2:M2", "next": "WQF:M1", "loser": "LR2:M7" },
-        { "id": "WR2:M3", "next": "WQF:M2", "loser": "LR2:M6" },
-        { "id": "WR2:M4", "next": "WQF:M2", "loser": "LR2:M5" },
-        { "id": "WR2:M5", "next": "WQF:M3", "loser": "LR2:M4" },
-        { "id": "WR2:M6", "next": "WQF:M3", "loser": "LR2:M3" },
-        { "id": "WR2:M7", "next": "WQF:M4", "loser": "LR2:M2" },
-        { "id": "WR2:M8", "next": "WQF:M4", "loser": "LR2:M1" }
+        { "id": "WR2:M1", "next": "WQF:M1", "loser": "LR2:M5" },
+        { "id": "WR2:M2", "next": "WQF:M1", "loser": "LR2:M6" },
+        { "id": "WR2:M3", "next": "WQF:M2", "loser": "LR2:M7" },
+        { "id": "WR2:M4", "next": "WQF:M2", "loser": "LR2:M8" },
+        { "id": "WR2:M5", "next": "WQF:M3", "loser": "LR2:M1" },
+        { "id": "WR2:M6", "next": "WQF:M3", "loser": "LR2:M2" },
+        { "id": "WR2:M7", "next": "WQF:M4", "loser": "LR2:M3" },
+        { "id": "WR2:M8", "next": "WQF:M4", "loser": "LR2:M4" }
       ]
     },
     {
       "name": "Winners Quarter-Finals",
       "matches": [
-        { "id": "WQF:M1", "next": "WSF:M1", "loser": "LR4:M4" },
-        { "id": "WQF:M2", "next": "WSF:M1", "loser": "LR4:M3" },
-        { "id": "WQF:M3", "next": "WSF:M2", "loser": "LR4:M2" },
-        { "id": "WQF:M4", "next": "WSF:M2", "loser": "LR4:M1" }
+        { "id": "WQF:M1", "next": "WSF:M1", "loser": "LR4:M3" },
+        { "id": "WQF:M2", "next": "WSF:M1", "loser": "LR4:M4" },
+        { "id": "WQF:M3", "next": "WSF:M2", "loser": "LR4:M1" },
+        { "id": "WQF:M4", "next": "WSF:M2", "loser": "LR4:M2" }
       ]
     },
     {

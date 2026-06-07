@@ -18,10 +18,10 @@
     {
       "name": "Winners Quarter-Finals",
       "matches": [
-        { "id": "WQF:M1", "next": "WSF:M1", "loser": "LR2:M4" },
-        { "id": "WQF:M2", "next": "WSF:M1", "loser": "LR2:M3" },
-        { "id": "WQF:M3", "next": "WSF:M2", "loser": "LR2:M2" },
-        { "id": "WQF:M4", "next": "WSF:M2", "loser": "LR2:M1" }
+        { "id": "WQF:M1", "next": "WSF:M1", "loser": "LR2:M3" },
+        { "id": "WQF:M2", "next": "WSF:M1", "loser": "LR2:M4" },
+        { "id": "WQF:M3", "next": "WSF:M2", "loser": "LR2:M1" },
+        { "id": "WQF:M4", "next": "WSF:M2", "loser": "LR2:M2" }
       ]
     },
     {
