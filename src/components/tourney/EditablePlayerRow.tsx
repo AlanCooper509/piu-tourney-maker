@@ -48,7 +48,7 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
       setIsLoading(true);
       const seedValue = newSeed.trim() !== "" ? Number(newSeed) : null;
       
-      const updatedPlayer = await handleUpdatePlayerInTourney(player.id, newName.trim(), seedValue);
+      const updatedPlayer = await handleUpdatePlayerInTourney(player.id, newName.trim(), seedValue, tourney?.type ?? undefined);
       updatePlayer(updatedPlayer);
       setIsOpen(false);
       
