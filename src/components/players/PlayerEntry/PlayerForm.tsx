@@ -99,7 +99,6 @@ export function PlayerForm({
             size="sm"
             colorPalette="red"
             variant="outline"
-            borderWidth={2}
             onClick={onCancel}
             disabled={loading}
           >

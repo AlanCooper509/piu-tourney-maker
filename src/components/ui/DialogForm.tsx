@@ -53,7 +53,7 @@ export default function DialogForm({ title, trigger, formBody, showSubmit = true
                   const shouldClose = await onSubmit();
                   if (shouldClose) setOpen(false);
                 }}>
-                Submit
+                {isDestructive ? "Delete" : "Submit"}
               </Button>
             </Dialog.Footer>
 
