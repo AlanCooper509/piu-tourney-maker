@@ -155,12 +155,13 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
           {/* Delete Player Dialog Form */}
           <DialogForm
             title={`Delete player "${player.player_name}"?`}
+            showSubmit={true}
+            isDestructive={true}
+            loading={isDeleting}
             open={isDeleteOpen}
             setOpen={setIsDeleteOpen}
-            loading={isDeleting}
             onSubmit={handleDeletePlayer}
             onCancel={async () => { return true; }}             
-            showSubmit={true}
             trigger={
               <IconButton
                 aria-label="Delete player"
@@ -175,7 +176,7 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
             formBody={
               <VStack gap={4}>
                 <Text fontSize="sm" textAlign="center">
-                  This will remove <strong>ANY AND ALL</strong> of {player.player_name}'s scores across <strong>ALL</strong> rounds within this entire tournament!
+                  This will remove <strong>ANY AND ALL</strong> of {player.player_name}'s scores across <strong>ALL</strong> rounds within this <strong>ENTIRE</strong> tournament!
                 </Text>
                 <Text fontSize="sm" textAlign="center" mt={2} color="fg.error">
                   Are you sure you want to proceed?

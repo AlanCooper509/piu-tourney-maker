@@ -12,6 +12,7 @@ interface DialogFormProps {
   trigger: ReactNode; // element that opens the dialog
   formBody: ReactNode;  // form fields
   showSubmit?: boolean;
+  isDestructive?: boolean;
   loading?: boolean;
   open: boolean;       // control dialog open state
   setOpen: (open: boolean) => void; // function to set open state
@@ -19,7 +20,7 @@ interface DialogFormProps {
   onCancel: () => void;  // function to call on cancel
 }
 
-export default function DialogForm({ title, trigger, formBody, showSubmit = true, loading = false, open, setOpen, onSubmit, onCancel }: DialogFormProps) {
+export default function DialogForm({ title, trigger, formBody, showSubmit = true, isDestructive = false, loading = false, open, setOpen, onSubmit, onCancel }: DialogFormProps) {
   return (
     <Dialog.Root open={open} onOpenChange={(details) => setOpen(details.open)} closeOnInteractOutside={false} modal={false}>
       <Dialog.Trigger asChild>
@@ -37,7 +38,7 @@ export default function DialogForm({ title, trigger, formBody, showSubmit = true
 
             <Dialog.Footer>
               <Dialog.ActionTrigger asChild>
-                <Button variant="outline" borderWidth="2px" colorPalette={"red"} onClick={onCancel}>
+                <Button variant="outline" borderWidth="2px" colorPalette={isDestructive ? "gray" : "red"} onClick={onCancel}>
                   Cancel
                 </Button>
               </Dialog.ActionTrigger>
@@ -47,7 +48,7 @@ export default function DialogForm({ title, trigger, formBody, showSubmit = true
                 borderWidth="2px"
                 display={showSubmit ? 'inline-flex' : 'none'}
                 loading={loading}
-                colorPalette={"green"} 
+                colorPalette={isDestructive ? "red" : "green"} 
                 onClick={async () => {
                   const shouldClose = await onSubmit();
                   if (shouldClose) setOpen(false);
