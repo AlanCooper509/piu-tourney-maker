@@ -110,7 +110,11 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
 
         {/* Middle vs Divider */}
         {isTourneyAdmin ? (
-          <Center height="14" mx={{ base: 2, md: 6 }} zIndex={2}>
+          <Center display={{ base: "none", md: "flex" }}
+            mx={6}
+            height="14"
+            zIndex={2}
+          >
             <Box width="2px" height="full" bg="gray.800" />
           </Center>
         ) : (
