@@ -85,7 +85,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
           flex={1}
           w="full"
           minW={0}
-          maxW={{ base: isTourneyAdmin ? "xs" : "max-content", md: "full" }}
+          maxW={{ base: isTourneyAdmin ? "xs" : "full", md: "full" }}
           display="flex"
           alignItems="center"
           justifyContent={{ base: "flex-start", md: "flex-end" }}
@@ -150,7 +150,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
           flex={1}
           w="full"
           minW={0}
-          maxW={{ base: isTourneyAdmin ? "xs" : "max-content", md: "full" }}
+          maxW={{ base: isTourneyAdmin ? "xs" : "full", md: "full" }}
           display="flex"
           alignItems="center"
           justifyContent={{ base: "flex-end", md: "flex-start" }}
