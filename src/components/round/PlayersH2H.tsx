@@ -78,10 +78,18 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
         direction={{ base: "column", md: "row" }}
         align="center"
         justify="center"
-        gap={{ base: 4, md: 0 }}
+        gap={{ base: 2, md: 0 }}
       >
         {/* Left Side: Player 1 */}
-        <Box flex={1} w="full" minW={0} maxW={{ base: "max-content", md: "full" }} display="flex" alignItems="center" justifyContent={{ base: "center", md: "flex-end" }}>
+        <Box
+          flex={1}
+          w="full"
+          minW={0}
+          maxW={{ base: isTourneyAdmin ? "xs" : "max-content", md: "full" }}
+          display="flex"
+          alignItems="center"
+          justifyContent={{ base: "flex-start", md: "flex-end" }}
+        >
           {!loadingTourneyAdminStatus && isTourneyAdmin ? (
             /* ==================== ADMIN VIEW ==================== */
             player1 ? (
@@ -104,7 +112,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
             )
           ) : (
             /* ==================== END-USER VIEW ==================== */
-            <PlayerRoundName playerRound={player1} color="red.solid"/>
+            <PlayerRoundName playerRound={player1} color="red.solid" />
           )}
         </Box>
 
@@ -121,6 +129,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
           <Center
             px={2}
             mx={{ base: 0, md: -4 }}
+            my={{ base: -5, md: 0 }}
             zIndex={2}
             bg="gray.950"
             borderColor="gray.600"
@@ -137,7 +146,15 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
         )}
 
         {/* Right Side: Player 2 */}
-        <Box flex={1} w="full" minW={0} maxW={{ base: "max-content", md: "full" }} display="flex" alignItems="center" justifyContent={{ base: "center", md: "flex-start" }}>
+        <Box
+          flex={1}
+          w="full"
+          minW={0}
+          maxW={{ base: isTourneyAdmin ? "xs" : "max-content", md: "full" }}
+          display="flex"
+          alignItems="center"
+          justifyContent={{ base: "flex-end", md: "flex-start" }}
+        >
           {!loadingTourneyAdminStatus && isTourneyAdmin ? (
             /* ==================== ADMIN VIEW ==================== */
             player2 ? (
@@ -160,7 +177,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
             ) : null
           ) : (
             /* ==================== END-USER VIEW ==================== */
-            <PlayerRoundName playerRound={player2} color="blue.solid"/>
+            <PlayerRoundName playerRound={player2} color="blue.solid" />
           )}
         </Box>
       </Flex>
