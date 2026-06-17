@@ -81,7 +81,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
         gap={{ base: 4, md: 0 }}
       >
         {/* Left Side: Player 1 */}
-        <Box flex={1} w="full" display="flex" justifyContent={{ base: "center", md: "flex-end" }}>
+        <Box flex={1} w="full" minW={0} maxW={{ base: "max-content", md: "full" }} display="flex" alignItems="center" justifyContent={{ base: "center", md: "flex-end" }}>
           {!loadingTourneyAdminStatus && isTourneyAdmin ? (
             /* ==================== ADMIN VIEW ==================== */
             player1 ? (
@@ -137,7 +137,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
         )}
 
         {/* Right Side: Player 2 */}
-        <Box flex={1} w="full" display="flex" justifyContent={{ base: "center", md: "flex-start" }}>
+        <Box flex={1} w="full" minW={0} maxW={{ base: "max-content", md: "full" }} display="flex" alignItems="center" justifyContent={{ base: "center", md: "flex-start" }}>
           {!loadingTourneyAdminStatus && isTourneyAdmin ? (
             /* ==================== ADMIN VIEW ==================== */
             player2 ? (
