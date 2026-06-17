@@ -122,10 +122,12 @@ export function RoundDetails({
                 </Text>
               )}
               <HStack mt={2}>
-                <LeaderboardLinkButton
-                  tourneyId={tourneyId}
-                  roundId={round?.id ?? 0}
-                />
+                {tourneyType !== "Double Elimination" && (
+                  <LeaderboardLinkButton
+                    tourneyId={tourneyId}
+                    roundId={round?.id ?? 0}
+                  />
+                )}
                 {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Not Started" && (
                   <SkipRoundButton
                     tourneyId={tourneyId}

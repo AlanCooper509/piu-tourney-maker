@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabaseClient } from "../lib/supabaseClient";
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import { RoundDetails } from "../components/round/details/RoundDetails";
+import { PlayersH2H } from "../components/round/PlayersH2H";
 import { PlayersList } from "../components/round/PlayersList";
 import { StagesList } from "../components/stages/StagesList";
 import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeaderText";
@@ -124,7 +125,7 @@ function RoundPage() {
   // Stores round pools in the tourney to state variable
   useEffect(() => {
     if (allRoundPoolsInTourney) {
-      const sorted = [...allRoundPoolsInTourney].sort((a, b) => 
+      const sorted = [...allRoundPoolsInTourney].sort((a, b) =>
         (a.sort_order ?? a.id) - (b.sort_order ?? b.id)
       );
       setRoundPools(sorted);
@@ -197,7 +198,7 @@ function RoundPage() {
         }
       )
       .subscribe();
-        
+
     const chartPoolsChannel = supabaseClient
       .channel('chart-pools-changes')
       .on(
@@ -235,7 +236,7 @@ function RoundPage() {
         }
       )
       .subscribe();
-    
+
     const roundsChannel = supabaseClient
       .channel('tourney-rounds-changes')
       .on(
@@ -335,44 +336,61 @@ function RoundPage() {
         tourneyId={Number(tourneyId)}
         tourneyType={tourney?.type ?? null}
       />
-      <Separator mt={"24px"} mb={"24px"} />
-      <Container maxW="4xl">
-        <Flex direction={["column", "column", "column", "row"]} gap={4}>
-          {/* Players List Code */}
-          <Box
-            flex="1"
-            width={["100%", "100%", "100%", "50%"]}
-            display="flex"
-            justifyContent="center"
-          >
-            <PlayersList
-              round={round}
-              players={players}
-              setPlayers={setPlayers}
-              stages={stages}
-              tourneyPlayers={tourneyPlayers}
-              loading={loadingPlayers || loadingTourneyPlayers}
-              error={errorPlayers || errorTourneyPlayers}
-            />
-          </Box>
+      {tourney?.type === 'Double Elimination' ? (
+        <>
+          <Separator mt={6} />
+          <PlayersH2H
+            round={round}
+            players={players}
+            setPlayers={setPlayers}
+            stages={stages}
+            tourneyPlayers={tourneyPlayers}
+            loading={loadingPlayers || loadingTourneyPlayers}
+            error={errorPlayers || errorTourneyPlayers}
+          />
+        </>
+      ) : (
+        <>
+          <Separator mt={"24px"} mb={"24px"} />
+          <Container maxW="4xl">
+            <Flex direction={["column", "column", "column", "row"]} gap={4}>
+              {/* Players List Code */}
+              <Box
+                flex="1"
+                width={["100%", "100%", "100%", "50%"]}
+                display="flex"
+                justifyContent="center"
+              >
+                <PlayersList
+                  round={round}
+                  players={players}
+                  setPlayers={setPlayers}
+                  stages={stages}
+                  tourneyPlayers={tourneyPlayers}
+                  loading={loadingPlayers || loadingTourneyPlayers}
+                  error={errorPlayers || errorTourneyPlayers}
+                />
+              </Box>
 
-          {/* Stages List Code */}
-          <Box
-            flex="1"
-            width={["100%", "100%", "100%", "50%"]}
-            display="flex"
-            justifyContent="center"
-          >
-            <StagesList
-              round={round}
-              stages={stages}
-              setStages={setStages}
-              loading={loadingStages}
-              error={errorStages}
-            />
-          </Box>
-        </Flex>
-      </Container>
+              {/* Stages List Code */}
+              <Box
+                flex="1"
+                width={["100%", "100%", "100%", "50%"]}
+                display="flex"
+                justifyContent="center"
+              >
+                <StagesList
+                  round={round}
+                  stages={stages}
+                  setStages={setStages}
+                  loading={loadingStages}
+                  error={errorStages}
+                />
+              </Box>
+            </Flex>
+          </Container>
+        </>
+      )}
     </Box>
   );
 }

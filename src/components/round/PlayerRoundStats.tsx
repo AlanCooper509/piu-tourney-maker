@@ -1,4 +1,4 @@
-import { Box, Checkbox, Collapsible, HStack, IconButton, Text } from '@chakra-ui/react';
+import { Box, Checkbox, Collapsible, HStack, IconButton, Text, VStack } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { IoChevronForward } from 'react-icons/io5';
 import { FaTrash } from 'react-icons/fa';
@@ -8,6 +8,7 @@ import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import { useCurrentTourney } from '../../context/CurrentTourneyContext';
 import { getScoresForPlayer } from '../../helpers/getScoresForPlayer';
 import NonEditablePlayerScores from '../players/NonEditablePlayerScores';
+import DialogForm from '../../components/ui/DialogForm';
 
 import type { PlayerRound } from "../../types/PlayerRound";
 import type { Stage } from '../../types/Stage';
@@ -15,17 +16,28 @@ import type { Stage } from '../../types/Stage';
 interface PlayerRoundStatsProps {
   player: PlayerRound;
   stages: Stage[] | null;
-  handleDeletePlayer: React.MouseEventHandler<HTMLButtonElement>;
+  handleDeletePlayer: () => Promise<boolean>;
+  isDeleting: boolean;
+  isDeleteOpen: boolean;
+  setIsDeleteOpen: (open: boolean) => void;
 }
 
-export default function PlayerRoundStats({ player, stages, handleDeletePlayer }: PlayerRoundStatsProps) {
+export default function PlayerRoundStats({ 
+  player, 
+  stages, 
+  handleDeletePlayer,
+  isDeleting,
+  isDeleteOpen,
+  setIsDeleteOpen
+}: PlayerRoundStatsProps) {
   const { tourney } = useCurrentTourney();
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
 
   const [isOpen, setIsOpen] = useState(false);
   const [stagesPlayed, setStagesPlayed] = useState(0);
 
   const hasStages = !!stages && stages.length > 0;
+  const playerName = player.player_tourneys.player_name;
 
   const toggleOpen = () => setIsOpen(prev => !prev);
 
@@ -44,11 +56,11 @@ export default function PlayerRoundStats({ player, stages, handleDeletePlayer }:
     <Box w={["xs", "md", "md", "sm"]}>
       <Collapsible.Root
         textAlign="left"
-        borderWidth={ isOpen ? "1px" : "0px" }
+        borderWidth={isOpen ? "1px" : "0px"}
         borderStyle="solid"
         borderColor="gray.400"
         borderRadius="md"
-        mb={ isOpen ? 2 : 0 }
+        mb={isOpen ? 2 : 0}
       >
         <Collapsible.Trigger
           asChild
@@ -69,23 +81,44 @@ export default function PlayerRoundStats({ player, stages, handleDeletePlayer }:
                   <Checkbox.Control />
                 </Checkbox.Root>
               )}
-              <Text
-                truncate
-                title={player.player_tourneys.player_name}
-              >
-                {player.player_tourneys.player_name}
+              <Text truncate title={playerName}>
+                {playerName}
               </Text>
             </HStack>
+            
             {!loadingTourneyAdminStatus && isTourneyAdmin && (
-              <IconButton
-                aria-label="Delete player"
-                variant="outline"
-                size="xs"
-                colorPalette="red"
-                onClick={handleDeletePlayer}
-              >
-                <FaTrash />
-              </IconButton>
+              <Box onClick={(e) => e.stopPropagation()}>
+                <DialogForm
+                  title={`Delete player "${playerName}"?`}
+                  showSubmit={true}
+                  isDestructive={true}
+                  loading={isDeleting}
+                  open={isDeleteOpen}
+                  setOpen={setIsDeleteOpen}
+                  onSubmit={handleDeletePlayer}
+                  onCancel={async () => true}             
+                  trigger={
+                    <IconButton
+                      aria-label="Delete player"
+                      variant="outline"
+                      size="xs"
+                      colorPalette="red"
+                    >
+                      <FaTrash />
+                    </IconButton>
+                  }
+                  formBody={
+                    <VStack gap={3} py={2}>
+                      <Text fontSize="sm" textAlign="center" color="fg">
+                        This will remove <strong>ALL</strong> of {playerName}'s scores on <strong>this</strong> specific round!
+                      </Text>
+                      <Text fontSize="sm" textAlign="center" color="fg.error" fontWeight="medium">
+                        Are you sure you want to proceed?
+                      </Text>
+                    </VStack>
+                  }
+                />
+              </Box>
             )}
           </HStack>
         </Collapsible.Trigger>
