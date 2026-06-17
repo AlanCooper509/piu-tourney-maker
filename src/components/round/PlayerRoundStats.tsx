@@ -1,7 +1,7 @@
 import { Box, Checkbox, Collapsible, HStack, IconButton, Text, VStack } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { IoChevronForward } from 'react-icons/io5';
-import { FaTrash } from 'react-icons/fa';
+import { MdOutlinePersonRemoveAlt1 } from "react-icons/md";
 
 import EditablePlayerScores from '../players/EditablePlayerScores';
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
@@ -104,7 +104,7 @@ export default function PlayerRoundStats({
                       size="xs"
                       colorPalette="red"
                     >
-                      <FaTrash />
+                      <MdOutlinePersonRemoveAlt1 />
                     </IconButton>
                   }
                   formBody={
