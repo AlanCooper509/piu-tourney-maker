@@ -39,7 +39,7 @@ export default function DialogForm({ title, trigger, formBody, showSubmit = true
             <Dialog.Footer>
               <Dialog.ActionTrigger asChild>
                 <Button variant="outline" borderWidth="2px" colorPalette={isDestructive ? "gray" : "red"} onClick={onCancel}>
-                  Cancel
+                  {showSubmit ? "Cancel" : "Close"}
                 </Button>
               </Dialog.ActionTrigger>
 

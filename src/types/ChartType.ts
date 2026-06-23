@@ -1,0 +1,1 @@
+export type ChartType = 'Single' | 'Double' | 'Co-Op' | 'UCS';

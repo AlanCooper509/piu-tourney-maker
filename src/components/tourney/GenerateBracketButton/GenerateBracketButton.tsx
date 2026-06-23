@@ -10,8 +10,9 @@ import type { PlayerTourney } from "../../../types/PlayerTourney";
 
 interface SeedPlayersButtonProps {
   players: PlayerTourney[] | null,
+  buttonText: string
 }
-export default function GenerateBracketButton({ players }: SeedPlayersButtonProps) {
+export default function GenerateBracketButton({ players, buttonText }: SeedPlayersButtonProps) {
   const { tourney } = useCurrentTourney();
 
   const [open, setOpen] = useState(false);
@@ -52,7 +53,7 @@ export default function GenerateBracketButton({ players }: SeedPlayersButtonProp
           px={2}
           loading={open}
         >
-          Generate Bracket
+          {buttonText}
         </IconButton>
       }
       formBody={

@@ -7,6 +7,7 @@ import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import EditableTourneyName from './EditableTourneyName'
 import GenerateBracketButton from './GenerateBracketButton/GenerateBracketButton';
 import SeedPlayersButton from './SeedPlayersButton/SeedPlayersButton'
+import ChartRulesButton from './ChartRulesButton/ChartRulesButton';
 import { handleUpdateTourneyName } from '../../handlers/handleUpdateTourneyName'
 import { StatusElement } from '../StatusElement'
 import { toaster } from '../ui/toaster'
@@ -14,15 +15,19 @@ import { handleStartTourney } from '../../handlers/handleStartTourney'
 
 import type { Round } from '../../types/Round'
 import type { PlayerTourney } from '../../types/PlayerTourney'
+import type { RoundPool } from '../../types/RoundPool';
+import type { ChartdrawConfigWithSpecs } from '../../types/ChartDrawConfig';
 
 interface TourneyDetailsProps {
   players: PlayerTourney[] | null
   rounds: Round[] | null
+  roundPools: RoundPool[] | null
+  chartdrawConfigs: ChartdrawConfigWithSpecs[] | null
   loading: boolean
   error: Error | null
 }
 
-export function TourneyDetails({ players, rounds, loading, error }: TourneyDetailsProps) {
+export function TourneyDetails({ players, rounds, roundPools, chartdrawConfigs, loading, error}: TourneyDetailsProps) {
   const { tourney, setTourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
   const [updatingName, setUpdatingName] = useState(false);
@@ -103,16 +108,25 @@ export function TourneyDetails({ players, rounds, loading, error }: TourneyDetai
             {!loadingTourneyAdminStatus && isTourneyAdmin && tourney?.status === "Not Started" && (
               <HStack mb={4}>
                 {tourney.type === "Double Elimination" && (
-                <GenerateBracketButton 
-                  players={players}
-                />
+                  <>
+                    <GenerateBracketButton 
+                      players={players}
+                      buttonText={rounds && rounds.length > 0 ? "Regenerate Bracket" : "Generate Bracket"}
+                    />
+                    <ChartRulesButton
+                      chartdrawConfigs={chartdrawConfigs}
+                      roundPools={roundPools}
+                    />
+                  </>
                 )}
                 {/* TODO: Archive this Seed Players button after migrating existing Gauntlet/Waterfall functionality to GenerateBracketButton */}
                 {tourney.type !== "Double Elimination" && (
-                  <SeedPlayersButton 
-                    players={players}
-                    rounds={rounds}
-                  />
+                  <>
+                    <SeedPlayersButton 
+                      players={players}
+                      rounds={rounds}
+                    />
+                  </>
                 )}
                 <IconButton 
                   colorPalette="green"

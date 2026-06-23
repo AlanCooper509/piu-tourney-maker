@@ -1,4 +1,5 @@
-export type ChartType = 'Single' | 'Double' | 'Co-Op' | 'UCS';
+import type { ChartType } from "./ChartType";
+
 export interface Chart {
   id: number;               // bigint -> number
   name_en: string;          // text
