@@ -1,16 +1,17 @@
 import { Box, Heading, Text, HStack, VStack, Center } from '@chakra-ui/react';
 
+import { toaster } from '../ui/toaster';
 import { handleAssignRandomChartToStage } from '../../handlers/handleAssignChartToStage';
 import { handleAssignChartToStage } from '../../handlers/handleAssignChartToStage';
 import { handleAddChartToPool } from '../../handlers/handleAddChartToPool';
-import AddStageButton from './AddStageButton';
-import { toaster } from '../ui/toaster';
 import { useCurrentTourney } from '../../context/CurrentTourneyContext';
 import { useIsAdminForTourney } from '../../context/admin/AdminTourneyContext';
+import AddStageButton from './AddStageButton';
+import StageRow from './StageRow';
 
 import type { Round } from '../../types/Round';
 import type { Stage } from '../../types/Stage';
-import StageRow from './StageRow';
+import type { ChartType } from '../../types/ChartType';
 
 interface StageListProps {
   round: Round | null;
@@ -67,7 +68,7 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
     stageId: number,
     chartName: string,
     chartLevel: number,
-    chartType: 'Single' | 'Double' | 'Co-Op' | 'UCS'
+    chartType: ChartType
   ) {
     try {
       const insertedPool = await handleAddChartToPool(stageId, {

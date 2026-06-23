@@ -1,5 +1,6 @@
 import { Card, Badge, HStack, Text } from '@chakra-ui/react'
-import type { Chart, ChartType } from '../../types/Chart'
+import type { Chart } from '../../types/Chart'
+import type { ChartType } from '../../types/ChartType'
 
 interface ChartRowProps {
   chart: Chart,
