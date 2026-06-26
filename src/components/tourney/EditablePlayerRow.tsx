@@ -110,7 +110,7 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
       {/* Left side: player seed/name display */}
       <HStack flex="1" minW="0" overflow="hidden" mx={4}>
         <Text truncate title={player.player_name}>
-          {player.seed ? `${player.player_name} (${player.seed})` : player.player_name}
+          {player.seed ? `(${player.seed}) ${player.player_name}` : player.player_name}
         </Text>
       </HStack>
 

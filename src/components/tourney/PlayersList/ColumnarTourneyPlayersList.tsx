@@ -63,7 +63,21 @@ export function ColumnarTourneyPlayersList({ players, setPlayers, loading, error
     );
   };
   const columnCount = Math.min(Math.max(players?.length || 1, 1), 4);
-  return (
+
+  const sortedPlayers = players ? [...players].sort((a, b) => {
+    const seedA = a.seed;
+    const seedB = b.seed;
+
+    if (seedA !== null && seedA !== undefined && seedB !== null && seedB !== undefined) {
+      return seedA - seedB;
+    }
+
+    if (seedA !== null && seedA !== undefined) return -1;
+    if (seedB !== null && seedB !== undefined) return 1;
+    return a.player_name.localeCompare(b.player_name);
+  }) : [];
+
+return (
     <>
       <Box>
         <HStack mb={2} justifyContent="center" alignItems="center">
@@ -77,11 +91,13 @@ export function ColumnarTourneyPlayersList({ players, setPlayers, loading, error
             />
           }
         </HStack>
+        
         {loading && <Text>Loading players...</Text>}
         {error && <Text color="red">Error: {error.message}</Text>}
-        <SimpleGrid columns={[1,1,2,columnCount]} gap={[0, 0, 3, 5]} mb={2}>
-            {!loading && !error && players?.length ? (
-              players.map(p => (
+        
+        <SimpleGrid columns={[1, 1, 2, columnCount]} gap={[0, 0, 3, 5]} mb={2}>
+            {!loading && !error && sortedPlayers.length ? (
+              sortedPlayers.map(p => (
                 <EditablePlayerRow
                   key={p.id}
                   player={p}
