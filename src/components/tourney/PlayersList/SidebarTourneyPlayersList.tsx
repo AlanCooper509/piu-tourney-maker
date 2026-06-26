@@ -1,4 +1,4 @@
-import { Box, Center, Heading, HStack, Text, VStack } from '@chakra-ui/react';
+import { Box, Center, Heading, HStack, Text, VStack, Card } from '@chakra-ui/react';
 import { useState } from 'react';
 
 import AddPlayer from '../../players/AddPlayer';
@@ -63,21 +63,16 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
     );
   };
 
-  // Sort players by their native listing/seed ordering if applicable
   const sortedPlayers = players ? [...players] : [];
 
   return (
     <Box 
-      w={{ base: "100%", md: "320px" }} // Full width on mobile, sleek sidebar width on desktop
+      w={{ base: "100%", md: "320px" }} 
       minW={{ md: "280px" }}
-      borderRight={{ base: "none", md: "1px solid" }} 
-      borderBottom={{ base: "1px solid", md: "none" }}
-      borderColor="whiteAlpha.200" 
-      pb={{ base: 4, md: 0 }}
       h="fit-content"
     >
-      {/* Header Area */}
-      <HStack mb={4} justifyContent="center" alignItems="center">
+      {/* Header Area remains outside as a section title */}
+      <HStack mb={3} justifyContent="center" alignItems="center" px={1}>
         <Heading size="md">Players</Heading>
         {!loadingTourneyAdminStatus && isTourneyAdmin && (
           <AddPlayer
@@ -89,35 +84,45 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
         )}
       </HStack>
 
-      {loading && <Text fontSize="sm" color="gray.400">Loading players...</Text>}
-      {error && <Text fontSize="sm" color="red.400">Error: {error.message}</Text>}
+      {loading && <Text fontSize="sm" color="gray.400" mb={2} px={1}>Loading players...</Text>}
+      {error && <Text fontSize="sm" color="red.400" mb={2} px={1}>Error: {error.message}</Text>}
 
-      {/* Roster Area forced to a single column */}
-      <VStack align="stretch" gap={2} maxH={{ md: "calc(100vh - 200px)" }} overflowY="auto">
-        {!loading && !error && sortedPlayers.length ? (
-          sortedPlayers.map((p) => (
-            <Box 
-              key={p.id} 
-              p={1} 
-              borderRadius="md" 
-              _hover={{ bg: "whiteAlpha.50" }}
-              transition="background 0.2s"
-            >
-              <EditablePlayerRow
-                player={p}
-                updatePlayer={updatePlayer}
-                removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
-              />
-            </Box>
-          ))
-        ) : (
-          !loading && !error && (
-            <Center w="100%" py={4}>
-              <Text fontSize="sm" color="gray.500">No players yet.</Text>
-            </Center>
-          )
-        )}
-      </VStack>
+      <Card.Root variant="outline" size="sm">
+        <Card.Body p={1.5}>
+          <VStack 
+            align="stretch" 
+            gap={0}
+            maxH={{ md: "calc(100vh - 240px)" }} 
+            overflowY="auto"
+          >
+            {!loading && !error && sortedPlayers.length ? (
+              sortedPlayers.map((p, index) => (
+                <Box 
+                  key={p.id} 
+                  p={1.5} 
+                  borderRadius="sm"
+                  borderTopWidth={index > 0 ? "1px" : "0px"}
+                  borderColor="border.subtle"
+                  _hover={{ bg: "whiteAlpha.50" }}
+                  transition="background 0.2s"
+                >
+                  <EditablePlayerRow
+                    player={p}
+                    updatePlayer={updatePlayer}
+                    removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
+                  />
+                </Box>
+              ))
+            ) : (
+              !loading && !error && (
+                <Center w="100%" py={4}>
+                  <Text fontSize="sm" color="gray.500" fontStyle="italic">No players yet.</Text>
+                </Center>
+              )
+            )}
+          </VStack>
+        </Card.Body>
+      </Card.Root>
     </Box>
   );
 }

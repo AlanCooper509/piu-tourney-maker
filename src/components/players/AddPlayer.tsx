@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Popover, Portal, Button, type ListCollection } from "@chakra-ui/react";
+import { Popover, Portal, Button, type ListCollection, IconButton } from "@chakra-ui/react";
 import { MdOutlinePersonAddAlt } from "react-icons/md";
 
 import { PlayerForm } from "./PlayerEntry/PlayerForm";
@@ -11,9 +11,10 @@ interface AddPlayerProps {
   loading: boolean;
   collection?: ListCollection<{ label: string; value: string }>;
   hideSeed?: boolean;
+  text?: string;
 }
 
-export default function AddPlayer({ onAdd, newName, setNewName, loading, collection, hideSeed = false }: AddPlayerProps) {
+export default function AddPlayer({ onAdd, newName, setNewName, loading, collection, hideSeed = false, text }: AddPlayerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [newSeed, setNewSeed] = useState<string>("");
 
@@ -32,9 +33,27 @@ export default function AddPlayer({ onAdd, newName, setNewName, loading, collect
   return (
     <Popover.Root open={isOpen} onOpenChange={(e) => setIsOpen(e.open)} positioning={{ placement: "bottom" }}>
       <Popover.Trigger asChild>
-        <Button variant="outline" borderWidth={2} size="sm" colorPalette="green">
-          Add Player <MdOutlinePersonAddAlt />
-        </Button>
+        {text ? 
+          <Button
+            aria-label="Add player"
+            variant="outline"
+            borderWidth={2}
+            size="sm"
+            colorPalette="green"
+          >
+            {text}<MdOutlinePersonAddAlt />
+          </Button>
+          :
+          <IconButton
+            aria-label="Add player"
+            variant="outline"
+            borderWidth={2}
+            size="sm"
+            colorPalette="green"
+          >
+            <MdOutlinePersonAddAlt />
+          </IconButton>
+        }
       </Popover.Trigger>
       <Portal>
         <Popover.Positioner>

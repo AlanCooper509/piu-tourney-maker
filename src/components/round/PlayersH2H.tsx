@@ -107,6 +107,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
                   loading={addingPlayer}
                   collection={collection}
                   hideSeed={true}
+                  text={"Add Player"}
                 />
               </Box>
             )
@@ -172,6 +173,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
                   loading={addingPlayer}
                   collection={collection}
                   hideSeed={true}
+                  text={"Add Player"}
                 />
               </Box>
             ) : null

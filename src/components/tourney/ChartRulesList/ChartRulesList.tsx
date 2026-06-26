@@ -1,6 +1,8 @@
 import { Stack, Text, Badge, Box, Card, HStack, Heading, Separator } from "@chakra-ui/react";
 import { LuTriangleAlert } from "react-icons/lu";
 
+import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
+import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 import PickBanFlowCollapsible from "./PickBanFlowCollapsible";
 import ChartSpecsCollapsible from "./ChartSpecsCollapsible";
 import AppliedPoolsList from "./AppliedPoolsList";
@@ -17,6 +19,9 @@ interface ChartRulesListProps {
 }
 
 export default function ChartRulesList({ chartdrawConfigs, pickbanRulesets, roundPools }: ChartRulesListProps) {
+  const { tourney } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
+
   if (!chartdrawConfigs.length) {
     return <Text color="gray.500">No chart rulesets available for this tournament.</Text>;
   }
@@ -28,11 +33,11 @@ export default function ChartRulesList({ chartdrawConfigs, pickbanRulesets, roun
   );
 
   return (
-    <Stack>
+    <Stack w={{ base: "100%", md: "400px" }}>
       <Heading size="md">Rulesets</Heading>
 
       {/* Round Pools without a Ruleset */}
-      {unassignedPools.length > 0 && (
+      {!loadingTourneyAdminStatus && isTourneyAdmin && unassignedPools.length > 0 && (
         <Box p={3} width="100%">
           {/* Combined header line that handles icon + text seamlessly */}
           <HStack 
@@ -48,7 +53,7 @@ export default function ChartRulesList({ chartdrawConfigs, pickbanRulesets, roun
           </HStack>
           
           {/* Badges Layout */}
-          <HStack gap={1.5} flexWrap="wrap" justifyContent={["center", "flex-start"]}>
+          <HStack gap={1.5} flexWrap="wrap" justifyContent="center">
             {unassignedPools.map((pool) => (
               <Badge
                 key={pool.id}
