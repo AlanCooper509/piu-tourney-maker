@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { VStack, StackSeparator, Separator, Box } from "@chakra-ui/react"
+import { VStack, StackSeparator, Separator, Box, Stack } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
 import { supabaseClient } from "../lib/supabaseClient";
 
@@ -9,6 +9,8 @@ import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeader
 import { TourneyDetails } from "../components/tourney/TourneyDetails";
 import { ColumnarTourneyPlayersList } from "../components/tourney/PlayersList/ColumnarTourneyPlayersList";
 import { Toaster } from "../components/ui/toaster";
+import ChartRulesList from "../components/tourney/ChartRulesList/ChartRulesList";
+import { SidebarTourneyPlayersList } from "../components/tourney/PlayersList/SidebarTourneyPlayersList";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 import { deleteRound, upsertRound } from "../helpers/state/rounds";
@@ -19,16 +21,18 @@ import type { PlayerTourney } from "../types/PlayerTourney";
 import type { Round } from "../types/Round";
 import type { RoundPool } from "../types/RoundPool";
 import type { ChartdrawConfig, ChartdrawConfigSpec, ChartdrawConfigWithSpecs } from "../types/ChartDrawConfig";
+import type { PickbanRulesetWithSequences, PickbanSequence } from "../types/Pickban";
 
 function TourneyPage() {
   const { tourneyId } = useParams();
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
 
   const { tourney, setTourney } = useCurrentTourney();
-  const [players, setPlayers] = useState<PlayerTourney[]>([]);  
+  const [players, setPlayers] = useState<PlayerTourney[]>([]);
   const [rounds, setRounds] = useState<Round[]>([]);
   const [roundPools, setRoundPools] = useState<RoundPool[]>([]);
-  const [chartdrawConfigs, setChartdrawConfigs] = useState<ChartdrawConfigWithSpecs[]>([]); 
+  const [chartdrawConfigs, setChartdrawConfigs] = useState<ChartdrawConfigWithSpecs[]>([]);
+  const [pickbanRulesets, setPickbanRulesets] = useState<PickbanRulesetWithSequences[]>([]);
 
 
   // Initial Supabase Network Fetches
@@ -52,6 +56,11 @@ function TourneyPage() {
     'chartdraw_configs',
     { column: "tourney_id", value: tourneyId },
     "*, chartdraw_config_specs(*)"
+  );
+  const { data: queriedPickbanRulesets } = getSupabaseTable<PickbanRulesetWithSequences>(
+    'pickban_rulesets',
+    { column: "tourney_id", value: tourneyId },
+    "*, pickban_sequences(*)"
   );
 
   // Seed Initial Data From Database Fetches
@@ -81,6 +90,10 @@ function TourneyPage() {
   useEffect(() => {
     if (queriedChartdrawConfigs) setChartdrawConfigs(queriedChartdrawConfigs);
   }, [queriedChartdrawConfigs]);
+
+  useEffect(() => {
+    if (queriedPickbanRulesets) setPickbanRulesets(queriedPickbanRulesets);
+  }, [queriedPickbanRulesets]);
 
   const tourneyRounds = useMemo(() => {
     if (!rounds.length) return [];
@@ -189,7 +202,7 @@ function TourneyPage() {
             }
 
             const incomingSpec = payload.new as ChartdrawConfigSpec;
-            
+
             return prev.map(config => {
               if (config.id !== incomingSpec.chartdraw_config_id) return config;
 
@@ -205,40 +218,120 @@ function TourneyPage() {
       )
       .subscribe();
 
+    const pickbanRulesetChannel = supabaseClient
+      .channel('tourney-page-pickban-rulesets-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'pickban_rulesets' },
+        (payload) => {
+          if (payload.eventType === 'DELETE') {
+            setPickbanRulesets(prev => prev.filter(r => r.id !== payload.old.id));
+            return;
+          }
+
+          const incoming = payload.new as PickbanRulesetWithSequences;
+          if (String(incoming.tourney_id) !== String(tourneyId)) return;
+
+          setPickbanRulesets(prev => {
+            const exists = prev.find(r => r.id === incoming.id);
+            if (exists) {
+              return prev.map(r => r.id === incoming.id ? { ...incoming, pickban_sequences: r.pickban_sequences } : r);
+            }
+            return [...prev, { ...incoming, pickban_sequences: [] }];
+          });
+        }
+      )
+      .subscribe();
+
+    const pickbanSequenceChannel = supabaseClient
+      .channel('tourney-page-pickban-sequences-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'pickban_sequences' },
+        (payload) => {
+          setPickbanRulesets((prev: PickbanRulesetWithSequences[]) => {
+            if (payload.eventType === 'DELETE') {
+              return prev.map(ruleset => ({
+                ...ruleset,
+                pickban_sequences: ruleset.pickban_sequences.filter(s => s.id !== payload.old.id)
+              }));
+            }
+
+            const incomingSeq = payload.new as PickbanSequence;
+
+            return prev.map(ruleset => {
+              if (ruleset.id !== incomingSeq.pickban_ruleset_id) return ruleset;
+
+              const seqExists = ruleset.pickban_sequences.some(s => s.id === incomingSeq.id);
+              const updatedSequences = seqExists
+                ? ruleset.pickban_sequences.map(s => s.id === incomingSeq.id ? incomingSeq : s)
+                : [...ruleset.pickban_sequences, incomingSeq];
+
+              // Keeps the steps cleanly ordered whenever a realtime broadcast arrives
+              updatedSequences.sort((a, b) => Number(a.sequence) - Number(b.sequence));
+
+              return { ...ruleset, pickban_sequences: updatedSequences };
+            });
+          });
+        }
+      )
+      .subscribe();
+
+
     return () => {
       supabaseClient.removeChannel(roundsChannel);
       supabaseClient.removeChannel(roundPoolsChannel);
       supabaseClient.removeChannel(playerTourneyChannel);
       supabaseClient.removeChannel(chartdrawConfigChannel);
       supabaseClient.removeChannel(chartdrawConfigSpecsChannel);
+      supabaseClient.removeChannel(pickbanRulesetChannel);
+      supabaseClient.removeChannel(pickbanSequenceChannel);
     };
   }, [tourneyId]);
 
   return (
     <Box mt={8}>
       <Toaster />
-      <TourneyHeaderText 
-        rounds={tourneyRounds} 
+      <TourneyHeaderText
+        rounds={tourneyRounds}
         setRounds={setRounds}
-        currentRoundId={NaN} 
-        roundPools={roundPools} 
+        currentRoundId={NaN}
+        roundPools={roundPools}
       />
       <Separator mt={2} mb={4} />
       <VStack separator={<StackSeparator />}>
         <TourneyDetails
           players={players}
           rounds={tourneyRounds}
-          roundPools={roundPools}
-          chartdrawConfigs={chartdrawConfigs}
           loading={loadingTourney}
           error={errorTourney}
         />
-        <ColumnarTourneyPlayersList
-          players={players}
-          setPlayers={setPlayers}
-          loading={loadingPlayers}
-          error={errorPlayers}
-        />
+        {tourney?.type === "Double Elimination" ? (
+          <Stack 
+            direction={{ base: "column", md: "row" }}
+            alignItems={{ base: "stretch", md: "start" }}
+            gap={4}
+          >
+            <SidebarTourneyPlayersList
+              players={players}
+              setPlayers={setPlayers}
+              loading={loadingPlayers}
+              error={errorPlayers}
+            />
+            <ChartRulesList
+              chartdrawConfigs={chartdrawConfigs || []}
+              pickbanRulesets={pickbanRulesets || []}
+              roundPools={roundPools || []}
+            />
+          </Stack>
+        ) : (
+          <ColumnarTourneyPlayersList
+            players={players}
+            setPlayers={setPlayers}
+            loading={loadingPlayers}
+            error={errorPlayers}
+          />
+        )}
       </VStack>
     </Box>
   );

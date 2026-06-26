@@ -7,7 +7,6 @@ import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import EditableTourneyName from './EditableTourneyName'
 import GenerateBracketButton from './GenerateBracketButton/GenerateBracketButton';
 import SeedPlayersButton from './SeedPlayersButton/SeedPlayersButton'
-import ChartRulesButton from './ChartRulesButton/ChartRulesButton';
 import { handleUpdateTourneyName } from '../../handlers/handleUpdateTourneyName'
 import { StatusElement } from '../StatusElement'
 import { toaster } from '../ui/toaster'
@@ -15,19 +14,15 @@ import { handleStartTourney } from '../../handlers/handleStartTourney'
 
 import type { Round } from '../../types/Round'
 import type { PlayerTourney } from '../../types/PlayerTourney'
-import type { RoundPool } from '../../types/RoundPool';
-import type { ChartdrawConfigWithSpecs } from '../../types/ChartDrawConfig';
 
 interface TourneyDetailsProps {
   players: PlayerTourney[] | null
   rounds: Round[] | null
-  roundPools: RoundPool[] | null
-  chartdrawConfigs: ChartdrawConfigWithSpecs[] | null
   loading: boolean
   error: Error | null
 }
 
-export function TourneyDetails({ players, rounds, roundPools, chartdrawConfigs, loading, error}: TourneyDetailsProps) {
+export function TourneyDetails({ players, rounds, loading, error}: TourneyDetailsProps) {
   const { tourney, setTourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
   const [updatingName, setUpdatingName] = useState(false);
@@ -112,10 +107,6 @@ export function TourneyDetails({ players, rounds, roundPools, chartdrawConfigs, 
                     <GenerateBracketButton 
                       players={players}
                       buttonText={rounds && rounds.length > 0 ? "Regenerate Bracket" : "Generate Bracket"}
-                    />
-                    <ChartRulesButton
-                      chartdrawConfigs={chartdrawConfigs}
-                      roundPools={roundPools}
                     />
                   </>
                 )}

@@ -73,7 +73,6 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
       borderRight={{ base: "none", md: "1px solid" }} 
       borderBottom={{ base: "1px solid", md: "none" }}
       borderColor="whiteAlpha.200" 
-      pr={{ base: 0, md: 4 }}
       pb={{ base: 4, md: 0 }}
       h="fit-content"
     >
@@ -94,7 +93,7 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
       {error && <Text fontSize="sm" color="red.400">Error: {error.message}</Text>}
 
       {/* Roster Area forced to a single column */}
-      <VStack align="stretch" gap={2} maxH={{ md: "calc(100vh - 200px)" }} overflowY="auto" pr={1}>
+      <VStack align="stretch" gap={2} maxH={{ md: "calc(100vh - 200px)" }} overflowY="auto">
         {!loading && !error && sortedPlayers.length ? (
           sortedPlayers.map((p) => (
             <Box 
