@@ -16,7 +16,8 @@ export interface ChartdrawConfigSpec {
   id: number;
   chartdraw_config_id: number;
   chart_type: ChartType;
-  level: number;
+  level_min: number;
+  level_max: number;
   quantity: number;
   group: number | null;
   created_at: string;

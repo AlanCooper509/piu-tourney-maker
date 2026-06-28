@@ -67,7 +67,7 @@ export default function PickBanFlowCollapsible({ linkedRuleset, totalCharts }: P
             {hasSequences && (
               isOverdrawn ? (
                 <Badge colorPalette="red" variant="subtle" size={"md"} gap={1}>
-                  <LuTriangleAlert size={12} /> Math Error: Requires {totalRequired} charts (Have {totalCharts})
+                  <LuTriangleAlert size={12} /> Requires {totalRequired} charts (Have {totalCharts})
                 </Badge>
               ) : (
                 <Badge colorPalette="green" variant="subtle" size={"md"} gap={1}>

@@ -69,27 +69,27 @@ export default function ChartRulesList({ chartdrawConfigs, pickbanRulesets, roun
       )}
 
       {/* Listing of Rulesets */}
-      {chartdrawConfigs.map((config) => {
+      {chartdrawConfigs.map((chartDrawConfig) => {
         // get all round pools pointing to this configuration profile
         const matchingPools = roundPools.filter(
-          (pool) => pool.chartdraw_config_id === config.id
+          (pool) => pool.chartdraw_config_id === chartDrawConfig.id
         );
 
         // find the linked Pick/Ban ruleset with its attached sequence steps
         const linkedRuleset = pickbanRulesets.find(
-          (ruleset) => ruleset.id === config.pickban_ruleset_id
+          (ruleset) => ruleset.id === chartDrawConfig.pickban_ruleset_id
         );
 
-        const totalCharts = config.chartdraw_config_specs?.reduce(
+        const totalCharts = chartDrawConfig.chartdraw_config_specs?.reduce(
           (acc, spec) => acc + (Number(spec.quantity) || 0), 0
         ) || 0;
 
         return (
-          <Card.Root key={config.id} variant="outline" size="sm">
+          <Card.Root key={chartDrawConfig.id} variant="outline" size="sm">
             <Card.Body>
                 <Stack gap={0} width="100%">
                 {/* header section with name */}
-                <Text fontSize="md" fontWeight="bold" mb={3}>{config.name}</Text>
+                <Text fontSize="md" fontWeight="bold" mb={3}>{chartDrawConfig.name}</Text>
 
                 {/* assigned round pools list */}
                 <AppliedPoolsList matchingPools={matchingPools} />
@@ -97,7 +97,7 @@ export default function ChartRulesList({ chartdrawConfigs, pickbanRulesets, roun
                 <Separator gap={2} py={1} />
 
                 {/* chart draw details */}
-                <ChartSpecsCollapsible config={config} />
+                <ChartSpecsCollapsible chartdrawConfig={chartDrawConfig} />
 
                 {/* pick/ban ruleset */}
                 <PickBanFlowCollapsible linkedRuleset={linkedRuleset} totalCharts={totalCharts} />

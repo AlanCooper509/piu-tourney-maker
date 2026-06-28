@@ -3,18 +3,28 @@ import { Badge, Box, Collapsible, HStack, Span, Text, Stack } from "@chakra-ui/r
 import { LuChevronDown } from "react-icons/lu";
 import { GiRollingDices } from "react-icons/gi";
 
-import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
-interface ChartSpecsCollapsibleProps {
-  config: ChartdrawConfigWithSpecs;
-}
+import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
+import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
+import AddChartSpecDialog from "./AddChartSpecDialog";
 
-export default function ChartSpecsCollapsible({ config }: ChartSpecsCollapsibleProps) {
-  const specs = config.chartdraw_config_specs || [];
+import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
+
+interface ChartSpecsCollapsibleProps {
+  chartdrawConfig: ChartdrawConfigWithSpecs;
+}
+ 
+export default function ChartSpecsCollapsible({ chartdrawConfig }: ChartSpecsCollapsibleProps) {
+  const { tourney } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
+
+  const specs = chartdrawConfig.chartdraw_config_specs || [];
 
   // helper to shorten chart type text for visual badges
   const getDisplayType = (type: string) => {
     if (type === "Single") return "S";
     if (type === "Double") return "D";
+    if (type === "Co-Op") return "C";
+    if (type === "UCS") return "U";
     return type;
   };
   
@@ -27,9 +37,10 @@ export default function ChartSpecsCollapsible({ config }: ChartSpecsCollapsibleP
   // singles
   const singles = specs.filter((s) => s.chart_type === "Single");
   if (singles.length > 0) {
-    const levels = singles.map((s) => s.level);
-    const min = Math.min(...levels);
-    const max = Math.max(...levels);
+    const mins = singles.map((s) => s.level_min);
+    const maxes = singles.map((s) => s.level_max);
+    const min = Math.min(...mins);
+    const max = Math.max(...maxes);
     const text = min === max ? `S${min}` : `S${min}-${max}`;
     levelParts.push(
       <Badge key="singles" colorPalette="red" variant="subtle" size="sm">
@@ -41,9 +52,10 @@ export default function ChartSpecsCollapsible({ config }: ChartSpecsCollapsibleP
   // doubles
   const doubles = specs.filter((s) => s.chart_type === "Double");
   if (doubles.length > 0) {
-    const levels = doubles.map((s) => s.level);
-    const min = Math.min(...levels);
-    const max = Math.max(...levels);
+    const mins = doubles.map((s) => s.level_min);
+    const maxes = doubles.map((s) => s.level_max);
+    const min = Math.min(...mins);
+    const max = Math.max(...maxes);
     const text = min === max ? `D${min}` : `D${min}-${max}`;
     levelParts.push(
       <Badge key="doubles" colorPalette="green" variant="subtle" size="sm">
@@ -55,9 +67,10 @@ export default function ChartSpecsCollapsible({ config }: ChartSpecsCollapsibleP
   // co-op
   const coop = specs.filter((s) => s.chart_type === "Co-Op");
   if (coop.length > 0) {
-    const levels = coop.map((s) => s.level);
-    const min = Math.min(...levels);
-    const max = Math.max(...levels);
+    const mins = coop.map((s) => s.level_min);
+    const maxes = coop.map((s) => s.level_max);
+    const min = Math.min(...mins);
+    const max = Math.max(...maxes);
     const text = min === max ? `C${min}` : `C${min}-${max}`;
     levelParts.push(
       <Badge key="coop" colorPalette="yellow" variant="subtle" size="sm">
@@ -124,41 +137,54 @@ export default function ChartSpecsCollapsible({ config }: ChartSpecsCollapsibleP
 
       <Collapsible.Content pt={2}>
         <Stack gap={2.5}>
-          {/* Style / Game Mode Badges */}
+          {!loadingTourneyAdminStatus && isTourneyAdmin && (
+            <AddChartSpecDialog configId={chartdrawConfig.id} />
+          )}
+
+          {/* Chart Duration Badges */}
           <HStack gap={2} flexWrap="wrap">
-            {config.contains_arcade && <Badge colorPalette="teal" variant="subtle">Arcade</Badge>}
-            {config.contains_shortcut && <Badge colorPalette="purple" variant="subtle">Shortcut</Badge>}
-            {config.contains_remix && <Badge colorPalette="orange" variant="subtle">Remix</Badge>}
-            {config.contains_full && <Badge colorPalette="pink" variant="subtle">Full</Badge>}
+            {chartdrawConfig.contains_arcade && <Badge colorPalette="teal" variant="subtle">Arcade</Badge>}
+            {chartdrawConfig.contains_shortcut && <Badge colorPalette="purple" variant="subtle">Shortcut</Badge>}
+            {chartdrawConfig.contains_remix && <Badge colorPalette="orange" variant="subtle">Remix</Badge>}
+            {chartdrawConfig.contains_full && <Badge colorPalette="pink" variant="subtle">Full</Badge>}
           </HStack>
 
-          {/* Granular Chart Level Badges */}
-          {specs.length > 0 && (
-            <HStack gap={1.5} flexWrap="wrap">
-              {[...specs]
-                .sort((a, b) => {
-                  if (a.level !== b.level) return a.level - b.level;
-                  const typeOrder = ["Single", "Double", "Co-Op", "UCS"];
-                  const indexA = typeOrder.indexOf(a.chart_type);
-                  const indexB = typeOrder.indexOf(b.chart_type);
-                  return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
-                })
-                .map((spec) => (
-                  <Badge
-                    key={spec.id}
-                    variant="subtle"
-                    colorPalette={spec.chart_type === "Single" ? "red" : spec.chart_type === "Double" ? "green" : "gray"}
-                    fontSize="xs"
-                    px={2}
-                    py={1}
-                  >
-                    <Span color="white">{getDisplayType(spec.chart_type)}{spec.level}</Span>{" "}
-                    <Span color="gray.400">×{spec.quantity}</Span>
-                    {spec.group && ` [G${spec.group}]`}
-                  </Badge>
-                ))}
-            </HStack>
-          )}
+          <HStack gap={1.5} flexWrap="wrap">
+            {/* Chart Level Badges */}
+            {specs.length > 0 && (
+              <>
+                {[...specs]
+                  .sort((a, b) => {
+                    if (a.level_min !== b.level_min) return a.level_min - b.level_min;
+                    if (a.level_max !== b.level_max) return a.level_max - b.level_max;
+                    const typeOrder = ["Single", "Double", "Co-Op", "UCS"];
+                    const indexA = typeOrder.indexOf(a.chart_type);
+                    const indexB = typeOrder.indexOf(b.chart_type);
+                    return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
+                  })
+                  .map((spec) => {
+                    const levelString = spec.level_min === spec.level_max 
+                      ? `${spec.level_min}` 
+                      : `${spec.level_min}-${spec.level_max}`;
+
+                    return (
+                      <Badge
+                        key={spec.id}
+                        variant="subtle"
+                        colorPalette={spec.chart_type === "Single" ? "red" : spec.chart_type === "Double" ? "green" : spec.chart_type === "Co-Op" ? "yellow" : "gray"}
+                        fontSize="xs"
+                        px={2}
+                        py={1}
+                      >
+                        <Span color="white">{getDisplayType(spec.chart_type)}{levelString}</Span>{" "}
+                        <Span color="gray.400">×{spec.quantity}</Span>
+                        {spec.group && ` [G${spec.group}]`}
+                      </Badge>
+                    );
+                  })}
+              </>
+            )}
+          </HStack>
         </Stack>
       </Collapsible.Content>
     </Collapsible.Root>
