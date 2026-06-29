@@ -65,5 +65,5 @@ export async function handleAddPickBanFlow(
     updatedConfig = configData;
   }
 
-  return { ruleset: rulesetData, steps: stepsData };
+  return { ruleset: rulesetData, steps: stepsData, config: updatedConfig };
 }
