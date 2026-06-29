@@ -1,19 +1,23 @@
 import React from "react";
-import { Badge, Box, Collapsible, HStack, Span, Text, Stack } from "@chakra-ui/react";
+import { Badge, Box, Collapsible, HStack, Span, Text, Stack, Separator } from "@chakra-ui/react";
 import { LuChevronDown } from "react-icons/lu";
 import { GiRollingDices } from "react-icons/gi";
+import { LuX } from "react-icons/lu";
 
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
+import { handleDeleteChartSpecs } from "../../../handlers/chartdraw/handleDeleteChartSpecs";
 import AddChartSpecDialog from "./AddChartSpecDialog";
 
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
+import { toaster } from "../../ui/toaster";
 
 interface ChartSpecsCollapsibleProps {
   chartdrawConfig: ChartdrawConfigWithSpecs;
+  setChartdrawConfigs: React.Dispatch<React.SetStateAction<ChartdrawConfigWithSpecs[]>>;
 }
- 
-export default function ChartSpecsCollapsible({ chartdrawConfig }: ChartSpecsCollapsibleProps) {
+
+export default function ChartSpecsCollapsible({ chartdrawConfig, setChartdrawConfigs }: ChartSpecsCollapsibleProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
 
@@ -27,10 +31,35 @@ export default function ChartSpecsCollapsible({ chartdrawConfig }: ChartSpecsCol
     if (type === "UCS") return "U";
     return type;
   };
-  
+
+  async function onDeleteSpec(specId: number, displayLabel: string) {
+    try {
+      await handleDeleteChartSpecs(specId);
+      setChartdrawConfigs(prev => prev.map(config =>
+        config.id === chartdrawConfig.id
+          ? { ...config, chartdraw_config_specs: config.chartdraw_config_specs.filter(s => s.id !== specId) }
+          : config
+      ));
+      toaster.create({
+        title: "Removed Chart Range",
+        description: `Successfully removed ${displayLabel} constraints from the configuration pool.`,
+        type: "success",
+        closable: true,
+      });
+    } catch (err: any) {
+      console.error("Error deleting chart specification:", err.message);
+      toaster.create({
+        title: "Error Removing Range",
+        description: err.message,
+        type: "error",
+        closable: true,
+      });
+    }
+  }
+
   // calculate the total aggregate count of charts
   const totalCharts = specs.reduce((acc, spec) => acc + (Number(spec.quantity) || 0), 0);
-  
+
   // build an array of Badge elements for the header preview
   const levelParts: React.ReactNode[] = [];
 
@@ -94,8 +123,8 @@ export default function ChartSpecsCollapsible({ chartdrawConfig }: ChartSpecsCol
   const levelsSummary = levelParts.reduce<React.ReactNode[]>((acc, curr, index) => {
     if (index === 0) return [curr];
     return [
-      ...acc, 
-      <Text key={`sep-${index}`} as="span" mx={1} fontSize="xs" fontWeight="normal">|</Text>, 
+      ...acc,
+      <Text key={`sep-${index}`} as="span" mx={1} fontSize="xs" fontWeight="normal">|</Text>,
       curr
     ];
   }, []);
@@ -119,7 +148,7 @@ export default function ChartSpecsCollapsible({ chartdrawConfig }: ChartSpecsCol
               <GiRollingDices /> {totalCharts} {totalCharts === 1 ? "Chart" : "Charts"}
             </Badge>
           </HStack>
-          
+
           <Collapsible.Context>
             {(context) => (
               <Box
@@ -155,36 +184,81 @@ export default function ChartSpecsCollapsible({ chartdrawConfig }: ChartSpecsCol
               <>
                 {[...specs]
                   .sort((a, b) => {
-                    if (a.level_min !== b.level_min) return a.level_min - b.level_min;
-                    if (a.level_max !== b.level_max) return a.level_max - b.level_max;
                     const typeOrder = ["Single", "Double", "Co-Op", "UCS"];
                     const indexA = typeOrder.indexOf(a.chart_type);
                     const indexB = typeOrder.indexOf(b.chart_type);
-                    return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
+                    const rankA = indexA === -1 ? 99 : indexA;
+                    const rankB = indexB === -1 ? 99 : indexB;
+                    if (rankA !== rankB) return rankA - rankB;
+                    if (a.level_min !== b.level_min) return a.level_min - b.level_min;
+                    return a.level_max - b.level_max;
                   })
                   .map((spec) => {
-                    const levelString = spec.level_min === spec.level_max 
-                      ? `${spec.level_min}` 
+                    const levelString = spec.level_min === spec.level_max
+                      ? `${spec.level_min}`
                       : `${spec.level_min}-${spec.level_max}`;
 
+                    const fullDisplayLabel = `${getDisplayType(spec.chart_type)}${levelString}`;
                     return (
                       <Badge
                         key={spec.id}
                         variant="subtle"
                         colorPalette={spec.chart_type === "Single" ? "red" : spec.chart_type === "Double" ? "green" : spec.chart_type === "Co-Op" ? "yellow" : "gray"}
+                        borderWidth={2}
+                        borderColor={spec.chart_type === "Single" ? "red.800" : spec.chart_type === "Double" ? "green.800" : spec.chart_type === "Co-Op" ? "yellow.800" : "gray.800"}
                         fontSize="xs"
-                        px={2}
-                        py={1}
+                        p={0}
+                        display="inline-flex"
+                        alignItems="stretch"
+                        overflow="hidden"
                       >
-                        <Span color="white">{getDisplayType(spec.chart_type)}{levelString}</Span>{" "}
-                        <Span color="gray.400">×{spec.quantity}</Span>
-                        {spec.group && ` [G${spec.group}]`}
+                        <HStack px={2} py={1} gap={1.5} alignItems="center" h="100%">
+                          {/* Level Range String */}
+                          <Span color="white">{getDisplayType(spec.chart_type)}{levelString}</Span>{" "}
+
+                          {/* Level Range Count */}
+                          <Span color="gray.400">×{spec.quantity}</Span>
+
+                          {/* Chart Pool Group */}
+                          {spec.group && ` [G${spec.group}]`}
+                        </HStack>
+
+                        {/* Admin Option: Delete Specs */}
+                        {!loadingTourneyAdminStatus && isTourneyAdmin && (
+                          <Box
+                            as="button"
+                            display="inline-flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            px={2}
+                            cursor="pointer"
+                            transition="all 0.15s"
+                            borderLeft="1px solid"
+                            borderColor="whiteAlpha.300"
+                            bg="blackAlpha.50"
+                            color="whiteAlpha.800"
+                            _hover={{
+                              bg: "blackAlpha.250",
+                              color: "white"
+                            }}
+                            _active={{ bg: "blackAlpha.400" }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteSpec(spec.id, fullDisplayLabel);
+                            }}
+                            aria-label="Delete range spec"
+                          >
+                            <LuX size={10} strokeWidth={3.5} />
+                          </Box>
+                        )}
                       </Badge>
                     );
-                  })}
+                  })
+                }
               </>
             )}
           </HStack>
+          <Separator gap={2}></Separator>
         </Stack>
       </Collapsible.Content>
     </Collapsible.Root>

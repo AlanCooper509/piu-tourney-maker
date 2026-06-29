@@ -21,7 +21,7 @@ import type { PlayerTourney } from "../types/PlayerTourney";
 import type { Round } from "../types/Round";
 import type { RoundPool } from "../types/RoundPool";
 import type { ChartdrawConfig, ChartdrawConfigSpec, ChartdrawConfigWithSpecs } from "../types/ChartDrawConfig";
-import type { PickbanRulesetWithSequences, PickbanSequence } from "../types/Pickban";
+import type { PickbanRulesetWithSteps, PickbanRulesetSteps } from "../types/Pickban";
 
 function TourneyPage() {
   const { tourneyId } = useParams();
@@ -32,7 +32,7 @@ function TourneyPage() {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [roundPools, setRoundPools] = useState<RoundPool[]>([]);
   const [chartdrawConfigs, setChartdrawConfigs] = useState<ChartdrawConfigWithSpecs[]>([]);
-  const [pickbanRulesets, setPickbanRulesets] = useState<PickbanRulesetWithSequences[]>([]);
+  const [pickbanRulesets, setPickbanRulesets] = useState<PickbanRulesetWithSteps[]>([]);
 
 
   // Initial Supabase Network Fetches
@@ -57,10 +57,10 @@ function TourneyPage() {
     { column: "tourney_id", value: tourneyId },
     "*, chartdraw_config_specs(*)"
   );
-  const { data: queriedPickbanRulesets } = getSupabaseTable<PickbanRulesetWithSequences>(
+  const { data: queriedPickbanRulesets } = getSupabaseTable<PickbanRulesetWithSteps>(
     'pickban_rulesets',
     { column: "tourney_id", value: tourneyId },
-    "*, pickban_sequences(*)"
+    "*, pickban_ruleset_steps(*)"
   );
 
   // Seed Initial Data From Database Fetches
@@ -229,15 +229,15 @@ function TourneyPage() {
             return;
           }
 
-          const incoming = payload.new as PickbanRulesetWithSequences;
+          const incoming = payload.new as PickbanRulesetWithSteps;
           if (String(incoming.tourney_id) !== String(tourneyId)) return;
 
           setPickbanRulesets(prev => {
             const exists = prev.find(r => r.id === incoming.id);
             if (exists) {
-              return prev.map(r => r.id === incoming.id ? { ...incoming, pickban_sequences: r.pickban_sequences } : r);
+              return prev.map(r => r.id === incoming.id ? { ...incoming, pickban_ruleset_steps: r.pickban_ruleset_steps } : r);
             }
-            return [...prev, { ...incoming, pickban_sequences: [] }];
+            return [...prev, { ...incoming, pickban_ruleset_steps: [] }];
           });
         }
       )
@@ -247,30 +247,30 @@ function TourneyPage() {
       .channel('tourney-page-pickban-sequences-changes')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'pickban_sequences' },
+        { event: '*', schema: 'public', table: 'pickban_ruleset_steps' },
         (payload) => {
-          setPickbanRulesets((prev: PickbanRulesetWithSequences[]) => {
+          setPickbanRulesets((prev: PickbanRulesetWithSteps[]) => {
             if (payload.eventType === 'DELETE') {
               return prev.map(ruleset => ({
                 ...ruleset,
-                pickban_sequences: ruleset.pickban_sequences.filter(s => s.id !== payload.old.id)
+                pickban_ruleset_steps: ruleset.pickban_ruleset_steps.filter(s => s.id !== payload.old.id)
               }));
             }
 
-            const incomingSeq = payload.new as PickbanSequence;
+            const incomingSeq = payload.new as PickbanRulesetSteps;
 
             return prev.map(ruleset => {
               if (ruleset.id !== incomingSeq.pickban_ruleset_id) return ruleset;
 
-              const seqExists = ruleset.pickban_sequences.some(s => s.id === incomingSeq.id);
+              const seqExists = ruleset.pickban_ruleset_steps.some(s => s.id === incomingSeq.id);
               const updatedSequences = seqExists
-                ? ruleset.pickban_sequences.map(s => s.id === incomingSeq.id ? incomingSeq : s)
-                : [...ruleset.pickban_sequences, incomingSeq];
+                ? ruleset.pickban_ruleset_steps.map(s => s.id === incomingSeq.id ? incomingSeq : s)
+                : [...ruleset.pickban_ruleset_steps, incomingSeq];
 
               // Keeps the steps cleanly ordered whenever a realtime broadcast arrives
               updatedSequences.sort((a, b) => Number(a.sequence) - Number(b.sequence));
 
-              return { ...ruleset, pickban_sequences: updatedSequences };
+              return { ...ruleset, pickban_ruleset_steps: updatedSequences };
             });
           });
         }
@@ -320,6 +320,7 @@ function TourneyPage() {
             />
             <ChartRulesList
               chartdrawConfigs={chartdrawConfigs || []}
+              setChartdrawConfigs={setChartdrawConfigs}
               pickbanRulesets={pickbanRulesets || []}
               roundPools={roundPools || []}
             />

@@ -9,16 +9,17 @@ import AppliedPoolsList from "./AppliedPoolsList";
 
 import type { RoundPool } from "../../../types/RoundPool";
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
-import type { PickbanRulesetWithSequences } from "../../../types/Pickban";
+import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
 
 
 interface ChartRulesListProps {
   chartdrawConfigs: ChartdrawConfigWithSpecs[];
-  pickbanRulesets: PickbanRulesetWithSequences[];
+  setChartdrawConfigs: React.Dispatch<React.SetStateAction<ChartdrawConfigWithSpecs[]>>;
+  pickbanRulesets: PickbanRulesetWithSteps[];
   roundPools: RoundPool[];
 }
 
-export default function ChartRulesList({ chartdrawConfigs, pickbanRulesets, roundPools }: ChartRulesListProps) {
+export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, pickbanRulesets, roundPools }: ChartRulesListProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
 
@@ -97,10 +98,10 @@ export default function ChartRulesList({ chartdrawConfigs, pickbanRulesets, roun
                 <Separator gap={2} py={1} />
 
                 {/* chart draw details */}
-                <ChartSpecsCollapsible chartdrawConfig={chartDrawConfig} />
+                <ChartSpecsCollapsible chartdrawConfig={chartDrawConfig} setChartdrawConfigs={setChartdrawConfigs} />
 
                 {/* pick/ban ruleset */}
-                <PickBanFlowCollapsible linkedRuleset={linkedRuleset} totalCharts={totalCharts} />
+                <PickBanFlowCollapsible chartdrawConfig={chartDrawConfig} linkedRuleset={linkedRuleset} totalCharts={totalCharts} />
               </Stack>
             </Card.Body>
           </Card.Root>

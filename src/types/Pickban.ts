@@ -1,6 +1,6 @@
 export type PickbanAction = "PICK" | "BAN" | "PROTECT" | "AUTOPICK" | "IGNORE";
 
-export interface PickbanSequence {
+export interface PickbanRulesetSteps {
   id: number;
   pickban_ruleset_id: number;
   action: PickbanAction;
@@ -16,6 +16,6 @@ export interface PickbanRuleset {
   created_at: string;
 }
 
-export interface PickbanRulesetWithSequences extends PickbanRuleset {
-  pickban_sequences: PickbanSequence[];
+export interface PickbanRulesetWithSteps extends PickbanRuleset {
+  pickban_ruleset_steps: PickbanRulesetSteps[];
 }

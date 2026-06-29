@@ -1,26 +1,41 @@
-import { Badge, Box, Collapsible, HStack, Span, Text, Stack } from "@chakra-ui/react";
+import { Badge, Box, Collapsible, HStack, Span, Text, Stack, VStack } from "@chakra-ui/react";
 import { LuChevronDown, LuTriangleAlert } from "react-icons/lu";
 import { LiaCheckCircle } from "react-icons/lia";
 
-import type { PickbanRulesetWithSequences, PickbanAction } from "../../../types/Pickban";
+import AddPickBanFlowDialog from "./AddPickBanFlowDialog";
+
+import type { PickbanRulesetWithSteps, PickbanAction } from "../../../types/Pickban";
+import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
+import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
+import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 
 interface PickBanFlowCollapsibleProps {
-  linkedRuleset: PickbanRulesetWithSequences | null | undefined;
+  chartdrawConfig: ChartdrawConfigWithSpecs;
+  linkedRuleset: PickbanRulesetWithSteps | null | undefined;
   totalCharts: number;
 }
 
-export default function PickBanFlowCollapsible({ linkedRuleset, totalCharts }: PickBanFlowCollapsibleProps) {
+export default function PickBanFlowCollapsible({ chartdrawConfig, linkedRuleset, totalCharts }: PickBanFlowCollapsibleProps) {
+  const { tourney } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
+
   if (!linkedRuleset) {
     return (
-      <Box pt={2}>
-        <Text fontSize="xs" color="fg.muted" fontStyle="italic">
-          No pick/ban ruleset applied to this configuration.
+      <VStack pt={2} gap={2} alignItems="left" textAlign="left" width="100%">
+        <Text fontSize="xs" fontWeight="medium" color="fg.muted">
+          Pick/Ban Flow: <Span fontWeight="normal" fontStyle="italic">No pick/ban ruleset applied yet.</Span>
         </Text>
-      </Box>
+        {!loadingTourneyAdminStatus && isTourneyAdmin && (
+          <AddPickBanFlowDialog 
+            configId={chartdrawConfig.id}
+            totalCharts={totalCharts} 
+          />
+        )}
+      </VStack>
     );
   }
 
-  const sequences = linkedRuleset.pickban_sequences || [];
+  const sequences = linkedRuleset.pickban_ruleset_steps || [];
   const hasSequences = sequences.length > 0;
 
   let banCount = 0;
