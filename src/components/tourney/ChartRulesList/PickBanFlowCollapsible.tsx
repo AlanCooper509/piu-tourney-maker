@@ -5,7 +5,7 @@ import { LiaCheckCircle } from "react-icons/lia";
 import AddPickBanFlowDialog from "./AddPickBanFlowDialog";
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
-import LinkExistingPickbanToRulesetSelect from "../PickbanFlows/LinkExistingPickbanToRulesetButton";
+import LinkExistingPickbanToRulesetSelect from "../PickbanFlows/LinkExistingPickbanToRulesetSelect";
 import RemovePickbanFromRulesetButton from "../PickbanFlows/RemovePickbanFromRulesetButton";
 
 import type { PickbanRulesetWithSteps, PickbanAction } from "../../../types/Pickban";
