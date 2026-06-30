@@ -5,7 +5,7 @@ import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 import PickBanFlowCollapsible from "./PickBanFlowCollapsible";
 import ChartSpecsCollapsible from "./ChartSpecsCollapsible";
-import AppliedPoolsList from "./AppliedPoolsList";
+import RoundPoolsList from "./RoundPoolsList";
 
 import type { RoundPool } from "../../../types/RoundPool";
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
@@ -16,9 +16,10 @@ interface ChartRulesListProps {
   setChartdrawConfigs: React.Dispatch<React.SetStateAction<ChartdrawConfigWithSpecs[]>>;
   pickbanRulesets: PickbanRulesetWithSteps[];
   roundPools: RoundPool[];
+  setRoundPools: React.Dispatch<React.SetStateAction<RoundPool[]>>;
 }
 
-export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, pickbanRulesets, roundPools }: ChartRulesListProps) {
+export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, pickbanRulesets, roundPools, setRoundPools }: ChartRulesListProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
 
@@ -39,7 +40,7 @@ export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, 
       {/* Round Pools without a Ruleset */}
       {!loadingTourneyAdminStatus && isTourneyAdmin && unassignedPools.length > 0 && (
         <Box p={3} width="100%">
-          {/* Combined header line that handles icon + text seamlessly */}
+          {/* Combined header line that handles icon + text */}
           <HStack 
             mb={2.5} 
             gap={1.5} 
@@ -69,12 +70,7 @@ export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, 
       )}
 
       {/* Listing of Rulesets */}
-      {chartdrawConfigs.map((chartDrawConfig) => {
-        // get all round pools pointing to this configuration profile
-        const matchingPools = roundPools.filter(
-          (pool) => pool.chartdraw_config_id === chartDrawConfig.id
-        );
-
+      {[...chartdrawConfigs].sort((a, b) => a.id - b.id).map((chartDrawConfig) => {
         // find the linked Pick/Ban ruleset with its attached sequence steps
         const linkedPickbanRuleset = pickbanRulesets.find(
           (ruleset) => ruleset.id === chartDrawConfig.pickban_ruleset_id
@@ -91,10 +87,10 @@ export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, 
                 {/* header section with name */}
                 <Text fontSize="md" fontWeight="bold" mb={3}>{chartDrawConfig.name}</Text>
 
-                {/* assigned round pools list */}
-                <AppliedPoolsList matchingPools={matchingPools} />
+                {/* round pools listing */}
+                <RoundPoolsList chartdrawConfig={chartDrawConfig} roundPools={roundPools} setRoundPools={setRoundPools}/>
 
-                <Separator gap={2} py={1} />
+                <Separator gap={2} py={1} mt={3} />
 
                 {/* chart draw details */}
                 <ChartSpecsCollapsible chartdrawConfig={chartDrawConfig} setChartdrawConfigs={setChartdrawConfigs} />

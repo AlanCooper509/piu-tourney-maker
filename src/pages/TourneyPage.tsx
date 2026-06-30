@@ -323,6 +323,7 @@ function TourneyPage() {
               setChartdrawConfigs={setChartdrawConfigs}
               pickbanRulesets={pickbanRulesets || []}
               roundPools={roundPools || []}
+              setRoundPools={setRoundPools}
             />
           </Stack>
         ) : (

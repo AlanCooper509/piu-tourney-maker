@@ -24,7 +24,7 @@ export default function LinkExistingPickbanToRulesetSelect({
     });
   }, [pickbanRulesets]);
 
-  const handleSelectExisting = async (rulesetIdStr: string) => {
+  const onSelectExisting = async (rulesetIdStr: string) => {
     if (!rulesetIdStr) return;
 
     setIsLinking(true);
@@ -62,7 +62,7 @@ export default function LinkExistingPickbanToRulesetSelect({
         disabled={isLinking || pickbanRulesets.length === 0}
         onValueChange={(details) => {
           const selectedId = details.value[0];
-          if (selectedId) handleSelectExisting(selectedId);
+          if (selectedId) onSelectExisting(selectedId);
         }}
       >
         <Select.HiddenSelect />
