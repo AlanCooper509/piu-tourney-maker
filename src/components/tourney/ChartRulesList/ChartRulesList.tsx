@@ -97,7 +97,7 @@ export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, 
               <Card.Body>
                   <Stack gap={0} width="100%">
                   {/* header section with name */}
-                  <Text fontSize="md" fontWeight="bold" mb={3}>{chartDrawConfig.name}</Text>
+                  <Text fontSize="md" fontWeight="bold" mb={2}>{chartDrawConfig.name}</Text>
 
                   {/* round pools listing */}
                   <RoundPoolsList chartdrawConfig={chartDrawConfig} roundPools={roundPools} setRoundPools={setRoundPools}/>
