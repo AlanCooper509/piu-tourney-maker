@@ -11,7 +11,6 @@ import type { RoundPool } from "../../../types/RoundPool";
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
 
-
 interface ChartRulesListProps {
   chartdrawConfigs: ChartdrawConfigWithSpecs[];
   setChartdrawConfigs: React.Dispatch<React.SetStateAction<ChartdrawConfigWithSpecs[]>>;
@@ -77,7 +76,7 @@ export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, 
         );
 
         // find the linked Pick/Ban ruleset with its attached sequence steps
-        const linkedRuleset = pickbanRulesets.find(
+        const linkedPickbanRuleset = pickbanRulesets.find(
           (ruleset) => ruleset.id === chartDrawConfig.pickban_ruleset_id
         );
 
@@ -101,7 +100,7 @@ export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, 
                 <ChartSpecsCollapsible chartdrawConfig={chartDrawConfig} setChartdrawConfigs={setChartdrawConfigs} />
 
                 {/* pick/ban ruleset */}
-                <PickBanFlowCollapsible chartdrawConfig={chartDrawConfig} linkedRuleset={linkedRuleset} totalCharts={totalCharts} />
+                <PickBanFlowCollapsible chartdrawConfig={chartDrawConfig} pickbanRulesets={pickbanRulesets} linkedPickbanRuleset={linkedPickbanRuleset} totalCharts={totalCharts} />
               </Stack>
             </Card.Body>
           </Card.Root>

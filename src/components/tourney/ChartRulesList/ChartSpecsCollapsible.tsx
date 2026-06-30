@@ -166,19 +166,15 @@ export default function ChartSpecsCollapsible({ chartdrawConfig, setChartdrawCon
 
       <Collapsible.Content pt={2}>
         <Stack gap={2.5}>
-          {!loadingTourneyAdminStatus && isTourneyAdmin && (
-            <AddChartSpecDialog configId={chartdrawConfig.id} />
-          )}
-
           {/* Chart Duration Badges */}
-          <HStack gap={2} flexWrap="wrap">
+          <HStack gap={2} flexWrap="wrap" paddingStart={4}>
             {chartdrawConfig.contains_arcade && <Badge colorPalette="teal" variant="subtle">Arcade</Badge>}
             {chartdrawConfig.contains_shortcut && <Badge colorPalette="purple" variant="subtle">Shortcut</Badge>}
             {chartdrawConfig.contains_remix && <Badge colorPalette="orange" variant="subtle">Remix</Badge>}
             {chartdrawConfig.contains_full && <Badge colorPalette="pink" variant="subtle">Full</Badge>}
           </HStack>
 
-          <HStack gap={1.5} flexWrap="wrap">
+          <HStack gap={1.5} flexWrap="wrap" paddingStart={4}>
             {/* Chart Level Badges */}
             {specs.length > 0 && (
               <>
@@ -258,6 +254,10 @@ export default function ChartSpecsCollapsible({ chartdrawConfig, setChartdrawCon
               </>
             )}
           </HStack>
+          {!loadingTourneyAdminStatus && isTourneyAdmin && (
+            <AddChartSpecDialog configId={chartdrawConfig.id} />
+          )}
+
           <Separator gap={2}></Separator>
         </Stack>
       </Collapsible.Content>

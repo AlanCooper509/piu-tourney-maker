@@ -1,41 +1,28 @@
-import { Badge, Box, Collapsible, HStack, Span, Text, Stack, VStack } from "@chakra-ui/react";
+import { Badge, Box, Collapsible, HStack, Span, Text, Stack } from "@chakra-ui/react";
 import { LuChevronDown, LuTriangleAlert } from "react-icons/lu";
 import { LiaCheckCircle } from "react-icons/lia";
 
 import AddPickBanFlowDialog from "./AddPickBanFlowDialog";
+import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
+import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
+import LinkExistingPickbanToRulesetSelect from "../PickbanFlows/LinkExistingPickbanToRulesetButton";
+import RemovePickbanFromRulesetButton from "../PickbanFlows/RemovePickbanFromRulesetButton";
 
 import type { PickbanRulesetWithSteps, PickbanAction } from "../../../types/Pickban";
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
-import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
-import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 
 interface PickBanFlowCollapsibleProps {
   chartdrawConfig: ChartdrawConfigWithSpecs;
-  linkedRuleset: PickbanRulesetWithSteps | null | undefined;
+  pickbanRulesets: PickbanRulesetWithSteps[];
+  linkedPickbanRuleset: PickbanRulesetWithSteps | null | undefined;
   totalCharts: number;
 }
 
-export default function PickBanFlowCollapsible({ chartdrawConfig, linkedRuleset, totalCharts }: PickBanFlowCollapsibleProps) {
+export default function PickBanFlowCollapsible({ chartdrawConfig, pickbanRulesets, linkedPickbanRuleset, totalCharts }: PickBanFlowCollapsibleProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
 
-  if (!linkedRuleset) {
-    return (
-      <VStack pt={2} gap={2} alignItems="left" textAlign="left" width="100%">
-        <Text fontSize="xs" fontWeight="medium" color="fg.muted">
-          Pick/Ban Flow: <Span fontWeight="normal" fontStyle="italic">No pick/ban ruleset applied yet.</Span>
-        </Text>
-        {!loadingTourneyAdminStatus && isTourneyAdmin && (
-          <AddPickBanFlowDialog 
-            configId={chartdrawConfig.id}
-            totalCharts={totalCharts} 
-          />
-        )}
-      </VStack>
-    );
-  }
-
-  const sequences = linkedRuleset.pickban_ruleset_steps || [];
+  const sequences = linkedPickbanRuleset?.pickban_ruleset_steps || [];
   const hasSequences = sequences.length > 0;
 
   let banCount = 0;
@@ -53,7 +40,6 @@ export default function PickBanFlowCollapsible({ chartdrawConfig, linkedRuleset,
     if (action === "IGNORE") ignoreCount++;
   });
 
-  // Math check ignores the cleanup steps
   const totalRequired = banCount + pickCount + autopickCount + protectCount;
   const isOverdrawn = totalRequired > totalCharts;
   const finalPlayableCount = pickCount + autopickCount;
@@ -76,19 +62,23 @@ export default function PickBanFlowCollapsible({ chartdrawConfig, linkedRuleset,
         <HStack justify="space-between" width="100%">
           <HStack gap={2} flexWrap="wrap">
             <Text fontSize="xs" fontWeight="medium" color="fg.muted">
-              Pick/Ban Flow: <Span fontWeight="bold" color="fg.default">{linkedRuleset.name}</Span>
+              Pick/Ban Flow: <Span fontWeight="bold" color="fg.default">{linkedPickbanRuleset?.name ? linkedPickbanRuleset?.name : ""}</Span>
             </Text>
 
-            {hasSequences && (
+            {hasSequences ? (
               isOverdrawn ? (
                 <Badge colorPalette="red" variant="subtle" size={"md"} gap={1}>
-                  <LuTriangleAlert size={12} /> Requires {totalRequired} charts (Have {totalCharts})
+                  <LuTriangleAlert size={12} /> Missing {totalRequired - totalCharts} charts
                 </Badge>
               ) : (
                 <Badge colorPalette="green" variant="subtle" size={"md"} gap={1}>
                   <LiaCheckCircle size={12} /> {finalPlayableCount} {finalPlayableCount === 1 ? "Stage" : "Stages"}
                 </Badge>
               )
+            ) : (
+              <Badge colorPalette="red" variant="subtle" size={"md"} gap={1}>
+                <LuTriangleAlert size={12} /> No Pick/Ban Ruleset
+              </Badge>
             )}
           </HStack>
 
@@ -107,36 +97,65 @@ export default function PickBanFlowCollapsible({ chartdrawConfig, linkedRuleset,
       </Collapsible.Trigger>
 
       <Collapsible.Content pt={2}>
-        {hasSequences ? (
-          <Stack gap={2}>
-            <HStack gap={1.5} flexWrap="wrap">
-              {[...sequences]
-                .sort((a, b) => Number(a.sequence) - Number(b.sequence))
-                .map((step) => (
-                  <Badge
-                    key={step.id}
-                    variant="outline"
-                    colorPalette={getActionColorPalette(step.action)}
-                    fontSize="xs"
-                    px={1.5}
-                    py={0.5}
-                  >
-                    <Span fontWeight="bold" color="fg.muted" mr={0.5}>{step.sequence}.</Span>
-                    {step.actor ? `${step.actor.toUpperCase()} ` : ""}
-                    {step.action?.toUpperCase()}
-                  </Badge>
-                ))}
-            </HStack>
-            
-            <Text fontSize="xx-small" color="fg.muted" fontStyle="italic">
-              Pool Summary: Draw {totalCharts} → Play {finalPlayableCount} ({pickCount} Pick, {autopickCount} Auto) → Leftover Unpicked: {Math.max(0, totalCharts - totalRequired)}
-            </Text>
-          </Stack>
-        ) : (
-          <Text fontSize="xs" color="fg.muted" fontStyle="italic" pl={1}>
-            No pick/ban sequence actions configured yet.
-          </Text>
-        )}
+        <Stack gap={3}>
+          {linkedPickbanRuleset ? (
+            <>
+              {hasSequences ? (
+                <>
+                  <HStack gap={1.5} flexWrap="wrap" paddingStart={4}>
+                    {[...sequences]
+                      .sort((a, b) => Number(a.sequence) - Number(b.sequence))
+                      .map((step) => (
+                        <Badge
+                          key={step.id}
+                          variant="outline"
+                          colorPalette={getActionColorPalette(step.action)}
+                          fontSize="xs"
+                          px={1.5}
+                          py={0.5}
+                        >
+                          <Span fontWeight="bold" color="fg.muted" mr={0.5}>{step.sequence}.</Span>
+                          {step.actor ? `${step.actor.toUpperCase()} ` : ""}
+                          {step.action?.toUpperCase()}
+                        </Badge>
+                      ))}
+                  </HStack>
+
+                  <Text fontSize="xx-small" color="fg.muted" fontStyle="italic" paddingStart={4}>
+                    Pool Summary: Draw {totalCharts} → Play {finalPlayableCount} ({pickCount} Pick, {autopickCount} Auto) → Leftover Unpicked: {Math.max(0, totalCharts - totalRequired)}
+                  </Text>
+                </>
+              ) : (
+                <Text fontSize="xs" color="fg.muted" fontStyle="italic" pl={1}>
+                  No pick/ban sequence actions configured yet.
+                </Text>
+              )}
+              {!loadingTourneyAdminStatus && isTourneyAdmin && (
+                <RemovePickbanFromRulesetButton
+                  configId={chartdrawConfig.id}
+                />
+              )}
+            </>
+          ) : (
+            (!loadingTourneyAdminStatus && isTourneyAdmin) ? (
+              <HStack gap={4} width="100%" flexWrap="wrap" alignItems="center">
+                <LinkExistingPickbanToRulesetSelect
+                  configId={chartdrawConfig.id}
+                  pickbanRulesets={pickbanRulesets}
+                />
+                <Text fontSize="xs" color="fg.muted">or</Text>
+                <AddPickBanFlowDialog
+                  configId={chartdrawConfig.id}
+                  totalCharts={totalCharts}
+                />
+              </HStack>
+            ) : (
+              <Text fontSize="x-small" color="fg.muted" fontStyle="italic">
+                Pick/ban ruleset has not been added yet.
+              </Text>
+            )
+          )}
+        </Stack>
       </Collapsible.Content>
     </Collapsible.Root>
   );
