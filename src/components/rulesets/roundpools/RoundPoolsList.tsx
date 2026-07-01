@@ -49,12 +49,20 @@ export default function RoundPoolsList({
     const unappliedPools = roundPools.filter(
       (p) => !matchingPools.some((mp) => mp.id === p.id)
     );
-    return createListCollection({
-      items: unappliedPools.map((pool) => ({
+
+    // Map and Sort
+    const items = unappliedPools
+      .map((pool) => ({
         label: pool.name,
         value: String(pool.id),
-      })),
-    });
+        isAssigned: !!pool.chartdraw_config_id,
+      }))
+      .sort((a, b) => {
+        // Prioritize unassigned (false) over assigned (true)
+        return Number(a.isAssigned) - Number(b.isAssigned);
+      });
+
+    return createListCollection({ items });
   }, [roundPools, matchingPools]);
 
   // Dropdown Insertion Action
@@ -242,12 +250,22 @@ export default function RoundPoolsList({
               <Portal>
                 <Select.Positioner>
                   <Select.Content>
-                    {collection.items.map((item) => (
-                      <Select.Item key={item.value} item={item} fontSize="xs">
-                        {item.label}
-                        <Select.ItemIndicator />
-                      </Select.Item>
-                    ))}
+                    {collection.items.map((item) => {
+                      const isAssigned = (item as any).isAssigned;
+
+                      return (
+                        <Select.Item
+                          key={item.value}
+                          item={item}
+                          fontSize="xs"
+                          color={isAssigned ? "gray.400" : "inherit"}
+                        >
+                          {isAssigned ? "(Assigned) " : "(Unassigned) "}
+                          {item.label}
+                          <Select.ItemIndicator />
+                        </Select.Item>
+                      );
+                    })}
                   </Select.Content>
                 </Select.Positioner>
               </Portal>
