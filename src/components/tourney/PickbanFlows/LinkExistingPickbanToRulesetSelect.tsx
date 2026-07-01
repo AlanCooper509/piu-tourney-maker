@@ -51,14 +51,14 @@ export default function LinkExistingPickbanToRulesetSelect({
 
   return (
     <HStack gap={2} alignItems="center">
-      <Text fontSize="sm" whiteSpace="nowrap" fontWeight="medium">
-        Add Existing:
+      <Text fontSize="xs" whiteSpace="nowrap" color="fg.muted">
+        Use:
       </Text>
 
       <Select.Root
         collection={collection}
         size="sm"
-        width="240px"
+        width="100%"
         disabled={isLinking || pickbanRulesets.length === 0}
         onValueChange={(details) => {
           const selectedId = details.value[0];
@@ -70,9 +70,9 @@ export default function LinkExistingPickbanToRulesetSelect({
           <Select.Trigger
             fontSize="xs"
             borderWidth={2}
-            borderColor="green.800"
-            focusRingColor="green.700"
-            _hover={{ borderColor: "green.700" }}
+            borderColor="blue.800"
+            focusRingColor="blue.700"
+            _hover={{ borderColor: "blue.700" }}
           >
             {isLinking ? (
               <HStack gap={2} alignItems="center">

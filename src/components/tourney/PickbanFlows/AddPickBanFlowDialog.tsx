@@ -132,7 +132,7 @@ export default function AddPickBanFlowDialog({ configId, totalCharts }: AddPickB
   return (
     <Dialog.Root open={open} onOpenChange={(e) => setOpen(e.open)} size="md" placement="center">
       <Dialog.Trigger asChild>
-        <Button size="xs" variant="outline" flex={1} borderWidth={2} px={2} colorPalette="green" gap={1} onClick={(e) => e.stopPropagation()}>
+        <Button size="xs" variant="outline" flex={1} borderWidth={2} px={2} py={2} colorPalette="green" gap={1} onClick={(e) => e.stopPropagation()}>
           Create New Pick/Ban Flow <LuPlus />
         </Button>
       </Dialog.Trigger>

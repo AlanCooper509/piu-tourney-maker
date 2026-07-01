@@ -10,7 +10,7 @@ import RoundPoolsList from "./RoundPoolsList";
 import type { RoundPool } from "../../../types/RoundPool";
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
-import { AddRulesetPopover } from "./AddRulesetPopover";
+import { RulesetPopover } from "./RulesetPopover/RulesetPopover";
 
 interface ChartRulesListProps {
   chartdrawConfigs: ChartdrawConfigWithSpecs[];
@@ -36,31 +36,31 @@ export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, 
 
   return (
     <Box w={{ base: "100%", md: "400px" }} h="fit-content">
-      <HStack 
-          mb={3} 
-          justifyContent="center" 
-          alignItems="center" 
-          px={1} 
-          minHeight={(!loadingTourneyAdminStatus && isTourneyAdmin) ? "36px" : "24px"}
-        >
-          <Heading size="md">Rulesets</Heading>
-          {!loadingTourneyAdminStatus && isTourneyAdmin && (
-            <AddRulesetPopover
-              setChartdrawConfigs={setChartdrawConfigs}
-            />
-          )}
+      <HStack
+        mb={3}
+        justifyContent="center"
+        alignItems="center"
+        px={1}
+        minHeight={(!loadingTourneyAdminStatus && isTourneyAdmin) ? "36px" : "24px"}
+      >
+        <Heading size="md">Rulesets</Heading>
+        {!loadingTourneyAdminStatus && isTourneyAdmin && (
+          <RulesetPopover
+            setChartdrawConfigs={setChartdrawConfigs}
+          />
+        )}
       </HStack>
       <Stack gap={3}>
         {/* Round Pools without a Ruleset */}
         {!loadingTourneyAdminStatus && isTourneyAdmin && unassignedPools.length > 0 && (
-            <Card.Root variant="outline" size="sm" borderWidth={1} borderColor="orange.700">
-              <Card.Body>
-                <Box px={3} width="100%">
+          <Card.Root variant="outline" size="sm" borderWidth={1} borderColor="orange.700">
+            <Card.Body>
+              <Box px={3} width="100%">
                 {/* Combined header line that handles icon + text */}
-                <HStack 
-                  mb={2.5} 
-                  gap={1.5} 
-                  alignItems="center" 
+                <HStack
+                  mb={2.5}
+                  gap={1.5}
+                  alignItems="center"
                   justifyContent={"center"}
                 >
                   <LuTriangleAlert size={16} color="orange" style={{ flexShrink: 0 }} />
@@ -68,7 +68,7 @@ export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, 
                     Round Pools Missing Rulesets:
                   </Text>
                 </HStack>
-                
+
                 {/* Badges Layout */}
                 <HStack gap={1.5} flexWrap="wrap" justifyContent="center">
                   {unassignedPools.map((pool) => (
@@ -83,8 +83,8 @@ export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, 
                   ))}
                 </HStack>
               </Box>
-              </Card.Body>
-            </Card.Root>
+            </Card.Body>
+          </Card.Root>
         )}
 
         {/* Listing of Rulesets */}
@@ -101,12 +101,20 @@ export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, 
           return (
             <Card.Root key={chartDrawConfig.id} variant="outline" size="sm">
               <Card.Body>
-                  <Stack gap={0} width="100%">
+                <Stack gap={0} width="100%">
                   {/* header section with name */}
-                  <Text fontSize="md" fontWeight="bold" mb={2}>{chartDrawConfig.name}</Text>
+                  <HStack justify="space-between" align="center" mb={2}>
+                    <Text fontSize="md" fontWeight="bold">{chartDrawConfig.name}</Text>
+                    {!loadingTourneyAdminStatus && isTourneyAdmin && (
+                      <RulesetPopover
+                        config={chartDrawConfig}
+                        setChartdrawConfigs={setChartdrawConfigs}
+                      />
+                    )}
+                  </HStack>
 
                   {/* round pools listing */}
-                  <RoundPoolsList chartdrawConfig={chartDrawConfig} roundPools={roundPools} setRoundPools={setRoundPools}/>
+                  <RoundPoolsList chartdrawConfig={chartDrawConfig} roundPools={roundPools} setRoundPools={setRoundPools} />
 
                   <Separator gap={2} py={1} mt={3} />
 

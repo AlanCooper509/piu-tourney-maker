@@ -1,8 +1,8 @@
-import { Badge, Box, Collapsible, HStack, Span, Text, Stack } from "@chakra-ui/react";
+import { Badge, Box, Collapsible, HStack, Span, Text, Stack, VStack } from "@chakra-ui/react";
 import { LuChevronDown, LuTriangleAlert } from "react-icons/lu";
 import { LiaCheckCircle } from "react-icons/lia";
 
-import AddPickBanFlowDialog from "./AddPickBanFlowDialog";
+import AddPickBanFlowDialog from "../PickbanFlows/AddPickBanFlowDialog";
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 import LinkExistingPickbanToRulesetSelect from "../PickbanFlows/LinkExistingPickbanToRulesetSelect";
@@ -138,17 +138,23 @@ export default function PickBanFlowCollapsible({ chartdrawConfig, pickbanRuleset
             </>
           ) : (
             (!loadingTourneyAdminStatus && isTourneyAdmin) ? (
-              <HStack gap={4} width="100%" flexWrap="wrap" alignItems="center">
-                <LinkExistingPickbanToRulesetSelect
-                  configId={chartdrawConfig.id}
-                  pickbanRulesets={pickbanRulesets}
-                />
-                <Text fontSize="xs" color="fg.muted">or</Text>
-                <AddPickBanFlowDialog
-                  configId={chartdrawConfig.id}
-                  totalCharts={totalCharts}
-                />
-              </HStack>
+              <VStack gap={2} width="100%" alignItems="stretch">
+                  <HStack gap={3} width="100%" alignItems="center">
+                    <Box flex="1">
+                      <LinkExistingPickbanToRulesetSelect
+                        configId={chartdrawConfig.id}
+                        pickbanRulesets={pickbanRulesets}
+                      />
+                    </Box>
+                    <Text fontSize="xs" color="fg.muted" whiteSpace="nowrap" fontWeight="bold">
+                      or
+                    </Text>
+                  </HStack>
+                  <AddPickBanFlowDialog
+                    configId={chartdrawConfig.id}
+                    totalCharts={totalCharts}
+                  />
+                </VStack>
             ) : (
               <Text fontSize="x-small" color="fg.muted" fontStyle="italic">
                 Pick/ban ruleset has not been added yet.
