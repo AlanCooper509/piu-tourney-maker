@@ -115,12 +115,6 @@ export default function AddChartSpecDialog({ configId }: AddChartSpecDialogProps
 
                 {/* Quantity & Group Row */}
                 <HStack gap={4} alignItems="end" width="100%">
-                  {/* Quantity Field */}
-                  <Field.Root required flex="2">
-                    <Field.Label>Quantity</Field.Label>
-                    <Input type="number" min={1} value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-                  </Field.Root>
-
                   {/* Chart Type Selection */}
                   <Field.Root required flex="9">
                     <Field.Label>Chart Type</Field.Label>
@@ -153,6 +147,12 @@ export default function AddChartSpecDialog({ configId }: AddChartSpecDialogProps
                         })}
                       </Select.Content>
                     </Select.Root>
+                  </Field.Root>
+
+                  {/* Quantity Field */}
+                  <Field.Root required flex="2">
+                    <Field.Label>Quantity</Field.Label>
+                    <Input type="number" min={1} value={quantity} onChange={(e) => setQuantity(e.target.value)} />
                   </Field.Root>
                 </HStack>
 
