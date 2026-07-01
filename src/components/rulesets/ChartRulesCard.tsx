@@ -1,6 +1,8 @@
 import React from "react";
 import { Stack, Text, Card, HStack, Separator } from "@chakra-ui/react";
 
+import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
+import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 import PickBanFlowCollapsible from "../pickban/PickBanFlowCollapsible";
 import ChartSpecsCollapsible from "./chartdrawspecs/ChartSpecsCollapsible";
 import { RulesetPopover } from "./popover/RulesetPopover";
@@ -17,8 +19,6 @@ interface ChartRulesCardProps {
   pickbanRulesets: PickbanRulesetWithSteps[];
   roundPools: RoundPool[];
   setRoundPools: React.Dispatch<React.SetStateAction<RoundPool[]>>;
-  isTourneyAdmin: boolean;
-  loadingTourneyAdminStatus: boolean;
 }
 
 export default function ChartRulesCard({
@@ -26,10 +26,13 @@ export default function ChartRulesCard({
   setChartdrawConfigs,
   pickbanRulesets,
   roundPools,
-  setRoundPools,
-  isTourneyAdmin,
-  loadingTourneyAdminStatus,
+  setRoundPools
 }: ChartRulesCardProps) {
+  const { tourney } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(
+    tourney?.id ?? undefined
+  );
+
   // find the linked Pick/Ban ruleset with its attached sequence steps
   const linkedPickbanRuleset = pickbanRulesets.find(
     (ruleset) => ruleset.id === chartDrawConfig.pickban_ruleset_id
