@@ -1,5 +1,8 @@
 import { Center, Text } from "@chakra-ui/react";
 import { Tooltip } from "../ui/tooltip";
+import "@fontsource/exo-2/400.css";
+import "@fontsource/exo-2/700.css"; // Bold
+import "@fontsource/exo-2/900.css"; // Black (Extra bold)
 
 import type { PlayerRound } from "../../types/PlayerRound";
 
@@ -44,8 +47,9 @@ export function PlayerRoundName({ playerRound, color }: PlayerRoundNameProps) {
       {playerRound && playerName ? (
         <Tooltip content={playerName}>
           <Text 
+            fontFamily="'Exo 2', sans-serif"
             fontWeight="bold"
-            letterSpacing="wider"
+            letterSpacing="wide"
             fontSize="3xl"
             color="white"
             truncate

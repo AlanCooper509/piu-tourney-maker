@@ -72,7 +72,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
 
   return (
     <Box w="full" maxW="4xl" mx="auto" px={4} py={6}>
-      <Heading size="lg" textAlign="center" mb={6}>Head-to-Head</Heading>
+      <Heading textAlign="center" mb={6}>Head-to-Head</Heading>
       <Flex
         position="relative"
         direction={{ base: "column", md: "row" }}
@@ -130,7 +130,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
           <Center
             px={2}
             mx={{ base: 0, md: -4 }}
-            my={{ base: -5, md: 0 }}
+            my={{ base: -4.5, md: 0 }}
             zIndex={2}
             bg="gray.950"
             borderColor="gray.600"
@@ -138,7 +138,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
             transform="skewX(-20deg)"
             borderRadius="md"
             fontWeight="bold"
-            fontSize="lg"
+            fontSize="md"
             color="fg.muted"
             userSelect="none"
           >

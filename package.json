@@ -12,6 +12,7 @@
   "dependencies": {
     "@chakra-ui/react": "^3.24.2",
     "@emotion/react": "^11.14.0",
+    "@fontsource/exo-2": "^5.2.8",
     "@supabase/supabase-js": "^2.54.0",
     "framer-motion": "^12.23.22",
     "next-themes": "^0.4.6",
