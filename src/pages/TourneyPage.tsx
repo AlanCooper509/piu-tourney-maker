@@ -9,7 +9,7 @@ import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeader
 import { TourneyDetails } from "../components/tourney/TourneyDetails";
 import { ColumnarTourneyPlayersList } from "../components/tourney/PlayersList/ColumnarTourneyPlayersList";
 import { Toaster } from "../components/ui/toaster";
-import ChartRulesList from "../components/tourney/ChartRulesList/ChartRulesList";
+import ChartRulesList from "../components/rulesets/ChartRulesList";
 import { SidebarTourneyPlayersList } from "../components/tourney/PlayersList/SidebarTourneyPlayersList";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";

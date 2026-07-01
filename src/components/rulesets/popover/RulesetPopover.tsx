@@ -17,12 +17,12 @@ import {
 import { MdOutlinePlaylistAdd } from "react-icons/md";
 import { CiEdit } from "react-icons/ci";
 
-import { useCurrentTourney } from "../../../../context/CurrentTourneyContext";
-import { toaster } from "../../../ui/toaster";
-import { handleAddChartDrawConfig } from "../../../../handlers/chartdraw/handleAddChartDrawConfig";
-import { handleEditChartDrawConfig } from "../../../../handlers/chartdraw/handleEditChartDrawConfig";
+import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
+import { toaster } from "../../ui/toaster";
+import { handleAddChartDrawConfig } from "../../../handlers/chartdraw/handleAddChartDrawConfig";
+import { handleEditChartDrawConfig } from "../../../handlers/chartdraw/handleEditChartDrawConfig";
 
-import type { ChartdrawConfigWithSpecs } from "../../../../types/ChartDrawConfig";
+import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
 
 interface RulesetPopoverProps {
   config?: ChartdrawConfigWithSpecs; // Optional: If passed, switches to Edit Mode

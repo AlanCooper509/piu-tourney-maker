@@ -15,9 +15,9 @@ import { LuPlus, LuTrash2, LuArrowRight } from "react-icons/lu";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { IoBan } from "react-icons/io5";
 import { MdShield } from "react-icons/md";
-import { toaster } from "../../ui/toaster";
-import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
-import { handleAddPickBanFlow } from "../../../handlers/pickban/handleAddPickBanFlow";
+import { toaster } from "../ui/toaster";
+import { useCurrentTourney } from "../../context/CurrentTourneyContext";
+import { handleAddPickBanFlow } from "../../handlers/pickban/handleAddPickBanFlow";
 
 interface AddPickBanFlowDialogProps {
   configId: number;

@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Button } from "@chakra-ui/react";
 import { LuTrash2 } from "react-icons/lu";
 
-import { toaster } from "../../ui/toaster";
-import { handleRemovePickBanFlow } from "../../../handlers/pickban/handleRemovePickBanFlow";
+import { toaster } from "../ui/toaster";
+import { handleRemovePickBanFlow } from "../../handlers/pickban/handleRemovePickBanFlow";
 
 interface RemovePickbanFromRulesetButtonProps {
   configId: number;

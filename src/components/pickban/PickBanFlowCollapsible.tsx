@@ -2,14 +2,14 @@ import { Badge, Box, Collapsible, HStack, Span, Text, Stack, VStack } from "@cha
 import { LuChevronDown, LuTriangleAlert } from "react-icons/lu";
 import { LiaCheckCircle } from "react-icons/lia";
 
-import AddPickBanFlowDialog from "../PickbanFlows/AddPickBanFlowDialog";
-import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
-import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
-import LinkExistingPickbanToRulesetSelect from "../PickbanFlows/LinkExistingPickbanToRulesetSelect";
-import RemovePickbanFromRulesetButton from "../PickbanFlows/RemovePickbanFromRulesetButton";
+import AddPickBanFlowDialog from "./AddPickBanFlowDialog";
+import { useCurrentTourney } from "../../context/CurrentTourneyContext";
+import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
+import LinkExistingPickbanToRulesetSelect from "./LinkExistingPickbanToRulesetSelect";
+import RemovePickbanFromRulesetButton from "./RemovePickbanFromRulesetButton";
 
-import type { PickbanRulesetWithSteps, PickbanAction } from "../../../types/Pickban";
-import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
+import type { PickbanRulesetWithSteps, PickbanAction } from "../../types/Pickban";
+import type { ChartdrawConfigWithSpecs } from "../../types/ChartDrawConfig";
 
 interface PickBanFlowCollapsibleProps {
   chartdrawConfig: ChartdrawConfigWithSpecs;

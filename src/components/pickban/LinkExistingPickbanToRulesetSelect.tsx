@@ -1,9 +1,9 @@
 import { Select, Span, Spinner } from "@chakra-ui/react";
 import { useState, useMemo } from "react";
 import { HStack, Text, Portal, createListCollection } from "@chakra-ui/react";
-import { handleLinkPickBanFlow } from "../../../handlers/pickban/handleLinkPickBanFlow";
-import { toaster } from "../../ui/toaster";
-import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
+import { handleLinkPickBanFlow } from "../../handlers/pickban/handleLinkPickBanFlow";
+import { toaster } from "../ui/toaster";
+import type { PickbanRulesetWithSteps } from "../../types/Pickban";
 
 interface LinkExistingPickbanToRulesetSelectProps {
   configId: number;
