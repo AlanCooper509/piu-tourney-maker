@@ -1,11 +1,11 @@
 import React from "react";
-import { Stack, Text, Badge, Box, Card, HStack, Heading } from "@chakra-ui/react";
-import { LuTriangleAlert } from "react-icons/lu";
+import { Stack, Text, Box, HStack, Heading } from "@chakra-ui/react";
 
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import { RulesetPopover } from "./popover/RulesetPopover";
 import ChartRulesCard from "./ChartRulesCard";
+import UnassignedPoolsWarning from "./unassignedpools/UnassignedPoolsWarning";
 
 import type { RoundPool } from "../../types/RoundPool";
 import type { ChartdrawConfigWithSpecs } from "../../types/ChartDrawConfig";
@@ -60,40 +60,9 @@ export default function ChartRulesList({
         )}
       </HStack>
       <Stack gap={3}>
-        {/* Round Pools without a Ruleset */}
-        {!loadingTourneyAdminStatus && isTourneyAdmin && unassignedPools.length > 0 && (
-          <Card.Root variant="outline" size="sm" borderWidth={1} borderColor="orange.700">
-            <Card.Body>
-              <Box px={3} width="100%">
-                {/* Combined header line that handles icon + text */}
-                <HStack
-                  mb={2.5}
-                  gap={1.5}
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <LuTriangleAlert size={16} color="orange" style={{ flexShrink: 0 }} />
-                  <Text fontSize="sm" fontWeight="semibold">
-                    Round Pools Missing Rulesets:
-                  </Text>
-                </HStack>
-
-                {/* Badges Layout */}
-                <HStack gap={1.5} flexWrap="wrap" justifyContent="center">
-                  {unassignedPools.map((pool) => (
-                    <Badge
-                      key={pool.id}
-                      colorPalette="orange"
-                      variant="subtle"
-                      size="sm"
-                    >
-                      {pool.name}
-                    </Badge>
-                  ))}
-                </HStack>
-              </Box>
-            </Card.Body>
-          </Card.Root>
+        {/* Round Pools Warning */}
+        {!loadingTourneyAdminStatus && isTourneyAdmin && (
+          <UnassignedPoolsWarning unassignedPools={unassignedPools} />
         )}
 
         {/* Listing of Rulesets */}

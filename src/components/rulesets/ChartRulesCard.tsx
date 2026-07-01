@@ -9,6 +9,7 @@ import RoundPoolsList from "./roundpools/RoundPoolsList";
 import type { RoundPool } from "../../types/RoundPool";
 import type { ChartdrawConfigWithSpecs } from "../../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps } from "../../types/Pickban";
+import DeleteRulesetDialog from "./delete/DeleteRulesetDialog";
 
 interface ChartRulesCardProps {
   chartDrawConfig: ChartdrawConfigWithSpecs;
@@ -50,10 +51,16 @@ export default function ChartRulesCard({
               {chartDrawConfig.name}
             </Text>
             {!loadingTourneyAdminStatus && isTourneyAdmin && (
-              <RulesetPopover
-                config={chartDrawConfig}
-                setChartdrawConfigs={setChartdrawConfigs}
-              />
+              <HStack gap={2}>
+                <RulesetPopover
+                  config={chartDrawConfig}
+                  setChartdrawConfigs={setChartdrawConfigs}
+                />
+                <DeleteRulesetDialog
+                  chartdrawConfig={chartDrawConfig}
+                  setChartdrawConfigs={setChartdrawConfigs}
+                />
+              </HStack>
             )}
           </HStack>
 

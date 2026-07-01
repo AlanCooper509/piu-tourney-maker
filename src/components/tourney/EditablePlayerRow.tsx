@@ -9,6 +9,7 @@ import {
 import { useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
 import { MdOutlinePersonRemoveAlt1 } from "react-icons/md";
+import { FaSeedling } from "react-icons/fa";
 
 import { handleDeletePlayerFromTourney } from '../../handlers/handleDeletePlayerFromTourney';
 import { handleUpdatePlayerInTourney } from '../../handlers/handleUpdatePlayerInTourney';
@@ -108,9 +109,15 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
   return (
     <HStack w="full" maxW="100%" minW="0" justify={(!loadingTourneyAdminStatus && isTourneyAdmin) ? "space-between" : "center"} align="center">
       {/* Left side: player seed/name display */}
-      <HStack flex="1" minW="0" overflow="hidden" mx={4}>
-        <Text truncate title={player.player_name}>
-          {player.seed ? `(${player.seed}) ${player.player_name}` : player.player_name}
+      <HStack gap={1} alignItems="center" title={player.player_name}>
+        {player.seed && (
+          <HStack gap={0.5} fontSize="xs" color="green.600" marginEnd={2}>
+            <FaSeedling size={12} />
+            <Text as="span">{player.seed}</Text>
+          </HStack>
+        )}
+        <Text truncate fontWeight="medium">
+          {player.player_name}
         </Text>
       </HStack>
 
