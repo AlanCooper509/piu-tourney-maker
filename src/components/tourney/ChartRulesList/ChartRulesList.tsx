@@ -10,6 +10,7 @@ import RoundPoolsList from "./RoundPoolsList";
 import type { RoundPool } from "../../../types/RoundPool";
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
+import { AddRulesetPopover } from "./AddRulesetPopover";
 
 interface ChartRulesListProps {
   chartdrawConfigs: ChartdrawConfigWithSpecs[];
@@ -43,6 +44,11 @@ export default function ChartRulesList({ chartdrawConfigs, setChartdrawConfigs, 
           minHeight={(!loadingTourneyAdminStatus && isTourneyAdmin) ? "36px" : "24px"}
         >
           <Heading size="md">Rulesets</Heading>
+          {!loadingTourneyAdminStatus && isTourneyAdmin && (
+            <AddRulesetPopover
+              setChartdrawConfigs={setChartdrawConfigs}
+            />
+          )}
       </HStack>
       <Stack gap={3}>
         {/* Round Pools without a Ruleset */}

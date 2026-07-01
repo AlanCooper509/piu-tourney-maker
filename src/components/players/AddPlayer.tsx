@@ -48,10 +48,11 @@ export default function AddPlayer({ onAdd, newName, setNewName, loading, collect
             aria-label="Add player"
             variant="outline"
             borderWidth={2}
+            px={2}
             size="sm"
             colorPalette="green"
           >
-            <MdOutlinePersonAddAlt />
+            Add <MdOutlinePersonAddAlt />
           </IconButton>
         }
       </Popover.Trigger>
