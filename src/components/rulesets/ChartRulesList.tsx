@@ -76,8 +76,6 @@ export default function ChartRulesList({
               pickbanRulesets={pickbanRulesets}
               roundPools={roundPools}
               setRoundPools={setRoundPools}
-              isTourneyAdmin={isTourneyAdmin}
-              loadingTourneyAdminStatus={loadingTourneyAdminStatus}
             />
           ))}
       </Stack>
