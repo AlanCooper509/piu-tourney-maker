@@ -17,6 +17,7 @@ import { deletePlayerTourney, upsertPlayerTourney } from "../helpers/state/playe
 import { deleteRound, upsertRound } from "../helpers/state/rounds";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 import RulesetContainer from "../components/round/Ruleset/RulesetContainer";
+import ChartDrawContainer from "../components/round/ChartDraw/ChartDrawContainer";
 
 import type { ChartPool } from "../types/ChartPool";
 import type { RoundPool } from "../types/RoundPool";
@@ -28,6 +29,7 @@ import type { Score } from "../types/Score";
 import type { Stage } from "../types/Stage";
 import type { ChartdrawConfig, ChartdrawConfigSpec, ChartdrawConfigWithSpecs } from "../types/ChartDrawConfig";
 import type { PickbanRulesetSteps, PickbanRulesetWithSteps } from "../types/Pickban";
+import type { ChartdrawEntry, ChartdrawEntryWithDetails } from "../types/ChartDrawEntry";
 
 function RoundPage() {
   const { tourneyId, roundId } = useParams<{
@@ -47,6 +49,7 @@ function RoundPage() {
   const [tourneyPlayers, setTourneyPlayers] = useState<PlayerTourney[]>([]);
   const [chartdrawConfigs, setChartdrawConfigs] = useState<ChartdrawConfigWithSpecs[]>([]);
   const [pickbanRulesets, setPickbanRulesets] = useState<PickbanRulesetWithSteps[]>([]);
+  const [chartdrawEntries, setChartdrawEntries] = useState<ChartdrawEntryWithDetails[]>([]);
 
   // Clear state whenever round changes, before new data arrives
   useEffect(() => {
@@ -57,7 +60,7 @@ function RoundPage() {
 
   const activeRoundId = Number(roundId);
   const activeRoundPool = useMemo(() => {
-    if (!round || !roundPools.length) return null;    
+    if (!round || !roundPools.length) return null;
     return roundPools.find((pool) => pool.id === round.round_pool_id) || null;
   }, [round, roundPools]);
   const activeConfig = useMemo(() => {
@@ -101,6 +104,11 @@ function RoundPage() {
     'pickban_rulesets',
     { column: "tourney_id", value: tourneyId },
     "*, pickban_ruleset_steps(*)"
+  );
+  const { data: queriedChartdrawEntries } = getSupabaseTable<ChartdrawEntryWithDetails>(
+    'chartdraw_entries',
+    { column: "round_id", value: roundId },
+    "*, charts(*), player_rounds(*, player_tourneys(player_name))"
   );
 
   // Stores tourney table details
@@ -173,6 +181,15 @@ function RoundPage() {
     if (queriedPickbanRulesets) setPickbanRulesets(queriedPickbanRulesets);
   }, [queriedPickbanRulesets]);
 
+  useEffect(() => {
+    if (queriedChartdrawEntries) setChartdrawEntries(queriedChartdrawEntries);
+  }, [queriedChartdrawEntries]);
+
+  const roundPlayersRef = useRef(players);
+  useEffect(() => {
+    roundPlayersRef.current = players;
+  }, [players]);
+
   // Subscribe to table changes (RealTime updates)
   useEffect(() => {
     const roundsChannel = supabaseClient
@@ -221,7 +238,7 @@ function RoundPage() {
         }
       )
       .subscribe();
-    
+
     const playerRoundsChannel = supabaseClient
       .channel('player-rounds-changes')
       .on(
@@ -430,6 +447,63 @@ function RoundPage() {
       )
       .subscribe();
 
+    const chartdrawEntriesChannel = supabaseClient
+      .channel('round-page-chartdraw-entries-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'chartdraw_entries' },
+        async (payload) => {
+          // handle Deletions
+          if (payload.eventType === 'DELETE') {
+            setChartdrawEntries(prev => prev.filter(entry => entry.id !== payload.old.id));
+            return;
+          }
+
+          const incoming = payload.new as ChartdrawEntry;
+
+          // filter out updates belonging to a different round
+          if (String(incoming.round_id) !== String(roundId)) return;
+
+          // hydrate info pulled from charts table
+          let linkedChart = null;
+          if (incoming.chart_id) {
+            const { data } = await supabaseClient
+              .from("charts")
+              .select("*")
+              .eq("id", incoming.chart_id)
+              .single();
+
+            linkedChart = data;
+          }
+
+          // Re-map the structure of the matched player_round
+          const matchedPlayerRound = roundPlayersRef.current?.find(pr => pr.id === incoming.player_round_id);
+          const linkedPlayerRound = matchedPlayerRound
+            ? {
+              ...matchedPlayerRound,
+              player_tourneys: matchedPlayerRound.player_tourneys || null
+            }
+            : null;
+
+          // Combine into your full unified type
+          const entryWithDetails: ChartdrawEntryWithDetails = {
+            ...incoming,
+            charts: linkedChart,
+            player_rounds: linkedPlayerRound
+          };
+
+          // 3. Update State
+          setChartdrawEntries(prev => {
+            const entryExists = prev.some(entry => entry.id === incoming.id);
+            if (entryExists) {
+              return prev.map(entry => entry.id === incoming.id ? entryWithDetails : entry);
+            }
+            return [...prev, entryWithDetails];
+          });
+        }
+      )
+      .subscribe();
+
     return () => {
       supabaseClient.removeChannel(roundsChannel);
       supabaseClient.removeChannel(roundPoolsChannel);
@@ -442,6 +516,7 @@ function RoundPage() {
       supabaseClient.removeChannel(chartdrawConfigSpecsChannel);
       supabaseClient.removeChannel(pickbanRulesetChannel);
       supabaseClient.removeChannel(pickbanSequenceChannel);
+      supabaseClient.removeChannel(chartdrawEntriesChannel);
     };
   }, [activeRoundId, tourneyId]);
 
@@ -481,6 +556,12 @@ function RoundPage() {
           />
           {activeConfig && (
             <>
+              <ChartDrawContainer
+                round={round}
+                activeConfig={activeConfig}
+                pickbanRulesets={pickbanRulesets}
+                chartdrawEntries={chartdrawEntries}
+              />
               <RulesetContainer
                 activeConfig={activeConfig}
                 setChartdrawConfigs={setChartdrawConfigs}

@@ -167,6 +167,7 @@ function getChartById(
     name_kr: raw.name_kr ?? null,
     level: Number(raw.level),
     type: raw.type,
+    duration: raw.duration ?? null,
     image_url: raw.image_url ?? null,
     created_at: raw.created_at,
   };

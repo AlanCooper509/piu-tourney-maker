@@ -1,0 +1,1 @@
+export type ChartDuration = 'ARCADE' | 'SHORTCUT' | 'REMIX' | 'FULL';
