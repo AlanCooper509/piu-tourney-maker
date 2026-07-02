@@ -11,6 +11,7 @@ import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
 import type { ChartdrawEntryWithDetails } from "../../../types/ChartDrawEntry";
 import ChartDrawEntry from "./ChartDrawEntry";
+import ResetChartsDialog from "./ResetChartsDialog";
 
 interface ChartDrawContainerProps {
   round: Round | null;
@@ -94,6 +95,12 @@ export default function ChartDrawContainer({ round, activeConfig, pickbanRuleset
                     chartdrawEntry={entry}
                   />
                 ))}
+                {!loadingTourneyAdminStatus && isTourneyAdmin && (
+                  <>
+                    <Separator mt={2} mb={2} width="100%" />
+                    <ResetChartsDialog round={round} />
+                  </>
+                )}
               </VStack>
             )}
           </VStack>
