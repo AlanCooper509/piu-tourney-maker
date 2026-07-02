@@ -25,6 +25,10 @@ export default function ChartDrawContainer({ round, activeConfig, pickbanRuleset
     tourney?.id ?? undefined
   );
 
+  // TODO: prevent typescript from complaining while prototyping (delete later)
+  console.log(pickbanRulesets, activeConfig);
+
+
   const onDrawCharts = async () => {
     if (!activeConfig) return;
 
