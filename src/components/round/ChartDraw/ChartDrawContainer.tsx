@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Box, Card, Heading, IconButton, Separator, Text, VStack } from "@chakra-ui/react";
 import { GiRollingDices } from "react-icons/gi";
 
@@ -28,7 +29,7 @@ export default function ChartDrawContainer({ round, activeConfig, pickbanRuleset
 
   // TODO: prevent typescript from complaining while prototyping (delete later)
   console.log(pickbanRulesets, activeConfig);
-
+  const [isLoading, setIsLoading] = useState(false);
 
   const onDrawCharts = async () => {
     if (!activeConfig) return;
@@ -40,6 +41,7 @@ export default function ChartDrawContainer({ round, activeConfig, pickbanRuleset
       if (!activeConfig) {
         throw new Error("No active ruleset configuration found.");
       }
+      setIsLoading(true);
       await handleDrawChartsFromConfig(round.id, activeConfig);
 
       toaster.create({
@@ -56,6 +58,8 @@ export default function ChartDrawContainer({ round, activeConfig, pickbanRuleset
         type: "error",
       });
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -77,6 +81,7 @@ export default function ChartDrawContainer({ round, activeConfig, pickbanRuleset
                   colorPalette="teal"
                   onClick={() => onDrawCharts()}
                   px={2}
+                  loading={isLoading}
                 >
                   Draw {totalCharts} Charts<GiRollingDices />
                 </IconButton>
@@ -98,7 +103,9 @@ export default function ChartDrawContainer({ round, activeConfig, pickbanRuleset
                 {!loadingTourneyAdminStatus && isTourneyAdmin && (
                   <>
                     <Separator mt={2} mb={2} width="100%" />
-                    <ResetChartsDialog round={round} />
+                    <Box alignItems="center" display="flex" justifyContent="center" width="100%">
+                      <ResetChartsDialog round={round} />
+                    </Box>
                   </>
                 )}
               </VStack>
