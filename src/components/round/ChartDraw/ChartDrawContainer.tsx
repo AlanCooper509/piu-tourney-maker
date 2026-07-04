@@ -1,18 +1,18 @@
-import { useState } from "react";
-import { Box, Card, Heading, IconButton, Separator, Text, VStack } from "@chakra-ui/react";
-import { GiRollingDices } from "react-icons/gi";
+import { Box, Card, Heading, Separator, Text, VStack } from "@chakra-ui/react";
 
-import { toaster } from "../../ui/toaster";
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
-import { handleDrawChartsFromConfig } from "../../../handlers/chartdraw/handleDrawChartsFromConfig";
+import DrawChartsButton from "./DrawChartsButton";
+import ChartDrawEntry from "./ChartDrawEntryContainer";
+import StartPickBanButton from "./StartPickbBanButton";
+import { ChartdrawSpecsDurationsList } from "../../rulesets/chartdrawspecs/ChartdrawSpecsDurationsList";
+import ChartdrawSpecsList from "../../rulesets/chartdrawspecs/ChartdrawSpecsList";
+import ResetChartsDialog from "./ResetChartsDialog";
 
 import type { Round } from "../../../types/Round";
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
 import type { ChartdrawEntryWithDetails } from "../../../types/ChartDrawEntry";
-import ChartDrawEntry from "./ChartDrawEntry";
-import ResetChartsDialog from "./ResetChartsDialog";
 
 interface ChartDrawContainerProps {
   round: Round | null;
@@ -27,83 +27,72 @@ export default function ChartDrawContainer({ round, activeConfig, pickbanRuleset
     tourney?.id ?? undefined
   );
 
-  // TODO: prevent typescript from complaining while prototyping (delete later)
-  console.log(pickbanRulesets, activeConfig);
-  const [isLoading, setIsLoading] = useState(false);
+  const linkedPickbanRuleset = pickbanRulesets.find(
+    (ruleset) => ruleset.id === activeConfig.pickban_ruleset_id
+  );
 
-  const onDrawCharts = async () => {
-    if (!activeConfig) return;
+  const chartdrawSpecsRender = (
+    <VStack align="center" width="100%" mt={2} gap={2}>
+      <Heading size="md" fontWeight="semibold">
+        Chart Draw Distribution
+      </Heading>
+      <ChartdrawSpecsList
+        specs={activeConfig.chartdraw_config_specs}
+        isTourneyAdmin={isTourneyAdmin}
+        loadingTourneyAdminStatus={loadingTourneyAdminStatus}
+        chartdrawConfig={activeConfig}
+        borderWidth={0}
+        badgePadding={1.5}
+        badgeVariant="outline"
 
-    try {
-      if (!round) {
-        throw new Error("No round selected for chart draw.");
-      }
-      if (!activeConfig) {
-        throw new Error("No active ruleset configuration found.");
-      }
-      setIsLoading(true);
-      await handleDrawChartsFromConfig(round.id, activeConfig);
+      />
+      <ChartdrawSpecsDurationsList chartdrawConfig={activeConfig} />
+    </VStack>
+  )
 
-      toaster.create({
-        title: "Charts Drawn",
-        description: "Successfully drew the charts for the selected ruleset.",
-        type: "success",
-      });
-      return true;
-
-    } catch (err: any) {
-      toaster.create({
-        title: "Charts Draw Failed",
-        description: err.message || "Could not draw the requested charts.",
-        type: "error",
-      });
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // calculate the total aggregate count of charts
-  const totalCharts = activeConfig.chartdraw_config_specs.reduce((acc, spec) => acc + (Number(spec.quantity) || 0), 0);
   return (
     <Box w={{ base: "100%", md: "700px" }} h="fit-content">
       <Heading mb={2}>Chart Draw</Heading>
       <Card.Root variant="outline" size="sm">
         <Card.Body>
           <VStack align="center">
-            {!loadingTourneyAdminStatus && isTourneyAdmin && chartdrawEntries.length == 0 && (
+            {!loadingTourneyAdminStatus && isTourneyAdmin && (
               <>
-                <IconButton
-                  aria-label="Draw Charts"
-                  variant="outline"
-                  borderWidth={2}
-                  size="sm"
-                  colorPalette="teal"
-                  onClick={() => onDrawCharts()}
-                  px={2}
-                  loading={isLoading}
-                >
-                  Draw {totalCharts} Charts<GiRollingDices />
-                </IconButton>
+                {activeConfig && chartdrawEntries.length === 0 && (
+                  <DrawChartsButton round={round} activeConfig={activeConfig} />
+                )}
+
+                {chartdrawEntries.length > 0 && linkedPickbanRuleset && linkedPickbanRuleset.pickban_ruleset_steps.length > 0 && (
+                  <StartPickBanButton
+                    pickbanRuleset={linkedPickbanRuleset}
+                  />
+                )}
                 <Separator mt={2} width="100%" />
               </>
             )}
             {chartdrawEntries.length === 0 ? (
-              <Text color="fg.muted" fontSize="sm" whiteSpace="nowrap" fontStyle="italic">
-                Charts have not been drawn yet!
-              </Text>
+              <>
+                {chartdrawSpecsRender}
+                <Separator mt={2} width="100%" />
+                <Text color="fg.muted" fontSize="sm" whiteSpace="nowrap" fontStyle="italic">
+                  Charts have not been drawn yet!
+                </Text>
+              </>
+
             ) : (
-              <VStack align="stretch" width="100%" mt={2}>
-                {chartdrawEntries.map((entry) => (
+              <VStack align="stretch" width="100%" mt={2} gap={1.5}>
+                {chartdrawEntries.sort((a, b) => a.order - b.order).map((entry) => (
                   <ChartDrawEntry
                     key={entry.id}
                     chartdrawEntry={entry}
                   />
                 ))}
+                <Separator mt={2} width="100%" />
+                {chartdrawSpecsRender}
                 {!loadingTourneyAdminStatus && isTourneyAdmin && (
                   <>
                     <Separator mt={2} mb={2} width="100%" />
-                    <Box alignItems="center" display="flex" justifyContent="center" width="100%">
+                    <Box alignItems="center" display="flex" justifyContent="end" width="100%">
                       <ResetChartsDialog round={round} />
                     </Box>
                   </>

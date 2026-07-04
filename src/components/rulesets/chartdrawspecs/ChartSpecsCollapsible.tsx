@@ -1,16 +1,16 @@
 import React from "react";
-import { Badge, Box, Collapsible, HStack, Span, Text, Stack, Separator } from "@chakra-ui/react";
+import { Badge, Box, Collapsible, HStack, Text, Stack, Separator } from "@chakra-ui/react";
 import { LuChevronDown } from "react-icons/lu";
 import { GiRollingDices } from "react-icons/gi";
-import { LuX } from "react-icons/lu";
 
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
-import { handleDeleteChartSpecs } from "../../../handlers/chartdraw/handleDeleteChartSpecs";
+import { shortenChartType } from "../../../helpers/shortenChartType";
 import AddChartSpecDialog from "./AddChartSpecDialog";
 
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
-import { toaster } from "../../ui/toaster";
+import ChartdrawSpecsList from "./ChartdrawSpecsList";
+import { ChartdrawSpecsDurationsList } from "./ChartdrawSpecsDurationsList";
 
 interface ChartSpecsCollapsibleProps {
   chartdrawConfig: ChartdrawConfigWithSpecs;
@@ -22,40 +22,6 @@ export default function ChartSpecsCollapsible({ chartdrawConfig, setChartdrawCon
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
 
   const specs = chartdrawConfig.chartdraw_config_specs || [];
-
-  // helper to shorten chart type text for visual badges
-  const getDisplayType = (type: string) => {
-    if (type === "Single") return "S";
-    if (type === "Double") return "D";
-    if (type === "Co-Op") return "C";
-    if (type === "UCS") return "U";
-    return type;
-  };
-
-  async function onDeleteSpec(specId: number, displayLabel: string) {
-    try {
-      await handleDeleteChartSpecs(specId);
-      setChartdrawConfigs(prev => prev.map(config =>
-        config.id === chartdrawConfig.id
-          ? { ...config, chartdraw_config_specs: config.chartdraw_config_specs.filter(s => s.id !== specId) }
-          : config
-      ));
-      toaster.create({
-        title: "Removed Chart Range",
-        description: `Successfully removed ${displayLabel} constraints from the configuration pool.`,
-        type: "success",
-        closable: true,
-      });
-    } catch (err: any) {
-      console.error("Error deleting chart specification:", err.message);
-      toaster.create({
-        title: "Error Removing Range",
-        description: err.message,
-        type: "error",
-        closable: true,
-      });
-    }
-  }
 
   // calculate the total aggregate count of charts
   const totalCharts = specs.reduce((acc, spec) => acc + (Number(spec.quantity) || 0), 0);
@@ -111,7 +77,7 @@ export default function ChartSpecsCollapsible({ chartdrawConfig, setChartdrawCon
   // other chart types
   const others = specs.filter((s) => s.chart_type !== "Single" && s.chart_type !== "Double" && s.chart_type !== "Co-Op");
   if (others.length > 0) {
-    const types = Array.from(new Set(others.map((s) => getDisplayType(s.chart_type))));
+    const types = Array.from(new Set(others.map((s) => shortenChartType(s.chart_type))));
     levelParts.push(
       <Badge key="others" colorPalette="gray" variant="subtle" size="sm">
         {types.join(", ")}
@@ -167,93 +133,22 @@ export default function ChartSpecsCollapsible({ chartdrawConfig, setChartdrawCon
       <Collapsible.Content pt={2}>
         <Stack gap={2.5}>
           {/* Chart Duration Badges */}
-          <HStack gap={2} flexWrap="wrap" paddingStart={4}>
-            {chartdrawConfig.contains_arcade && <Badge colorPalette="teal" variant="subtle">Arcade</Badge>}
-            {chartdrawConfig.contains_shortcut && <Badge colorPalette="purple" variant="subtle">Shortcut</Badge>}
-            {chartdrawConfig.contains_remix && <Badge colorPalette="orange" variant="subtle">Remix</Badge>}
-            {chartdrawConfig.contains_full && <Badge colorPalette="pink" variant="subtle">Full</Badge>}
-          </HStack>
+          <ChartdrawSpecsDurationsList chartdrawConfig={chartdrawConfig} />
 
-          <HStack gap={1.5} flexWrap="wrap" paddingStart={4}>
-            {/* Chart Level Badges */}
-            {specs.length > 0 && (
-              <>
-                {[...specs]
-                  .sort((a, b) => {
-                    const typeOrder = ["Single", "Double", "Co-Op", "UCS"];
-                    const indexA = typeOrder.indexOf(a.chart_type);
-                    const indexB = typeOrder.indexOf(b.chart_type);
-                    const rankA = indexA === -1 ? 99 : indexA;
-                    const rankB = indexB === -1 ? 99 : indexB;
-                    if (rankA !== rankB) return rankA - rankB;
-                    if (a.level_min !== b.level_min) return a.level_min - b.level_min;
-                    return a.level_max - b.level_max;
-                  })
-                  .map((spec) => {
-                    const levelString = spec.level_min === spec.level_max
-                      ? `${spec.level_min}`
-                      : `${spec.level_min}-${spec.level_max}`;
+          {/* Chart Level Badges */}
+          {specs.length > 0 && (
+            <>
+              <ChartdrawSpecsList
+                specs={specs}
+                isTourneyAdmin={isTourneyAdmin}
+                loadingTourneyAdminStatus={loadingTourneyAdminStatus}
+                chartdrawConfig={chartdrawConfig}
+                setChartdrawConfigs={setChartdrawConfigs}
+                paddingStart={4}
+              />
+            </>
+          )}
 
-                    const fullDisplayLabel = `${getDisplayType(spec.chart_type)}${levelString}`;
-                    return (
-                      <Badge
-                        key={spec.id}
-                        variant="subtle"
-                        colorPalette={spec.chart_type === "Single" ? "red" : spec.chart_type === "Double" ? "green" : spec.chart_type === "Co-Op" ? "yellow" : "gray"}
-                        borderWidth={2}
-                        borderColor={spec.chart_type === "Single" ? "red.800" : spec.chart_type === "Double" ? "green.800" : spec.chart_type === "Co-Op" ? "yellow.800" : "gray.800"}
-                        fontSize="xs"
-                        p={0}
-                        display="inline-flex"
-                        alignItems="stretch"
-                        overflow="hidden"
-                      >
-                        <HStack px={2} py={1} gap={1.5} alignItems="center" h="100%">
-                          {/* Level Range String */}
-                          <Span color="white">{getDisplayType(spec.chart_type)}{levelString}</Span>{" "}
-
-                          {/* Level Range Count */}
-                          <Span color="gray.400">×{spec.quantity}</Span>
-
-                          {/* Chart Pool Group */}
-                          {spec.group && ` [G${spec.group}]`}
-                        </HStack>
-
-                        {/* Admin Option: Delete Specs */}
-                        {!loadingTourneyAdminStatus && isTourneyAdmin && (
-                          <Box
-                            as="button"
-                            display="inline-flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            px={2}
-                            cursor="pointer"
-                            transition="all 0.15s"
-                            borderLeft="1px solid"
-                            borderColor="whiteAlpha.300"
-                            bg="blackAlpha.50"
-                            color="whiteAlpha.800"
-                            _hover={{
-                              bg: "blackAlpha.250",
-                              color: "white"
-                            }}
-                            _active={{ bg: "blackAlpha.400" }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDeleteSpec(spec.id, fullDisplayLabel);
-                            }}
-                            aria-label="Delete range spec"
-                          >
-                            <LuX size={10} strokeWidth={3.5} />
-                          </Box>
-                        )}
-                      </Badge>
-                    );
-                  })
-                }
-              </>
-            )}
-          </HStack>
           {!loadingTourneyAdminStatus && isTourneyAdmin && (
             <AddChartSpecDialog configId={chartdrawConfig.id} />
           )}

@@ -68,9 +68,9 @@ export default function ResetChartsDialog({ round }: ResetChartsDialogProps) {
           loading={isResetting}
           borderWidth={2}
           px={2}
-          size="sm"
+          size="xs"
         >
-          Reset Pool <MdPlaylistRemove />
+          Reset Chart Draw <MdPlaylistRemove />
         </IconButton>
       }
       formBody={

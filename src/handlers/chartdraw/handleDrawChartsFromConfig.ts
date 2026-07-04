@@ -11,7 +11,7 @@ export async function handleDrawChartsFromConfig(
   if (activeConfig.contains_shortcut) allowedDurations.push("SHORTCUT");
   if (activeConfig.contains_remix) allowedDurations.push("REMIX");
   if (activeConfig.contains_full) allowedDurations.push("FULL");
-  allowedDurations.push(null); 
+  allowedDurations.push(null);
 
   const entriesToInsert: any[] = [];
   const groupOrderCounters: Record<string | number, number> = {};
@@ -25,7 +25,7 @@ export async function handleDrawChartsFromConfig(
     if (groupOrderCounters[groupKey] === undefined) {
       groupOrderCounters[groupKey] = 1;
     }
-    
+
     // 2. Build the base query
     let query = supabaseClient
       .from("charts")
@@ -53,7 +53,7 @@ export async function handleDrawChartsFromConfig(
     if (error) throw error;
 
     if (matchedCharts && matchedCharts.length > 0) {
-      // 5. Client-Side Shuffle
+      // 5. Client-Side Shuffle for individual spec pool
       const shuffledCharts = matchedCharts.sort(() => 0.5 - Math.random());
       const selectedCharts = shuffledCharts.slice(0, quantity);
 
@@ -61,19 +61,31 @@ export async function handleDrawChartsFromConfig(
         entriesToInsert.push({
           round_id: roundId,
           chart_id: chart.id,
-          action: null, 
+          action: null,
           group: currentGroup,
-          order: groupOrderCounters[groupKey]++
+          // assign final ordering after shuffling between spec pools (difficulties)
         });
       });
     }
   }
 
-  // 7. Bulk insert all selected charts
-  if (entriesToInsert.length > 0) {
+  // 6. Shuffle the entire accumulated pool so difficulties mix together
+  const mixedEntries = entriesToInsert.sort(() => 0.5 - Math.random());
+
+  // 7. Apply the group orders they are fully mixed
+  const finalEntriesToInsert = mixedEntries.map((entry) => {
+    const groupKey = entry.group ?? "null";
+    return {
+      ...entry,
+      order: groupOrderCounters[groupKey]++
+    };
+  });
+
+  // 8. Bulk insert the shuffled combined entries
+  if (finalEntriesToInsert.length > 0) {
     const { error: insertError } = await supabaseClient
       .from("chartdraw_entries")
-      .insert(entriesToInsert);
+      .insert(finalEntriesToInsert);
 
     if (insertError) throw insertError;
   }

@@ -8,7 +8,7 @@ export interface ChartdrawEntry {
   chart_id: number | null;               // bigint -> number | null
   player_round_id: number | null;        // bigint -> number | null
   action: PickbanAction | null;          // custom enum
-  order: number | null;                  // bigint -> number | null
+  order: number;                         // bigint -> number | null
   group: number | null;                  // bigint -> number | null
   created_at: string;                    // timestamp with time zone -> ISO string
 }
