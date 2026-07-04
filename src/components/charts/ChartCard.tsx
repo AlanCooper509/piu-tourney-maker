@@ -4,6 +4,7 @@ import type { ChartType } from '../../types/ChartType'
 
 interface ChartCardProps {
   chart: Chart
+  shorten?: Boolean
 }
 
 function color(type: ChartType | null): string {
@@ -16,17 +17,19 @@ function color(type: ChartType | null): string {
   }
 }
 
-export function ChartCard({ chart }: ChartCardProps) {
+export function ChartCard({ chart, shorten = false }: ChartCardProps) {
   return (
     <Card.Root variant="elevated">
       {chart.image_url && <Image src={chart.image_url} alt={chart.name_en} filter="auto" />}
-      <Card.Body>
-        <Card.Title truncate>
+      <Card.Body py={shorten ? 2 : 6} px={shorten ? 3 : 6}>
+        <Card.Title truncate m={0} lineHeight="shorter">
           <HStack>
             <Badge size="md" colorPalette={color(chart.type)} variant="surface">
               {chart.level}
             </Badge>
-            <Text truncate>{chart.name_en}</Text>
+            <Text fontSize="sm" fontWeight="bold" truncate flex="1">
+              {chart.name_en}
+            </Text>
           </HStack>
 
         </Card.Title>
