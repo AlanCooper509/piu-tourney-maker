@@ -1,5 +1,5 @@
 import React from "react";
-import { Stack, Text, Box, HStack, Heading } from "@chakra-ui/react";
+import { Stack, Box, HStack, Heading } from "@chakra-ui/react";
 
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
