@@ -3,10 +3,11 @@ import type { ChartPool } from "./ChartPool";
 import type { Score } from "./Score";
 
 export interface Stage {
-  id: number;                // bigint -> number
-  round_id: number;          // bigint -> number
-  chart_id?: number | null;  // bigint -> number
-  created_at: string;        // ISO timestamp string
+  id: number;                 // bigint -> number
+  round_id: number;           // bigint -> number
+  chart_id?: number | null;   // bigint -> number
+  play_order?: number | null; // bigint -> number
+  created_at: string;         // ISO timestamp string
   chart_pools?: ChartPool[];
   charts?: Chart | null;
   scores?: Score[];

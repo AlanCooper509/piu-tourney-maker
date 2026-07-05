@@ -1,6 +1,6 @@
 import { Box, HStack, Text } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
-import type { PickbanRulesetSteps, PickbanAction } from "../../../types/Pickban";
+import type { PickbanRulesetSteps, PickbanAction, PickbanActor } from "../../../types/Pickban";
 
 interface TimelinePipsProps {
   sequence: PickbanRulesetSteps[];
@@ -23,13 +23,12 @@ const BG_COLORS: Record<PickbanAction, string> = {
   IGNORE: "gray.800/20",
 };
 
-const getActorName = (actor: string | null, format: "full" | "short") => {
+const getActorName = (actor: PickbanActor, format: "full" | "short") => {
   const name = actor || "Automation";
   if (format === "short") {
     if (name === "Higher Seed") return "H";
     if (name === "Lower Seed") return "L";
     if (name === "Automation") return "A";
-    return name.slice(0, 2).toUpperCase(); // Fallback strategy
   }
   return name;
 };

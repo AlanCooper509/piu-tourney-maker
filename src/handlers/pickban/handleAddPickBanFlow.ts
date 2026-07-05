@@ -1,8 +1,9 @@
 import { supabaseClient } from "../../lib/supabaseClient";
+import type { PickbanAction, PickbanActor } from "../../types/Pickban";
 
 export interface SequenceStepInput {
-  action: "PICK" | "BAN" | "PROTECT" | "AUTOPICK" | "IGNORE";
-  actor: "Higher Seed" | "Lower Seed" | "Automation";
+  action: PickbanAction;
+  actor: NonNullable<PickbanActor>;
 }
 
 export async function handleAddPickBanFlow(

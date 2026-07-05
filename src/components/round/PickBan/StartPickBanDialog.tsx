@@ -1,13 +1,14 @@
 import { useState, useMemo, type Dispatch, type SetStateAction } from "react";
 import { Dialog, IconButton } from "@chakra-ui/react";
-import { LuSwords } from "react-icons/lu";
+import { LuSquareMousePointer } from "react-icons/lu";
+
+import { PickBanDialogContent } from "./PickBanDialogContent";
 
 import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
 import type { ChartdrawEntryWithDetails } from "../../../types/ChartDrawEntry";
 import type { Round } from "../../../types/Round";
 import type { PlayerRound } from "../../../types/PlayerRound";
-
-import { PickBanDialogContent } from "./PickBanDialogContent";
+import type { Stage } from "../../../types/Stage";
 
 interface StartPickBanDialogProps {
   pickbanRuleset: PickbanRulesetWithSteps;
@@ -15,6 +16,7 @@ interface StartPickBanDialogProps {
   setChartdrawEntries: Dispatch<SetStateAction<ChartdrawEntryWithDetails[]>>;
   round: Round;
   players: PlayerRound[];
+  stages: Stage[];
 }
 
 export default function StartPickBanDialog({
@@ -22,6 +24,7 @@ export default function StartPickBanDialog({
   chartdrawEntries,
   round,
   players,
+  stages,
   setChartdrawEntries,
 }: StartPickBanDialogProps) {
   const [open, setOpen] = useState(false);
@@ -29,6 +32,14 @@ export default function StartPickBanDialog({
   const pbStep = useMemo(() => {
     return chartdrawEntries.filter((entry) => entry.action !== null).length;
   }, [chartdrawEntries]);
+
+  const triggerLabel = useMemo(() => {
+    const totalSteps = pickbanRuleset?.pickban_ruleset_steps?.length || 0;
+    
+    if (pbStep === 0) return "Begin Pick/Ban Flow";
+    if (pbStep >= totalSteps) return "Show Pick/Ban Flow";
+    return "Resume Pick/Ban Flow";
+  }, [pbStep, pickbanRuleset]);
 
   return (
     <Dialog.Root open={open} onOpenChange={(e) => setOpen(e.open)} size="xl" placement="center">
@@ -39,25 +50,24 @@ export default function StartPickBanDialog({
           borderWidth={2}
           size="xl"
           colorPalette="green"
-          onClick={() => setOpen(true)}
           px={4}
         >
-          {pbStep > 0 ? "Resume Pick/Ban Flow" : "Begin Pick/Ban Flow"} <LuSwords />
+          {triggerLabel} <LuSquareMousePointer />
         </IconButton>
       </Dialog.Trigger>
 
       <Dialog.Backdrop />
       <Dialog.Positioner>
-        {open && (
-          <PickBanDialogContent
-            round={round}
-            players={players}
-            pbStep={pbStep}
-            pickbanRuleset={pickbanRuleset}
-            chartdrawEntries={chartdrawEntries}
-            setChartdrawEntries={setChartdrawEntries}
-          />
-        )}
+        <PickBanDialogContent
+          round={round}
+          players={players}
+          stages={stages}
+          pbStep={pbStep}
+          pickbanRuleset={pickbanRuleset}
+          chartdrawEntries={chartdrawEntries}
+          setChartdrawEntries={setChartdrawEntries}
+          setOpen={setOpen}
+        />
       </Dialog.Positioner>
     </Dialog.Root>
   );

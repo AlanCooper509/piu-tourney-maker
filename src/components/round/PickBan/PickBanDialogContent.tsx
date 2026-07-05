@@ -1,5 +1,5 @@
 import { useState, useMemo, type Dispatch, type SetStateAction } from "react";
-import { Stack, Dialog, Text, Box, IconButton } from "@chakra-ui/react";
+import { Stack, Dialog, IconButton } from "@chakra-ui/react";
 import { LuX } from "react-icons/lu";
 
 import { toaster } from "../../ui/toaster";
@@ -8,25 +8,29 @@ import { ActionHudBanner } from "./ActionHudBanner";
 import { UndoPickBanButton } from "./UndoPickBanButton";
 import { PickBanGrid } from "./PickBanGrid";
 import { handleExecutePickBanFlow } from "../../../handlers/pickban/handleExecutePickBanFlow";
+import { handleCreateStages } from "../../../handlers/pickban/handleCreateStages";
 
-import type { PickbanRulesetWithSteps, PickbanAction } from "../../../types/Pickban";
+import type { PickbanRulesetWithSteps, PickbanAction, PickbanActor } from "../../../types/Pickban";
 import type { ChartdrawEntryWithDetails } from "../../../types/ChartDrawEntry";
 import type { Round } from "../../../types/Round";
 import type { PlayerRound } from "../../../types/PlayerRound";
+import type { Stage } from "../../../types/Stage";
 
 export type UIChartState = "available" | PickbanAction;
 
 interface PickBanDialogContentProps {
   round: Round;
   players: PlayerRound[];
+  stages: Stage[];
   pbStep: number;
   pickbanRuleset: PickbanRulesetWithSteps;
   chartdrawEntries: ChartdrawEntryWithDetails[];
   setChartdrawEntries: Dispatch<SetStateAction<ChartdrawEntryWithDetails[]>>;
+  setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const resolveActorName = (
-  actor: string | null,
+  actor: PickbanActor,
   playerLeft: PlayerRound | null,
   playerRight: PlayerRound | null
 ): string => {
@@ -46,12 +50,18 @@ const resolveActorName = (
 export function PickBanDialogContent({
   round,
   players,
+  stages,
   pbStep,
   pickbanRuleset,
   chartdrawEntries,
-  setChartdrawEntries
+  setChartdrawEntries,
+  setOpen
 }: PickBanDialogContentProps) {
   const [selectingId, setSelectingId] = useState<number | null>(null);
+  const [isLockingIn, setIsLockingIn] = useState<boolean>(false);
+  const isLockedIn = useMemo(() => {
+    return stages.some((stage) => stage.round_id === round.id && stage.play_order !== null);
+  }, [stages, round.id]);
 
   const chartStates = useMemo(() => {
     const states: Record<number, UIChartState> = {};
@@ -85,16 +95,15 @@ export function PickBanDialogContent({
         currentStepIndex: pbStep,
       });
 
-      // Streamlined State Updater 
       setChartdrawEntries((prev) =>
-        prev.map((entry) => 
-          updatedEntriesMap[entry.id] 
-            ? { 
-                ...entry, 
-                action: updatedEntriesMap[entry.id].action,
-                player_round_id: updatedEntriesMap[entry.id].player_round_id,
-                play_order: updatedEntriesMap[entry.id].play_order // Map to local state
-              } 
+        prev.map((entry) =>
+          updatedEntriesMap[entry.id]
+            ? {
+              ...entry,
+              action: updatedEntriesMap[entry.id].action,
+              player_round_id: updatedEntriesMap[entry.id].player_round_id,
+              play_order: updatedEntriesMap[entry.id].play_order
+            }
             : entry
         )
       );
@@ -119,13 +128,43 @@ export function PickBanDialogContent({
     }
   };
 
+  const onLockInSelection = async () => {
+    if (isLockingIn) return;
+    let shouldClose = false;
+
+    try {
+      setIsLockingIn(true);
+      await handleCreateStages(round.id, chartdrawEntries);
+
+      toaster.create({
+        title: "Stages Locked In",
+        description: "The final stages have been added onto the round.",
+        type: "success",
+      });
+
+      shouldClose = true;
+    } catch (err: any) {
+      console.error("Failed to finalize pick/bans:", err);
+      toaster.create({
+        title: "Lock In Failed",
+        description: err.message || "Could not save stages onto the round.",
+        type: "error",
+      });
+    } finally {
+      setIsLockingIn(false);
+      if (shouldClose && typeof setOpen === "function") {
+        setOpen(false);
+      }
+    }
+  };
+
   return (
     <Dialog.Content bg="bg.panel" maxW={{ base: "95vw", md: "85vw", xl: "1200px" }} minW={{ md: "80vw" }}>
       <Dialog.Header>
         <Dialog.Title>Pick/Ban for {round.name}</Dialog.Title>
       </Dialog.Header>
-      <Dialog.CloseTrigger>
-        <IconButton aria-label="Close Dialog" variant="ghost" size="sm" colorPalette="gray">
+      <Dialog.CloseTrigger asChild>
+        <IconButton aria-label="Close Dialog" variant="ghost" size="sm" colorPalette="gray" disabled={isLockingIn}>
           <LuX />
         </IconButton>
       </Dialog.CloseTrigger>
@@ -134,21 +173,17 @@ export function PickBanDialogContent({
         <Stack gap={4}>
           <TimelinePips sequence={sequence} pbStep={pbStep} />
 
-          {!isDone && currentStepRule ? (
-            <ActionHudBanner
-              currentStepRule={currentStepRule}
-              pbStep={pbStep}
-              totalSteps={sequence.length}
-              playerLeft={player1}
-              playerRight={player2}
-              resolvedName={activeActorName}
-            />
-          ) : (
-            <Box p={4} bg="green.alpha.10" borderRadius="md" borderWidth="2px" borderColor="green.600" textAlign="center">
-              <Text fontSize="lg" fontWeight="black" color="green.500">LOCK IN THE PICK/BANS</Text>
-              <Text fontSize="xs" color="fg.muted" mt={1}>Pick/Ban steps have been completed.</Text>
-            </Box>
-          )}
+          <ActionHudBanner
+            currentStepRule={currentStepRule}
+            pbStep={pbStep}
+            totalSteps={sequence.length}
+            playerLeft={player1}
+            playerRight={player2}
+            resolvedName={activeActorName}
+            isDone={isDone}
+            isLockedIn={isLockedIn}
+            onLockIn={onLockInSelection}
+          />
 
           <PickBanGrid
             chartdrawEntries={chartdrawEntries}
@@ -163,12 +198,12 @@ export function PickBanDialogContent({
       </Dialog.Body>
 
       <Dialog.Footer>
-        {pbStep > 0 && (
+        {pbStep > 0 && !isLockedIn && (
           <UndoPickBanButton
             pbStep={pbStep}
             roundId={round.id}
             groupId={chartdrawEntries[0]?.group}
-            isParentSelecting={selectingId !== null}
+            isParentSelecting={selectingId !== null || isLockingIn}
             chartdrawEntries={chartdrawEntries}
             setChartdrawEntries={setChartdrawEntries}
           />

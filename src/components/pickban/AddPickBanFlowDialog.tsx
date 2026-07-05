@@ -18,6 +18,7 @@ import { MdShield } from "react-icons/md";
 import { toaster } from "../ui/toaster";
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 import { handleAddPickBanFlow } from "../../handlers/pickban/handleAddPickBanFlow";
+import type { PickbanAction, PickbanActor } from "../../types/Pickban";
 
 interface AddPickBanFlowDialogProps {
   configId: number;
@@ -25,8 +26,8 @@ interface AddPickBanFlowDialogProps {
 }
 
 interface SequenceStepInput {
-  action: "PICK" | "BAN" | "PROTECT" | "AUTOPICK" | "IGNORE";
-  actor: "Higher Seed" | "Lower Seed" | "Automation";
+  action: PickbanAction;
+  actor: NonNullable<PickbanActor>;
 }
 
 const actionColors: Record<SequenceStepInput["action"], string> = {

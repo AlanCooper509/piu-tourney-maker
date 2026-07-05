@@ -1,10 +1,11 @@
 export type PickbanAction = "PICK" | "BAN" | "PROTECT" | "AUTOPICK" | "IGNORE";
+export type PickbanActor = "Higher Seed" | "Lower Seed" | "Automation" | null; // Automation doesnt exist on db (null instead), but frontend uses it for maps and stuff
 
 export interface PickbanRulesetSteps {
   id: number;
   pickban_ruleset_id: number;
   action: PickbanAction;
-  actor: string | null;
+  actor: PickbanActor;
   sequence: number;
   created_at: string;
 }

@@ -15,17 +15,19 @@ import type { PlayerRound } from "../../../types/PlayerRound";
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
 import type { ChartdrawEntryWithDetails } from "../../../types/ChartDrawEntry";
+import type { Stage } from "../../../types/Stage";
 
 interface ChartDrawContainerProps {
   round: Round | null;
   players: PlayerRound[];
+  stages: Stage[];
   activeConfig: ChartdrawConfigWithSpecs;
   pickbanRulesets: PickbanRulesetWithSteps[];
   chartdrawEntries: ChartdrawEntryWithDetails[];
   setChartdrawEntries: Dispatch<SetStateAction<ChartdrawEntryWithDetails[]>>;
 }
 
-export default function ChartDrawContainer({ round, players, activeConfig, pickbanRulesets, chartdrawEntries, setChartdrawEntries }: ChartDrawContainerProps) {
+export default function ChartDrawContainer({ round, players, stages, activeConfig, pickbanRulesets, chartdrawEntries, setChartdrawEntries }: ChartDrawContainerProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(
     tourney?.id ?? undefined
@@ -75,6 +77,7 @@ export default function ChartDrawContainer({ round, players, activeConfig, pickb
                     setChartdrawEntries={setChartdrawEntries}
                     round={round}
                     players={players}
+                    stages={stages}
                   />
                 )}
                 <Separator mt={2} width="100%" />

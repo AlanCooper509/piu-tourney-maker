@@ -559,6 +559,7 @@ function RoundPage() {
               <ChartDrawContainer
                 round={round}
                 players={players}
+                stages={stages}
                 activeConfig={activeConfig}
                 pickbanRulesets={pickbanRulesets}
                 chartdrawEntries={chartdrawEntries}
