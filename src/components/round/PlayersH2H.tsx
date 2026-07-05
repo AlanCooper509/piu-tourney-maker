@@ -1,19 +1,20 @@
 import { useState, useMemo } from 'react'
-import { Box, Center, createListCollection, Flex, Heading, Text, useFilter } from '@chakra-ui/react'
+import { Box, Center, createListCollection, Flex, Heading, Text, useFilter, VStack } from '@chakra-ui/react'
 
 import { handleAddPlayerToRound } from '../../handlers/round/handleAddPlayerToRound'
-import DeletablePlayerRow from './DeletablePlayerRow'
+import { handleDeletePlayerFromRound } from '../../handlers/round/handleDeletePlayerFromRound'
 import AddPlayer from '../players/AddPlayer'
 import { toaster } from '../ui/toaster'
-import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
+import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext"
 import { useCurrentTourney } from '../../context/CurrentTourneyContext'
 import calculatePlayerRankingsInRound from '../../helpers/calculatePlayerRankingsInRound'
+import DialogForm from '../../components/ui/DialogForm'
+import { PlayerRoundName } from '../players/PlayerRoundName'
 
 import type { PlayerRound } from '../../types/PlayerRound'
 import type { PlayerTourney } from '../../types/PlayerTourney'
 import type { Round } from '../../types/Round'
 import type { Stage } from '../../types/Stage'
-import { PlayerRoundName } from '../players/PlayerRoundName'
 
 interface PlayersH2HProps {
   round: Round | null
@@ -31,6 +32,10 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
 
   const [addingPlayer, setAddingPlayer] = useState(false);
   const [newName, setNewName] = useState("");
+  
+  // Controlled modal hooks
+  const [deletingPlayer, setDeletingPlayer] = useState<PlayerRound | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const onAddPlayer = async (name: string) => {
     if (!round) return;
@@ -56,7 +61,31 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
     }
   };
 
-  // Sort players if round is complete
+  const onDeletePlayerSubmit = async (): Promise<boolean> => {
+    if (!deletingPlayer) return false;
+    try {
+      await handleDeletePlayerFromRound(deletingPlayer.id);
+      setPlayers(prev => prev.filter(p => p.id !== deletingPlayer.id));
+      toaster.create({
+        title: "Player deleted",
+        description: `"${deletingPlayer.player_tourneys.player_name}" was removed from the round.`,
+        type: "success",
+        closable: true,
+      });
+      setIsDeleteOpen(false);
+      setDeletingPlayer(null);
+      return true;
+    } catch (err: any) {
+      toaster.create({
+        title: "Failed to delete player",
+        description: err.message,
+        type: "error",
+        closable: true,
+      });
+      return false;
+    }
+  };
+
   let managedPlayers = players ?? [];
   if (round && round.status === "Complete" && players && stages) {
     managedPlayers = sortPlayers(players, stages, round);
@@ -69,6 +98,8 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
 
   if (loading) return <Text textAlign="center">Loading players...</Text>;
   if (error) return <Text color="red" textAlign="center">Error: {error.message}</Text>;
+
+  const showAdminControls = !loadingTourneyAdminStatus && isTourneyAdmin;
 
   return (
     <Box w="full" maxW="4xl" mx="auto" px={4} py={6}>
@@ -85,18 +116,20 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
           flex={1}
           w="full"
           minW={0}
-          maxW={{ base: isTourneyAdmin ? "xs" : "full", md: "full" }}
+          maxW={{ base: showAdminControls ? "xs" : "full", md: "full" }}
           display="flex"
           alignItems="center"
           justifyContent={{ base: "flex-start", md: "flex-end" }}
         >
-          {!loadingTourneyAdminStatus && isTourneyAdmin ? (
-            /* ==================== ADMIN VIEW ==================== */
+          {showAdminControls ? (
             player1 ? (
-              <DeletablePlayerRow
-                player={player1}
-                stages={stages}
-                removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
+              <PlayerRoundName 
+                playerRound={player1} 
+                color="red.solid" 
+                onDelete={() => {
+                  setDeletingPlayer(player1);
+                  setIsDeleteOpen(true);
+                }}
               />
             ) : (
               <Box maxW="xs" w="full">
@@ -112,13 +145,12 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
               </Box>
             )
           ) : (
-            /* ==================== END-USER VIEW ==================== */
             <PlayerRoundName playerRound={player1} color="red.solid" />
           )}
         </Box>
 
         {/* Middle vs Divider */}
-        {isTourneyAdmin ? (
+        {showAdminControls ? (
           <Center display={{ base: "none", md: "flex" }}
             mx={6}
             height="14"
@@ -151,18 +183,20 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
           flex={1}
           w="full"
           minW={0}
-          maxW={{ base: isTourneyAdmin ? "xs" : "full", md: "full" }}
+          maxW={{ base: showAdminControls ? "xs" : "full", md: "full" }}
           display="flex"
           alignItems="center"
           justifyContent={{ base: "flex-end", md: "flex-start" }}
         >
-          {!loadingTourneyAdminStatus && isTourneyAdmin ? (
-            /* ==================== ADMIN VIEW ==================== */
+          {showAdminControls ? (
             player2 ? (
-              <DeletablePlayerRow
-                player={player2}
-                stages={stages}
-                removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
+              <PlayerRoundName 
+                playerRound={player2} 
+                color="blue.solid" 
+                onDelete={() => {
+                  setDeletingPlayer(player2);
+                  setIsDeleteOpen(true);
+                }}
               />
             ) : managedPlayers.length < 2 ? (
               <Box maxW="xs" w="full">
@@ -178,11 +212,35 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
               </Box>
             ) : null
           ) : (
-            /* ==================== END-USER VIEW ==================== */
             <PlayerRoundName playerRound={player2} color="blue.solid" />
           )}
         </Box>
       </Flex>
+
+      {/* Global Confirmation Dialog */}
+      <DialogForm
+        title={`Delete player "${deletingPlayer?.player_tourneys?.player_name}"?`}
+        showSubmit={true}
+        isDestructive={true}
+        open={isDeleteOpen}
+        setOpen={setIsDeleteOpen}
+        onSubmit={onDeletePlayerSubmit}
+        onCancel={async () => {
+          setDeletingPlayer(null);
+          return true;
+        }}
+        trigger={null}
+        formBody={
+          <VStack gap={3} py={2}>
+            <Text fontSize="sm" textAlign="center" color="fg">
+              This will remove <strong>ALL</strong> of {deletingPlayer?.player_tourneys?.player_name}'s scores on <strong>this</strong> specific round!
+            </Text>
+            <Text fontSize="sm" textAlign="center" color="fg.error" fontWeight="medium">
+              Are you sure you want to proceed?
+            </Text>
+          </VStack>
+        }
+      />
     </Box>
   )
 }

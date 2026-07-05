@@ -18,6 +18,7 @@ import { deleteRound, upsertRound } from "../helpers/state/rounds";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 import RulesetContainer from "../components/round/Ruleset/RulesetContainer";
 import ChartDrawContainer from "../components/round/ChartDraw/ChartDrawContainer";
+import ChosenStagesContainer from "../components/round/ChosenStagesContainer";
 
 import type { ChartPool } from "../types/ChartPool";
 import type { RoundPool } from "../types/RoundPool";
@@ -553,6 +554,10 @@ function RoundPage() {
             tourneyPlayers={tourneyPlayers}
             loading={loadingPlayersInRound || loadingPlayersInTourney}
             error={errorPlayersInRound || errorPlayersInTourney}
+          />
+          <ChosenStagesContainer
+            stages={stages}
+            players={players}
           />
           {activeConfig && (
             <>
