@@ -558,9 +558,11 @@ function RoundPage() {
             <>
               <ChartDrawContainer
                 round={round}
+                players={players}
                 activeConfig={activeConfig}
                 pickbanRulesets={pickbanRulesets}
                 chartdrawEntries={chartdrawEntries}
+                setChartdrawEntries={setChartdrawEntries}
               />
               <RulesetContainer
                 activeConfig={activeConfig}

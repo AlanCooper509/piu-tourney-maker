@@ -12,7 +12,7 @@ export default function ChartDrawEntryContainer({ chartdrawEntry }: ChartDrawEnt
   return (
     <Box borderWidth={1} borderRadius="md" w="100%">
       {chartdrawEntry.charts && (
-        <ChartRow chart={chartdrawEntry.charts} />
+        <ChartRow chart={chartdrawEntry.charts} action={chartdrawEntry?.action ?? undefined}/>
       )}
     </Box>
   );

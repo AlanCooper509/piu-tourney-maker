@@ -1,27 +1,31 @@
+import type { Dispatch, SetStateAction } from "react";
 import { Box, Card, Heading, Separator, Text, VStack } from "@chakra-ui/react";
 
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import DrawChartsButton from "./DrawChartsButton";
 import ChartDrawEntry from "./ChartDrawEntryContainer";
-import StartPickBanButton from "./StartPickbBanButton";
+import StartPickBanDialog from "../PickBan/StartPickBanDialog";
 import { ChartdrawSpecsDurationsList } from "../../rulesets/chartdrawspecs/ChartdrawSpecsDurationsList";
 import ChartdrawSpecsList from "../../rulesets/chartdrawspecs/ChartdrawSpecsList";
 import ResetChartsDialog from "./ResetChartsDialog";
 
 import type { Round } from "../../../types/Round";
+import type { PlayerRound } from "../../../types/PlayerRound";
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
 import type { ChartdrawEntryWithDetails } from "../../../types/ChartDrawEntry";
 
 interface ChartDrawContainerProps {
   round: Round | null;
+  players: PlayerRound[];
   activeConfig: ChartdrawConfigWithSpecs;
   pickbanRulesets: PickbanRulesetWithSteps[];
   chartdrawEntries: ChartdrawEntryWithDetails[];
+  setChartdrawEntries: Dispatch<SetStateAction<ChartdrawEntryWithDetails[]>>;
 }
 
-export default function ChartDrawContainer({ round, activeConfig, pickbanRulesets, chartdrawEntries }: ChartDrawContainerProps) {
+export default function ChartDrawContainer({ round, players, activeConfig, pickbanRulesets, chartdrawEntries, setChartdrawEntries }: ChartDrawContainerProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(
     tourney?.id ?? undefined
@@ -32,7 +36,7 @@ export default function ChartDrawContainer({ round, activeConfig, pickbanRuleset
   );
 
   const chartdrawSpecsRender = (
-    <VStack align="center" width="100%" mt={2} gap={2}>
+    <VStack align="center" width="100%" my={2} gap={2}>
       <Heading size="md" fontWeight="semibold">
         Chart Draw Distribution
       </Heading>
@@ -50,6 +54,8 @@ export default function ChartDrawContainer({ round, activeConfig, pickbanRuleset
     </VStack>
   )
 
+  const readyToStartPickBan = round && players.length == 2 && chartdrawEntries.length > 0 && linkedPickbanRuleset && linkedPickbanRuleset.pickban_ruleset_steps.length > 0;
+
   return (
     <Box w={{ base: "100%", md: "700px" }} h="fit-content">
       <Heading mb={2}>Chart Draw</Heading>
@@ -62,9 +68,13 @@ export default function ChartDrawContainer({ round, activeConfig, pickbanRuleset
                   <DrawChartsButton round={round} activeConfig={activeConfig} />
                 )}
 
-                {chartdrawEntries.length > 0 && linkedPickbanRuleset && linkedPickbanRuleset.pickban_ruleset_steps.length > 0 && (
-                  <StartPickBanButton
+                { readyToStartPickBan && (
+                  <StartPickBanDialog
                     pickbanRuleset={linkedPickbanRuleset}
+                    chartdrawEntries={chartdrawEntries}
+                    setChartdrawEntries={setChartdrawEntries}
+                    round={round}
+                    players={players}
                   />
                 )}
                 <Separator mt={2} width="100%" />
@@ -72,11 +82,11 @@ export default function ChartDrawContainer({ round, activeConfig, pickbanRuleset
             )}
             {chartdrawEntries.length === 0 ? (
               <>
-                {chartdrawSpecsRender}
-                <Separator mt={2} width="100%" />
-                <Text color="fg.muted" fontSize="sm" whiteSpace="nowrap" fontStyle="italic">
+                <Text color="fg.muted" fontSize="sm" whiteSpace="nowrap" fontStyle="italic" mt={2}>
                   Charts have not been drawn yet!
                 </Text>
+                <Separator mt={2} width="100%" />
+                {chartdrawSpecsRender}
               </>
 
             ) : (
