@@ -1,5 +1,5 @@
 import React from "react";
-import { Stack, Box, HStack, Heading } from "@chakra-ui/react";
+import { Stack, Box, HStack, Heading, Center, Text } from "@chakra-ui/react";
 
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
@@ -57,19 +57,26 @@ export default function ChartRulesList({
           <UnassignedPoolsWarning unassignedPools={unassignedPools} />
         )}
 
-        {/* Listing of Rulesets */}
-        {[...chartdrawConfigs]
-          .sort((a, b) => a.id - b.id)
-          .map((chartDrawConfig) => (
-            <ChartRulesCard
-              key={chartDrawConfig.id}
-              chartDrawConfig={chartDrawConfig}
-              setChartdrawConfigs={setChartdrawConfigs}
-              pickbanRulesets={pickbanRulesets}
-              roundPools={roundPools}
-              setRoundPools={setRoundPools}
-            />
-          ))}
+        {chartdrawConfigs.length === 0 ? (
+          <Center w="100%" py={4}>
+            <Text fontSize="sm" color="gray.500" fontStyle="italic">
+              No rulesets yet.
+            </Text>
+          </Center>
+        ) : (
+          [...chartdrawConfigs]
+            .sort((a, b) => a.id - b.id)
+            .map((chartDrawConfig) => (
+              <ChartRulesCard
+                key={chartDrawConfig.id}
+                chartDrawConfig={chartDrawConfig}
+                setChartdrawConfigs={setChartdrawConfigs}
+                pickbanRulesets={pickbanRulesets}
+                roundPools={roundPools}
+                setRoundPools={setRoundPools}
+              />
+            ))
+        )}
       </Stack>
     </Box>
   );

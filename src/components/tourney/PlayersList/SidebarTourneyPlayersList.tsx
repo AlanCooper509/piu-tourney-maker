@@ -1,5 +1,5 @@
 import { Box, Center, Heading, HStack, Text, VStack, Card } from '@chakra-ui/react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 import AddPlayer from '../../players/AddPlayer';
 import EditablePlayerRow from '../EditablePlayerRow';
@@ -33,7 +33,7 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
       }
       const newPlayer = await handleAddPlayerToTourney(tourney.id, name, seed);
       
-      setPlayers((prev: PlayerTourney[]) => {
+      setPlayers((prev) => {
         const existingList = prev ?? [];
         if (existingList.some((p) => p.id === newPlayer.id)) return existingList;
         return [...existingList, newPlayer];
@@ -87,16 +87,16 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
       {loading && <Text fontSize="sm" color="gray.400" mb={2} px={1}>Loading players...</Text>}
       {error && <Text fontSize="sm" color="red.400" mb={2} px={1}>Error: {error.message}</Text>}
 
-      <Card.Root variant="outline" size="sm">
-        <Card.Body p={1.5}>
-          <VStack 
-            align="stretch" 
-            gap={0}
-            maxH={{ md: "calc(100vh - 240px)" }} 
-            overflowY="auto"
-          >
-            {!loading && !error && sortedPlayers.length ? (
-              sortedPlayers.map((p, index) => (
+      {!loading && !error && sortedPlayers.length ? (
+        <Card.Root variant="outline" size="sm">
+          <Card.Body p={1.5}>
+            <VStack 
+              align="stretch" 
+              gap={0}
+              maxH={{ md: "calc(100vh - 240px)" }} 
+              overflowY="auto"
+            >
+              {sortedPlayers.map((p, index) => (
                 <Box 
                   key={p.id} 
                   p={1.5} 
@@ -109,20 +109,20 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
                   <EditablePlayerRow
                     player={p}
                     updatePlayer={updatePlayer}
-                    removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
+                    removePlayer={(id) => setPlayers(prev => (prev ? prev.filter(p => p.id !== id) : []))}
                   />
                 </Box>
-              ))
-            ) : (
-              !loading && !error && (
-                <Center w="100%" py={4}>
-                  <Text fontSize="sm" color="gray.500" fontStyle="italic">No players yet.</Text>
-                </Center>
-              )
-            )}
-          </VStack>
-        </Card.Body>
-      </Card.Root>
+              ))}
+            </VStack>
+          </Card.Body>
+        </Card.Root>
+      ) : (
+        !loading && !error && (
+          <Center w="100%" py={4}>
+            <Text fontSize="sm" color="gray.500" fontStyle="italic">No players yet.</Text>
+          </Center>
+        )
+      )}
     </Box>
   );
 }
