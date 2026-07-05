@@ -31,14 +31,6 @@ export default function ChartRulesList({
     tourney?.id ?? undefined
   );
 
-  if (!chartdrawConfigs.length) {
-    return (
-      <Text color="gray.500">
-        No chart rulesets available for this tournament.
-      </Text>
-    );
-  }
-
   // get all round pools that don't have a ruleset linked to them
   const validConfigIds = chartdrawConfigs.map((c) => c.id);
   const unassignedPools = roundPools.filter(
