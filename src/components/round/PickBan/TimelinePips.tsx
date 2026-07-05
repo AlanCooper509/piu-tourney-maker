@@ -1,6 +1,9 @@
 import { Box, HStack, Text } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
-import type { PickbanRulesetSteps, PickbanAction, PickbanActor } from "../../../types/Pickban";
+
+import getActorName from "../../../helpers/getActorName";
+
+import type { PickbanRulesetSteps, PickbanAction } from "../../../types/Pickban";
 
 interface TimelinePipsProps {
   sequence: PickbanRulesetSteps[];
@@ -21,16 +24,6 @@ const BG_COLORS: Record<PickbanAction, string> = {
   PROTECT: "blue.800/20",
   AUTOPICK: "teal.800/20",
   IGNORE: "gray.800/20",
-};
-
-const getActorName = (actor: PickbanActor, format: "full" | "short") => {
-  const name = actor || "Automation";
-  if (format === "short") {
-    if (name === "Higher Seed") return "H";
-    if (name === "Lower Seed") return "L";
-    if (name === "Automation") return "A";
-  }
-  return name;
 };
 
 const timelinePulse = keyframes`

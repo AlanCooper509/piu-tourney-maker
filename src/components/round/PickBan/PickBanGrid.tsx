@@ -1,8 +1,20 @@
 import { useMemo } from "react";
-import { Grid, Center } from "@chakra-ui/react";
+import {
+  Grid,
+  Center,
+  VStack,
+  Collapsible,
+  Text,
+  Box,
+  HStack,
+  Badge
+} from "@chakra-ui/react";
+import { LuChevronDown } from "react-icons/lu";
+
 import { InteractiveChartCard } from "./InteractiveChartCard";
+
 import type { ChartdrawEntryWithDetails } from "../../../types/ChartDrawEntry";
-import type { UIChartState } from "./PickBanDialogContent"; 
+import type { UIChartState } from "./PickBanDialogContent";
 import type { PickbanRulesetSteps } from "../../../types/Pickban";
 
 interface PickBanGridProps {
@@ -29,18 +41,15 @@ export function PickBanGrid({
   onCardClick,
 }: PickBanGridProps) {
 
-  // 1. Sort Strategy for the Active Play Lineup (group -> play_order)
   const comparePlayableOrder = (a: ChartdrawEntryWithDetails, b: ChartdrawEntryWithDetails) => {
     if (a.group !== b.group) {
       if (a.group === null || a.group === undefined) return -1;
       if (b.group === null || b.group === undefined) return 1;
       return a.group - b.group;
     }
-    // Fallback safely to 0 if play_order hasn't populated yet
     return (a.play_order ?? 0) - (b.play_order ?? 0);
   };
 
-  // 2. Sort Strategy for the Card Pool (group -> draw_order)
   const comparePoolOrder = (a: ChartdrawEntryWithDetails, b: ChartdrawEntryWithDetails) => {
     if (a.group !== b.group) {
       if (a.group === null || a.group === undefined) return -1;
@@ -50,14 +59,19 @@ export function PickBanGrid({
     return a.draw_order - b.draw_order;
   };
 
-  // Process sorted final entries showcase (Only showing the lineup chronological sequence)
   const finalPickedEntries = useMemo(() => {
     return chartdrawEntries
       .filter((entry) => entry.action === "PICK" || entry.action === "AUTOPICK")
       .sort(comparePlayableOrder);
   }, [chartdrawEntries]);
 
-  // Process active phase drafting view
+  const finalBannedEntries = useMemo(() => {
+    if (!isDone) return [];
+    return chartdrawEntries
+      .filter((entry) => chartStates[entry.id] === "BAN")
+      .sort(comparePoolOrder);
+  }, [chartdrawEntries, chartStates, isDone]);
+
   const sortedDisplayEntries = useMemo(() => {
     return [...chartdrawEntries].sort((a, b) => {
       const stateA = chartStates[a.id] || "available";
@@ -66,48 +80,107 @@ export function PickBanGrid({
       const isPickedA = stateA === "PICK" || stateA === "AUTOPICK";
       const isPickedB = stateB === "PICK" || stateB === "AUTOPICK";
 
-      // If BOTH are drafted maps, sort them in chronological gameplay timeline order
       if (isPickedA && isPickedB) {
         return comparePlayableOrder(a, b);
       }
 
-      // Otherwise, group structural cards by status bucket weight
       const diff = STATE_SORT_WEIGHTS[stateA] - STATE_SORT_WEIGHTS[stateB];
       if (diff !== 0) return diff;
 
-      // Tie-breaker within the same bucket (e.g. remaining available pool cards, bans)
       return comparePoolOrder(a, b);
     });
   }, [chartdrawEntries, chartStates]);
 
   if (isDone) {
     return (
-      <Center width="100%" p={4}>
-        <Grid
-          templateColumns={{
-            base: "minmax(0, 1fr)",
-            sm: "repeat(2, minmax(0, 1fr))",
-            md: `repeat(${Math.min(finalPickedEntries.length, 3)}, minmax(0, 1fr))`,
-            lg: `repeat(${Math.min(finalPickedEntries.length, 4)}, minmax(0, 1fr))`,
-          }}
-          gap={4}
-          justifyContent="center"
-          alignItems="center"
-        >
-          {finalPickedEntries.map((entry) => (
-            <InteractiveChartCard
-              key={entry.id}
-              entry={entry}
-              state={chartStates[entry.id] || "available"}
-              currentStepRule={currentStepRule as PickbanRulesetSteps}
-              resolvedActorName={activeActorName}
-              isDone={isDone}
-              isSelecting={false}
-              onClick={() => {}} 
-            />
-          ))}
-        </Grid>
-      </Center>
+      <VStack width="100%" gap={6} p={4} align="stretch">
+        {/* Picks Display */}
+        <Center width="100%">
+          <Grid
+            templateColumns={{
+              base: "minmax(0, 1fr)",
+              sm: "repeat(2, minmax(0, 1fr))",
+              md: `repeat(${Math.min(finalPickedEntries.length, 3)}, minmax(0, 1fr))`,
+              lg: `repeat(${Math.min(finalPickedEntries.length, 4)}, minmax(0, 1fr))`,
+            }}
+            gap={4}
+            justifyContent="center"
+            alignItems="center"
+            width="100%"
+          >
+            {finalPickedEntries.map((entry) => (
+              <InteractiveChartCard
+                key={entry.id}
+                entry={entry}
+                state={chartStates[entry.id] || "available"}
+                currentStepRule={currentStepRule as PickbanRulesetSteps}
+                resolvedActorName={activeActorName}
+                isDone={isDone}
+                isSelecting={false}
+                onClick={() => { }}
+              />
+            ))}
+          </Grid>
+        </Center>
+
+        {finalBannedEntries.length > 0 && (
+          <Collapsible.Root lazyMount unmountOnExit width="100%">
+            <Collapsible.Trigger cursor="pointer" width="100%" _hover={{ opacity: 0.8 }}>
+              <HStack justify="space-between" width="100%">
+                <HStack gap={2} minWidth={0}>
+                  <Text fontSize="xs" fontWeight="medium" color="fg.muted" whiteSpace="nowrap">
+                    Banned Charts:
+                  </Text>
+                  <Badge colorPalette="red" variant="subtle" size="md" gap={1}>
+                    {finalBannedEntries.length} {finalBannedEntries.length === 1 ? "Ban" : "Bans"}
+                  </Badge>
+                </HStack>
+
+                <Collapsible.Context>
+                  {(context) => (
+                    <Box
+                      transform={context.open ? "rotate(180deg)" : undefined}
+                      transition="transform 0.2s"
+                      color="fg.muted"
+                      flexShrink={0}
+                    >
+                      <LuChevronDown size={14} />
+                    </Box>
+                  )}
+                </Collapsible.Context>
+              </HStack>
+            </Collapsible.Trigger>
+
+            <Collapsible.Content>
+              <Box pt={4} pb={4}>
+                <Grid
+                  templateColumns={{
+                    base: "minmax(0, 1fr)",
+                    sm: "repeat(2, minmax(0, 1fr))",
+                    md: "repeat(3, minmax(0, 1fr))",
+                    xl: "repeat(4, minmax(0, 1fr))",
+                  }}
+                  gap={3}
+                  width="100%"
+                >
+                  {finalBannedEntries.map((entry) => (
+                    <InteractiveChartCard
+                      key={entry.id}
+                      entry={entry}
+                      state="BAN"
+                      currentStepRule={currentStepRule as PickbanRulesetSteps}
+                      resolvedActorName={activeActorName}
+                      isDone={isDone}
+                      isSelecting={false}
+                      onClick={() => { }}
+                    />
+                  ))}
+                </Grid>
+              </Box>
+            </Collapsible.Content>
+          </Collapsible.Root>
+        )}
+      </VStack>
     );
   }
 

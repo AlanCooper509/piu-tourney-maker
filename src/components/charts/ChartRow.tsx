@@ -5,12 +5,11 @@ import { MdShield } from "react-icons/md";
 
 import type { Chart } from '../../types/Chart'
 import type { ChartType } from '../../types/ChartType'
-import type { PickbanAction, PickbanActor } from '../../types/Pickban'
+import type { PickbanAction } from '../../types/Pickban'
 
 interface ChartRowProps {
   chart: Chart,
   action?: PickbanAction
-  actor?: PickbanActor
 }
 
 function color(type: ChartType | null): string {
