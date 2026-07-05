@@ -7,6 +7,7 @@ export interface HandlePickBanActionParams {
   action: PickbanAction;
   sequence: number;
   chartdrawEntriesId: number;
+  playOrder: number | null;
 }
 
 export async function handlePickBanAction({
@@ -14,10 +15,9 @@ export async function handlePickBanAction({
   playerRoundId,
   action,
   sequence,
+  playOrder,
 }: HandlePickBanActionParams): Promise<PickbanLog> {
   
-  // 1. Prepare both queries to run in parallel
-  // INSERT pickban_logs query
   const logInsertPromise = supabaseClient
     .from("pickban_logs")
     .insert({
@@ -29,29 +29,22 @@ export async function handlePickBanAction({
     .select()
     .single();
 
-  // UPDATE chartdraw_entries query
   const entryUpdatePromise = supabaseClient
     .from("chartdraw_entries")
     .update({
       action: action,
       player_round_id: playerRoundId,
+      play_order: playOrder
     })
     .eq("id", chartdrawEntriesId);
 
-  // 2. Await both database requests
   const [logResult, entryResult] = await Promise.all([
     logInsertPromise,
     entryUpdatePromise,
   ]);
 
-  // 3. Catch errors from either database operation
-  if (logResult.error) {
-    throw logResult.error;
-  }
-  if (entryResult.error) {
-    throw entryResult.error;
-  }
+  if (logResult.error) throw logResult.error;
+  if (entryResult.error) throw entryResult.error;
 
-  // 4. Return the log data to satisfy UI expectations
   return logResult.data;
 }

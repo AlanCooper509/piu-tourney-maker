@@ -6,13 +6,13 @@ import { MdShield } from "react-icons/md";
 import { ChartCard } from "../../charts/ChartCard";
 
 import type { ChartdrawEntryWithDetails } from "../../../types/ChartDrawEntry";
-import type { UIChartState } from "./StartPickBanDialog";
+import type { UIChartState } from "./PickBanDialogContent";
 import type { PickbanAction, PickbanRulesetSteps } from "../../../types/Pickban";
 
 interface InteractiveChartCardProps {
   entry: ChartdrawEntryWithDetails;
   state: UIChartState;
-  currentStepRule: PickbanRulesetSteps;
+  currentStepRule?: PickbanRulesetSteps;
   resolvedActorName: string;
   isDone: boolean;
   isSelecting: boolean;

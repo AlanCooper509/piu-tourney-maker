@@ -91,7 +91,7 @@ export default function ChartDrawContainer({ round, players, activeConfig, pickb
 
             ) : (
               <VStack align="stretch" width="100%" mt={2} gap={1.5}>
-                {chartdrawEntries.sort((a, b) => a.order - b.order).map((entry) => (
+                {chartdrawEntries.sort((a, b) => a.draw_order - b.draw_order).map((entry) => (
                   <ChartDrawEntry
                     key={entry.id}
                     chartdrawEntry={entry}

@@ -77,7 +77,7 @@ export async function handleDrawChartsFromConfig(
     const groupKey = entry.group ?? "null";
     return {
       ...entry,
-      order: groupOrderCounters[groupKey]++
+      draw_order: groupOrderCounters[groupKey]++
     };
   });
 
