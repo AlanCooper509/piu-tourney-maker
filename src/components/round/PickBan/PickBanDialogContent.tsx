@@ -14,15 +14,14 @@ import type { PickbanRulesetWithSteps, PickbanAction, PickbanActor } from "../..
 import type { ChartdrawEntryWithDetails } from "../../../types/ChartDrawEntry";
 import type { Round } from "../../../types/Round";
 import type { PlayerRound } from "../../../types/PlayerRound";
-import type { Stage } from "../../../types/Stage";
 
 export type UIChartState = "available" | PickbanAction;
 
 interface PickBanDialogContentProps {
   round: Round;
   players: PlayerRound[];
-  stages: Stage[];
   pbStep: number;
+  isLockedIn: boolean;
   pickbanRuleset: PickbanRulesetWithSteps;
   chartdrawEntries: ChartdrawEntryWithDetails[];
   setChartdrawEntries: Dispatch<SetStateAction<ChartdrawEntryWithDetails[]>>;
@@ -50,8 +49,8 @@ const resolveActorName = (
 export function PickBanDialogContent({
   round,
   players,
-  stages,
   pbStep,
+  isLockedIn,
   pickbanRuleset,
   chartdrawEntries,
   setChartdrawEntries,
@@ -59,9 +58,6 @@ export function PickBanDialogContent({
 }: PickBanDialogContentProps) {
   const [selectingId, setSelectingId] = useState<number | null>(null);
   const [isLockingIn, setIsLockingIn] = useState<boolean>(false);
-  const isLockedIn = useMemo(() => {
-    return stages.some((stage) => stage.round_id === round.id && stage.play_order !== null);
-  }, [stages, round.id]);
 
   const chartStates = useMemo(() => {
     const states: Record<number, UIChartState> = {};

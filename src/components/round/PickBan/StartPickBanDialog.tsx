@@ -28,17 +28,22 @@ export default function StartPickBanDialog({
   setChartdrawEntries,
 }: StartPickBanDialogProps) {
   const [open, setOpen] = useState(false);
-
+  
   const pbStep = useMemo(() => {
     return chartdrawEntries.filter((entry) => entry.action !== null).length;
   }, [chartdrawEntries]);
+  
+  const isLockedIn = useMemo(() => {
+    return stages.some((stage) => stage.round_id === round.id && stage.play_order !== null);
+  }, [stages, round.id]);
 
   const triggerLabel = useMemo(() => {
     const totalSteps = pickbanRuleset?.pickban_ruleset_steps?.length || 0;
-    
+
     if (pbStep === 0) return "Begin Pick/Ban Flow";
-    if (pbStep >= totalSteps) return "Show Pick/Ban Flow";
-    return "Resume Pick/Ban Flow";
+    if (pbStep >= totalSteps) {
+      return isLockedIn ? "Show Pick/Ban Flow" : "Finalize Pick/Ban Flow";
+    }
   }, [pbStep, pickbanRuleset]);
 
   return (
@@ -49,7 +54,7 @@ export default function StartPickBanDialog({
           variant="outline"
           borderWidth={2}
           size="xl"
-          colorPalette="green"
+          colorPalette={isLockedIn ? "blue" : "green"}
           px={4}
         >
           {triggerLabel} <LuSquareMousePointer />
@@ -61,8 +66,8 @@ export default function StartPickBanDialog({
         <PickBanDialogContent
           round={round}
           players={players}
-          stages={stages}
           pbStep={pbStep}
+          isLockedIn={isLockedIn}
           pickbanRuleset={pickbanRuleset}
           chartdrawEntries={chartdrawEntries}
           setChartdrawEntries={setChartdrawEntries}
