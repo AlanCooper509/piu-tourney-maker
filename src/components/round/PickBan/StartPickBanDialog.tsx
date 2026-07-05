@@ -210,8 +210,8 @@ export default function StartPickBanDialog({
                 />
               ) : (
                 <Box p={4} bg="green.alpha.10" borderRadius="md" borderWidth="2px" borderColor="green.600" textAlign="center">
-                  <Text fontSize="lg" fontWeight="black" color="green.500">PICK/BAN COMPLETE</Text>
-                  <Text fontSize="xs" color="fg.muted" mt={1}>All mutations resolved cleanly.</Text>
+                  <Text fontSize="lg" fontWeight="black" color="green.500">LOCK IN THE PICK/BANS</Text>
+                  <Text fontSize="xs" color="fg.muted" mt={1}>Pick/Ban steps have been completed.</Text>
                 </Box>
               )}
 

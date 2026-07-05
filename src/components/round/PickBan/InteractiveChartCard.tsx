@@ -110,15 +110,6 @@ export function InteractiveChartCard({ entry, state, currentStepRule, resolvedAc
           ) : (
             <>
               <Text
-                fontSize="2xs"
-                fontWeight="bold"
-                color="gray.400"
-                letterSpacing="wider"
-                textTransform="uppercase"
-              >
-                {hoverTheme.actionLabel}
-              </Text>
-              <Text
                 fontSize="xl"
                 fontWeight="black"
                 color="white"
@@ -128,6 +119,15 @@ export function InteractiveChartCard({ entry, state, currentStepRule, resolvedAc
                 truncate
               >
                 {resolvedActorName}
+              </Text>
+              <Text
+                fontSize="2xs"
+                fontWeight="bold"
+                color="gray.400"
+                letterSpacing="wider"
+                textTransform="uppercase"
+              >
+                {hoverTheme.actionLabel}
               </Text>
             </>
           )}

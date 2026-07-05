@@ -24,11 +24,11 @@ function color(type: ChartType | null): string {
 
 function getActionStyles(action: PickbanAction | undefined) {
   switch (action) {
-    case "PICK": return { bg: "green.600", text: <LuCheck strokeWidth={4} />, color: "gray.100" }
+    case "PICK": return { bg: "green.600", text: <LuCheck strokeWidth={4} />, color: "gray.200" }
     case "BAN": return { bg: "red.700", text: <IoBan />, color: "gray.400" }
-    case "PROTECT": return { bg: "blue.700", text: <MdShield />, color: "gray.100" }
-    case "AUTOPICK": return { bg: "teal.700", text: <LuCheck />, color: "gray.100" }
-    case "IGNORE": return { bg: "gray.700", text: "SKIP", color: "gray.100" }
+    case "PROTECT": return { bg: "blue.700", text: <MdShield />, color: "gray.200" }
+    case "AUTOPICK": return { bg: "teal.700", text: <LuCheck strokeWidth={4} />, color: "gray.200" }
+    case "IGNORE": return { bg: "gray.700", text: <IoBan />, color: "gray.400" }
     default: return null
   }
 }
