@@ -63,13 +63,13 @@ export function upsertStage(
             ...incoming,
 
             // preserve hydrated relations
-            scores: stage.scores ?? [],
-            chart_pools: stage.chart_pools ?? [],
+            scores: incoming.scores ?? stage.scores ?? [],
+            chart_pools: incoming.chart_pools ?? stage.chart_pools ?? [],
 
             // hydrate charts only if chart_id exists
             charts:
               incoming.chart_id != null
-                ? stage.chart_pools?.find(pool => pool.chart_id === incoming.chart_id)?.charts ?? null
+                ? incoming.charts ?? stage.charts ?? stage.chart_pools?.find(pool => pool.chart_id === incoming.chart_id)?.charts ?? null
                 : null,
           }
         : stage
