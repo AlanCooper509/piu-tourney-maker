@@ -57,6 +57,7 @@ function RoundPage() {
     setRound(null);
     setPlayers([]);
     setStages([]);
+    setChartdrawEntries([]);
   }, [roundId]);
 
   const activeRoundId = Number(roundId);
@@ -136,7 +137,7 @@ function RoundPage() {
         return sorted;
       });
     }
-  }, [queriedRoundsInTourney]);
+  }, [queriedRoundsInTourney, roundPools]);
 
   useEffect(() => {
     if (queriedRoundPools) {
@@ -173,10 +174,10 @@ function RoundPage() {
     setTourneyPlayers(queriedPlayersInTourney ?? []);
   }, [queriedPlayersInTourney]);
 
-  const tourneyPlayersRef = useRef(queriedPlayersInTourney);
+  const tourneyPlayersRef = useRef(tourneyPlayers);
   useEffect(() => {
-    tourneyPlayersRef.current = queriedPlayersInTourney;
-  }, [queriedPlayersInTourney]);
+    tourneyPlayersRef.current = tourneyPlayers;
+  }, [tourneyPlayers]);
 
   useEffect(() => {
     if (queriedChartdrawConfigs) setChartdrawConfigs(queriedChartdrawConfigs);
@@ -186,10 +187,6 @@ function RoundPage() {
     if (queriedPickbanRulesets) setPickbanRulesets(queriedPickbanRulesets);
   }, [queriedPickbanRulesets]);
 
-  const entriesRef = useRef(chartdrawEntries);
-  useEffect(() => {
-    entriesRef.current = chartdrawEntries;
-  }, [chartdrawEntries]);
   useEffect(() => {
     if (queriedChartdrawEntries) setChartdrawEntries(queriedChartdrawEntries);
   }, [queriedChartdrawEntries]);
@@ -287,12 +284,15 @@ function RoundPage() {
             let fetchedChart = null;
 
             if (incoming.chart_id && !alreadyHasChart) {
-              const { data } = await supabaseClient
+              const { data, error } = await supabaseClient
                 .from("charts")
                 .select("*")
                 .eq("id", incoming.chart_id)
                 .single();
               fetchedChart = data;
+              if (error) {
+                console.error(`Failed to hydrate chart ${incoming.chart_id} for chartdraw entry ${incoming.id}:`, error);
+              }
             }
 
             setStages(prev => {
@@ -510,11 +510,15 @@ function RoundPage() {
           // hydrate info pulled from charts table
           let linkedChart = null;
           if (incoming.chart_id) {
-            const { data } = await supabaseClient
+            const { data, error } = await supabaseClient
               .from("charts")
               .select("*")
               .eq("id", incoming.chart_id)
               .single();
+
+            if (error) {
+              console.error(`Failed to hydrate chart ${incoming.chart_id} for chartdraw entry ${incoming.id}:`, error);
+            }
 
             linkedChart = data;
           }
