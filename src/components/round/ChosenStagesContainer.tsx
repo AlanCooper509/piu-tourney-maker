@@ -210,33 +210,49 @@ export default function ChosenStagesContainer({
           <VStack align="stretch" gap={3}>
 
             {/* Header row */}
-            <Grid templateColumns="1.8fr 1.3fr 1.3fr" px={2} gap={2} fontWeight="bold" fontSize="xs" alignItems="center">
-              <Text color="fg.muted">Chart / Stage</Text>
+            <Grid
+              templateColumns={{ base: "1fr", sm: "1.8fr 1.3fr 1.3fr" }}
+              px={2}
+              gap={2}
+              fontWeight="bold"
+              fontSize="xs"
+              alignItems="center"
+            >
+              <Text color="fg.muted" textAlign={{ base: "center", sm: "left" }}>Chart / Stage</Text>
 
-              {/* Player 1 Header */}
-              <HStack justify="center" gap={1} minW={0}>
-                {player1?.player_tourneys?.seed != null && (
-                  <HStack gap={0.5} fontSize="xs" color="green.600" marginEnd={1}>
-                    <FaSeedling size={12} />
-                    <Text as="span">{player1.player_tourneys.seed}</Text>
-                  </HStack>
-                )}
-                <Text textAlign="center" textTransform="uppercase" truncate>
-                  {player1?.player_tourneys?.player_name ?? "Player 1"}
-                </Text>
-              </HStack>
+              {/* Group both player headers together on mobile, split into grid columns on desktop */}
+              <HStack width="100%" display={{ base: "flex", sm: "contents" }} justify="space-between" gap={2}>
 
-              {/* Player 2 Header */}
-              <HStack justify="center" gap={1} minW={0}>
-                {player2?.player_tourneys?.seed != null && (
-                  <HStack gap={0.5} fontSize="xs" color="green.600" marginEnd={1}>
-                    <FaSeedling size={12} />
-                    <Text as="span">{player2.player_tourneys.seed}</Text>
+                {/* Player 1 Header */}
+                <Box flex={1} minW={0} mt={{ base: 2, sm: 0 }}>
+                  <HStack justify="center" gap={1} minW={0}>
+                    {player1?.player_tourneys?.seed != null && (
+                      <HStack gap={0.5} fontSize="xs" color="green.600" marginEnd={1}>
+                        <FaSeedling size={12} />
+                        <Text as="span">{player1.player_tourneys.seed}</Text>
+                      </HStack>
+                    )}
+                    <Text textAlign="center" textTransform="uppercase" truncate>
+                      {player1?.player_tourneys?.player_name ?? "Player 1"}
+                    </Text>
                   </HStack>
-                )}
-                <Text textAlign="center" textTransform="uppercase" truncate>
-                  {player2?.player_tourneys?.player_name ?? "Player 2"}
-                </Text>
+                </Box>
+
+                {/* Player 2 Header */}
+                <Box flex={1} minW={0} mt={{ base: 2, sm: 0 }}>
+                  <HStack justify="center" gap={1} minW={0}>
+                    {player2?.player_tourneys?.seed != null && (
+                      <HStack gap={0.5} fontSize="xs" color="green.600" marginEnd={1}>
+                        <FaSeedling size={12} />
+                        <Text as="span">{player2.player_tourneys.seed}</Text>
+                      </HStack>
+                    )}
+                    <Text textAlign="center" textTransform="uppercase" truncate>
+                      {player2?.player_tourneys?.player_name ?? "Player 2"}
+                    </Text>
+                  </HStack>
+                </Box>
+
               </HStack>
             </Grid>
 
@@ -252,24 +268,31 @@ export default function ChosenStagesContainer({
 
                 return (
                   <React.Fragment key={stage.id}>
-                    <Grid templateColumns="1.8fr 1.3fr 1.3fr" alignItems="center" gap={2} px={2} py={0}>
-
+                    <Grid
+                      templateColumns={{ base: "1fr", sm: "1.8fr 1.3fr 1.3fr" }}
+                      alignItems="center"
+                      gap={{ base: 3, sm: 2 }}
+                      px={2}
+                      py={{ base: 2, sm: 0 }}
+                      borderBottom={{ base: "1px solid", sm: "none" }}
+                      borderColor="border.muted/20"
+                    >
                       {/* Column 1: Chart Metadata */}
-                      <Box minW={0}>
+                      <Box minW={0} width="100%">
                         {currentChart ? (
                           <ChartRow chart={currentChart} />
                         ) : (
-                          <Text fontWeight="medium" fontSize="sm" color="fg.muted" fontStyle="italic">
+                          <Text fontWeight="medium" fontSize="sm" color="fg.muted" fontStyle="italic" textAlign={{ base: "center", sm: "left" }}>
                             {`Unknown Chart (ID: ${stage.chart_id})`}
                           </Text>
                         )}
                       </Box>
 
-                      {/* Column 2: Player 1 Content */}
-                      {renderPlayerScoreColumn(stage, player1, player2)}
-
-                      {/* Column 3: Player 2 Content */}
-                      {renderPlayerScoreColumn(stage, player2, player1)}
+                      {/* Column 2 & 3: Player Content */}
+                      <HStack width="100%" display={{ base: "flex", sm: "contents" }} justify="space-between" gap={2}>
+                        <Box flex={1}>{renderPlayerScoreColumn(stage, player1, player2)}</Box>
+                        <Box flex={1}>{renderPlayerScoreColumn(stage, player2, player1)}</Box>
+                      </HStack>
                     </Grid>
                   </React.Fragment>
                 );
