@@ -18,6 +18,7 @@ import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
 import type { PlayerRound } from "../../../types/PlayerRound";
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
+import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 
 interface RoundsListProps {
   chartdrawConfigs: ChartdrawConfigWithSpecs[];
@@ -46,6 +47,8 @@ export default function RoundsList({
   playerRounds,
 }: RoundsListProps) {
   const { tourney } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
+
   const navigate = useNavigate();
 
   const renderRoundCard = (round: Round) => {
@@ -63,16 +66,16 @@ export default function RoundsList({
         boxShadow="sm"
         cursor="pointer"
         transition="all 0.2s"
-        _hover={{ 
-          transform: "translateY(-2px)", 
+        _hover={{
+          transform: "translateY(-2px)",
           boxShadow: "md",
-          borderColor: "cyan.muted" 
+          borderColor: "cyan.muted"
         }}
       >
         <HStack justifyContent="space-between" align="center" mb={2}>
           <Text fontWeight="bold" fontSize="md">
             {/* LinkOverlay captures the click action for the whole card */}
-            <LinkOverlay 
+            <LinkOverlay
               onClick={(e) => {
                 e.preventDefault();
                 navigate(roundUrl);
@@ -99,17 +102,22 @@ export default function RoundsList({
             </Text>
           )}
         </Box>
-
-        <Separator my={2} />
-        <Text fontSize="xs" color="fg.muted">
-          Advancing: <Text as="span" fontWeight="bold">{round.players_advancing}</Text>
-        </Text>
       </LinkBox>
     );
   };
 
   return (
     <Box w="100%" px={4}>
+      <HStack
+        mb={3}
+        justifyContent="center"
+        alignItems="center"
+        px={1}
+        minHeight={!loadingTourneyAdminStatus && isTourneyAdmin ? "36px" : "24px"}
+      >
+        <Heading size="md">Rounds</Heading>
+      </HStack>
+      <Separator my={2} />
       <Stack>
         {rounds.map((round, index) => {
           const currentPool = roundPools?.find(p => p.id === round.round_pool_id);
@@ -125,18 +133,35 @@ export default function RoundsList({
           return (
             <Box key={round.id}>
               {showPoolHeader && (
-                <Box mb={4} mt={index > 0 ? 6 : 0}>
-                  <HStack justifyContent="space-between" alignItems="baseline">
-                    <Heading size="md" letterSpacing="tight" color="cyan.solid">
+                <Box mb={{base: 2, md: 4}} mt={index > 0 ? 6 : 0}>
+                  <Stack
+                    direction={{ base: "column", md: "row" }}
+                    justifyContent={{ base: "center", md: "space-between" }}
+                    alignItems={{ base: "center", md: "baseline" }}
+                    gap={{ base: 0, md: 4 }}
+                    width="100%"
+                  >
+                    <Heading
+                      size="md"
+                      letterSpacing="tight"
+                      color="cyan.solid"
+                      textAlign={{ base: "center", md: "left" }}
+                    >
                       {currentPool.name.toUpperCase()}
                     </Heading>
+
                     {config && (
-                      <Text fontSize="xs" color="fg.muted">
+                      <Text
+                        fontSize="xs"
+                        color="fg.muted"
+                        textAlign={{ base: "center", md: "right" }}
+                        width={{ base: "100%", md: "auto" }}
+                      >
                         Ruleset: <Text as="span" fontWeight="semibold">{config.name}</Text>
                         {ruleset && ` (${ruleset.name})`}
                       </Text>
                     )}
-                  </HStack>
+                  </Stack>
                   <Separator mt={2} />
                 </Box>
               )}

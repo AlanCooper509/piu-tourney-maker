@@ -38,7 +38,7 @@ export default function ChartRulesList({
   );
 
   return (
-    <Box w={{ base: "100%", md: "400px" }} h="fit-content">
+    <Box w={{ base: "100%", md: "600px" }} h="fit-content">
       <HStack
         mb={3}
         justifyContent="center"

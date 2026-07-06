@@ -1,9 +1,10 @@
 import { HStack, Span, Text } from "@chakra-ui/react";
-import { BsFillRecordFill } from "react-icons/bs";
-import { FaPlugCircleCheck } from "react-icons/fa6";
+import { MdOutlinePlaylistAddCheck } from "react-icons/md";
+import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 
 import type { Tourney } from "../types/Tourney";
 import type { Round, RoundStatus } from "../types/Round";
+import { RiProgress5Fill } from "react-icons/ri";
 
 interface StatusElementProps {
   element: Tourney | Round;
@@ -12,16 +13,11 @@ interface StatusElementProps {
 // 1. Centralized configuration mapping status to color, labels, and icons
 const getStatusConfig = (status: RoundStatus | string | null | undefined) => {
   switch (status) {
-    case 'Complete':
-      return { color: "green.500", icon: "✓", label: "Complete" };
-    case 'In Progress':
-      return { color: "red.500", icon: <BsFillRecordFill />, label: "Live" }; // Solid glyph
-    case 'Ready':
-      return { color: "blue.500", icon: <FaPlugCircleCheck />, label: "Ready" }; // Steady bullet or ready indicator glyph
-    case 'Pick Ban':
-      return { color: "orange.400", icon: "✦", label: "Draft Phase" }; // Spark/Star glyph for preparation
-    default:
-      return { color: "gray.500", icon: "○", label: status ?? 'Not Started' };
+    case 'Complete':    return { color: "green.600",  icon: <IoIosCheckmarkCircleOutline />, label: "Complete" };
+    case 'In Progress': return { color: "green.600",    icon: <RiProgress5Fill />, label: "Live" };
+    case 'Ready':       return { color: "teal.400",   icon: <MdOutlinePlaylistAddCheck />, label: "Draft Complete" };
+    case 'Pick Ban':    return { color: "gray.500", icon: <MdOutlinePlaylistAddCheck />, label: "Draft Phase" };
+    default:            return { color: "gray.500",   icon: "○", label: status ?? 'Not Started' };
   }
 };
 

@@ -7,14 +7,15 @@ import {
   Link,
   Portal,
   Select,
+  Span,
   Stack
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { BiSolidMedal } from "react-icons/bi";
-import { RiSwordLine } from "react-icons/ri";
+import { RiProgress5Fill } from "react-icons/ri";
 import { MdOutlinePlaylistAddCheck } from "react-icons/md";
 import { IoChevronForward, IoChevronBack } from "react-icons/io5";
 import { IoAddCircleSharp } from "react-icons/io5";
+import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 
 import RoundModal from "../../round/details/RoundModal";
 import { handleAddRoundToTourney } from "../../../handlers/round/handleRoundRow";
@@ -194,20 +195,20 @@ export default function TourneyHeaderText({
                       <Select.Item item={item}>
                         <HStack 
                           color={
-                            item.status === "Not Started" ? "fg.muted"
-                            : item.status === "Pick Ban" ? "fg.muted"
-                            : item.status === "Ready" ? "fg.muted"
+                              item.status === "Not Started" ? "fg.muted"
+                            : item.status === "Pick Ban"    ? "fg"
+                            : item.status === "Ready"       ? "fg"
                             : item.status === "In Progress" ? "fg"
-                            : item.status === "Complete" ? "green.600"
+                            : item.status === "Complete"    ? "fg.muted"
                             : ""
                           }
                         >
                           {item.parent && <Box w={4} />}
-                          {!item.parent && item.poolName && <Box w={4} />}
-                          {item.status === "Ready" && <MdOutlinePlaylistAddCheck />}
-                          {item.status === "Pick Ban" && <MdOutlinePlaylistAddCheck />}
-                          {item.status === "In Progress" && <RiSwordLine />}
-                          {item.status === "Complete" && <BiSolidMedal />}
+                          {!item.parent && item.poolName   &&  <Box w={4} />}
+                          {item.status === "Ready"         &&  <Span color="teal.400"><MdOutlinePlaylistAddCheck /></Span>}
+                          {item.status === "Pick Ban"      &&  <Span color="gray.400"><MdOutlinePlaylistAddCheck /></Span>}
+                          {item.status === "In Progress"   &&  <Span color="green.600"><RiProgress5Fill /></Span>}
+                          {item.status === "Complete"      &&  <IoIosCheckmarkCircleOutline />}
                           {item.label}
                         </HStack>
                         <Select.ItemIndicator />

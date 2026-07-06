@@ -90,7 +90,7 @@ export default function ChartSpecsCollapsible({ chartdrawConfig, setChartdrawCon
     if (index === 0) return [curr];
     return [
       ...acc,
-      <Text key={`sep-${index}`} as="span" mx={1} fontSize="xs" fontWeight="normal">|</Text>,
+      <Text key={`sep-${index}`} as="span" mx={1} fontSize="xs" fontWeight="normal" color="fg.subtle">|</Text>,
       curr
     ];
   }, []);
@@ -98,23 +98,36 @@ export default function ChartSpecsCollapsible({ chartdrawConfig, setChartdrawCon
   return (
     <Collapsible.Root lazyMount unmountOnExit width="100%">
       <Collapsible.Trigger cursor="pointer" width="100%" _hover={{ opacity: 0.8 }}>
-        <HStack justify="space-between" width="100%">
-          <HStack gap={2} minWidth={0} width="100%">
-            <Text fontSize="xs" fontWeight="medium" color="fg.muted" whiteSpace="nowrap">
-              Charts:
-            </Text>
-            <HStack gap={0} display="inline-flex" alignItems="center" flexWrap="wrap">
-              {levelsSummary.length > 0 ? (
-                <>({levelsSummary})</>
-              ) : (
-                <Text fontSize="xs" color="fg.subtle" fontStyle="italic">None specified</Text>
-              )}
+        <HStack justify="space-between" align="center" width="100%" gap={3}>
+
+          {/* Left Container: Packs text & badge tightly, wraps them cleanly on mobile */}
+          <HStack gap={2} flexWrap="wrap" flex="1" minWidth={0} align="center">
+
+            {/* Charts Inline Block */}
+            <HStack gap={1.5} flexWrap="wrap" display="inline-flex" alignItems="center">
+              <Text fontSize="xs" fontWeight="medium" color="fg.muted" whiteSpace="nowrap">
+                Charts:
+              </Text>
+              <Text fontSize="xs" fontWeight="medium" color="fg" display="inline-flex" alignItems="center" flexWrap="wrap">
+                {levelsSummary.length > 0 ? (
+                  <>
+                    <Box as="span" mr={0.5} color="fg.muted">(</Box>
+                    {levelsSummary}
+                    <Box as="span" ml={0.5} color="fg.muted">)</Box>
+                  </>
+                ) : (
+                  <Text as="span" fontSize="xs" color="fg.subtle" fontStyle="italic">None specified</Text>
+                )}
+              </Text>
             </HStack>
-            <Badge colorPalette="teal" variant="subtle" size={"md"} gap={1}>
+
+            {/* total charts Badge */}
+            <Badge colorPalette="teal" variant="subtle" size="md" gap={1} flexShrink={0}>
               <GiRollingDices /> {totalCharts} {totalCharts === 1 ? "Chart" : "Charts"}
             </Badge>
           </HStack>
 
+          {/* Right Container: Fixed-width Chevron animation */}
           <Collapsible.Context>
             {(context) => (
               <Box
@@ -122,11 +135,14 @@ export default function ChartSpecsCollapsible({ chartdrawConfig, setChartdrawCon
                 transition="transform 0.2s"
                 color="fg.muted"
                 flexShrink={0}
+                display="flex"
+                alignItems="center"
               >
                 <LuChevronDown size={14} />
               </Box>
             )}
           </Collapsible.Context>
+
         </HStack>
       </Collapsible.Trigger>
 
