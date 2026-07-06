@@ -12,6 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { BiSolidMedal } from "react-icons/bi";
 import { RiSwordLine } from "react-icons/ri";
+import { MdOutlinePlaylistAddCheck } from "react-icons/md";
 import { IoChevronForward, IoChevronBack } from "react-icons/io5";
 import { IoAddCircleSharp } from "react-icons/io5";
 
@@ -196,6 +197,7 @@ export default function TourneyHeaderText({
                           color={
                             item.value === currentSelectValue ? "fg"
                             : item.status === "Not Started" ? "fg.muted"
+                            : item.status === "Pick Ban" ? "fg.muted"
                             : item.status === "In Progress" ? "fg"
                             : item.status === "Complete" ? "fg.muted"
                             : ""
@@ -203,7 +205,7 @@ export default function TourneyHeaderText({
                         >
                           {item.parent && <Box w={4} />}
                           {!item.parent && item.poolName && <Box w={4} />}
-                          
+                          {item.status === "Pick Ban" && <MdOutlinePlaylistAddCheck />}
                           {item.status === "In Progress" && <RiSwordLine />}
                           {item.status === "Complete" && <BiSolidMedal />}
                           {item.label}

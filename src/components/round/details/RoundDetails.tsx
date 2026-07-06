@@ -16,6 +16,11 @@ import type { Round } from "../../../types/Round";
 import type { PlayerRound } from "../../../types/PlayerRound";
 import type { Stage } from "../../../types/Stage";
 import type { TourneyType } from "../../../types/Tourney";
+import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
+import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
+import type { ChartdrawEntryWithDetails } from "../../../types/ChartDrawEntry";
+import DrawChartsButton from "../ChartDraw/DrawChartsButton";
+import StartPickBanDialog from "../PickBan/StartPickBanDialog";
 
 interface RoundDetailsProps {
   round: Round | null;
@@ -28,6 +33,10 @@ interface RoundDetailsProps {
   error: Error | null;
   tourneyId: number;
   tourneyType: TourneyType | null;
+  activeConfig?: ChartdrawConfigWithSpecs | null;
+  pickbanRulesets?: PickbanRulesetWithSteps[];
+  chartdrawEntries?: ChartdrawEntryWithDetails[];
+  setChartdrawEntries?: React.Dispatch<React.SetStateAction<ChartdrawEntryWithDetails[]>>;
 }
 
 export function RoundDetails({
@@ -40,7 +49,12 @@ export function RoundDetails({
   loading,
   error,
   tourneyId,
-  tourneyType
+  tourneyType,
+  activeConfig,
+  pickbanRulesets = [],
+  chartdrawEntries = [],
+  setChartdrawEntries
+
 }: RoundDetailsProps) {
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourneyId);
   const navigate = useNavigate();
@@ -49,6 +63,17 @@ export function RoundDetails({
   const playersAdvancing = round?.players_advancing ?? -1;
   const nextRound = rounds.find((r) => r.id === round?.next_round_id);
   const nextLoserRound = rounds.find((r) => r.id === round?.lost_next_round_id);
+
+  const linkedPickbanRuleset = pickbanRulesets.find(
+    (ruleset) => ruleset.id === activeConfig?.pickban_ruleset_id
+  );
+  const readyToStartPickBan =
+    round &&
+    players &&
+    players.length === 2 &&
+    chartdrawEntries.length > 0 &&
+    linkedPickbanRuleset &&
+    linkedPickbanRuleset.pickban_ruleset_steps.length > 0;
 
   return (
     <>
@@ -63,15 +88,25 @@ export function RoundDetails({
               {!loadingTourneyAdminStatus && isTourneyAdmin && (
                 <Box my={2}>
                   <HStack gap={2}>
-                    <EditRoundDetailsButton 
-                      round={round} 
-                      rounds={rounds} 
-                      setRound={setRound} 
-                      setRounds={setRounds} 
+                    {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Not Started" && (
+                      <SkipRoundButton
+                        tourneyId={tourneyId}
+                        tourneyType={tourneyType}
+                        round={round}
+                        setRound={setRound}
+                        players={players}
+                      />
+                    )}
+
+                    <EditRoundDetailsButton
+                      round={round}
+                      rounds={rounds}
+                      setRound={setRound}
+                      setRounds={setRounds}
                     />
-                    <DeleteRoundButton 
-                      round={round} 
-                      setRounds={setRounds} 
+                    <DeleteRoundButton
+                      round={round}
+                      setRounds={setRounds}
                     />
                   </HStack>
                 </Box>
@@ -85,7 +120,7 @@ export function RoundDetails({
                   roundStatus={round?.status}
                 />
               )}
- 
+
               {tourneyType !== "Double Elimination" || round.parent_round_id !== null && (
                 <ScoringDetailsText
                   pointsPerStage={round?.points_per_stage}
@@ -128,22 +163,34 @@ export function RoundDetails({
                     roundId={round?.id ?? 0}
                   />
                 )}
-                {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Not Started" && (
-                  <SkipRoundButton
-                    tourneyId={tourneyId}
-                    tourneyType={tourneyType}
-                    round={round}
-                    setRound={setRound}
-                    players={players}
-                  />
-                )}
-                {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Not Started" && (
+                {!loadingTourneyAdminStatus && isTourneyAdmin && tourneyType !== "Double Elimination" && round?.status === "Not Started" && (
                   <StartRoundButton
                     round={round}
                     setRound={setRound}
                     players={players}
                     stages={stages}
                   />
+                )}
+                {!loadingTourneyAdminStatus && isTourneyAdmin && tourneyType == "Double Elimination" && round?.status === "Not Started" && (
+                  <>
+                    {activeConfig && chartdrawEntries.length === 0 && (
+                      <DrawChartsButton round={round} activeConfig={activeConfig} />
+                    )}
+                  </>
+                )}
+                {!loadingTourneyAdminStatus && isTourneyAdmin && tourneyType == "Double Elimination" && round?.status === "Pick Ban" && (
+                  <>
+                    {readyToStartPickBan && setChartdrawEntries && (
+                      <StartPickBanDialog
+                        pickbanRuleset={linkedPickbanRuleset}
+                        chartdrawEntries={chartdrawEntries}
+                        setChartdrawEntries={setChartdrawEntries}
+                        round={round}
+                        players={players}
+                        stages={stages ?? []}
+                      />
+                    )}
+                  </>
                 )}
                 {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "In Progress" && (
                   <EndRoundButton

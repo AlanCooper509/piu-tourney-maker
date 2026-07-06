@@ -1,5 +1,6 @@
 import { supabaseClient } from "../../lib/supabaseClient";
 import type { ChartdrawConfigWithSpecs } from "../../types/ChartDrawConfig";
+import handleUpdateRoundStatus from "../round/handleUpdateRoundStatus";
 
 export async function handleDrawChartsFromConfig(
   roundId: number,
@@ -89,4 +90,7 @@ export async function handleDrawChartsFromConfig(
 
     if (insertError) throw insertError;
   }
+
+  // 9. Update the round status to "Pick Ban"
+  await handleUpdateRoundStatus(roundId, "Pick Ban");
 }

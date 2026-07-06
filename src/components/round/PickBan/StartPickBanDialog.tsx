@@ -37,24 +37,35 @@ export default function StartPickBanDialog({
     return stages.some((stage) => stage.round_id === round.id && stage.play_order !== null);
   }, [stages, round.id]);
 
-  const triggerLabel = useMemo(() => {
-    const totalSteps = pickbanRuleset?.pickban_ruleset_steps?.length || 0;
+  const totalSteps = pickbanRuleset?.pickban_ruleset_steps?.length || 0;
 
+  // 1. Determine the color palette based on step progress and lock-in status
+  const colorPalette = useMemo(() => {
+    if (pbStep === 0) return "green";
+    if (pbStep >= totalSteps) {
+      return isLockedIn ? "blue" : "green";
+    }
+    // Fallback mid-draft state gets blue
+    return "blue";
+  }, [pbStep, totalSteps, isLockedIn]);
+
+  const triggerLabel = useMemo(() => {
     if (pbStep === 0) return "Begin Pick/Ban Flow";
     if (pbStep >= totalSteps) {
       return isLockedIn ? "Show Pick/Ban Flow" : "Finalize Pick/Ban Flow";
     }
-  }, [pbStep, pickbanRuleset]);
+    return "Resume Pick/Bans";
+  }, [pbStep, totalSteps, isLockedIn]);
 
   return (
     <Dialog.Root open={open} onOpenChange={(e) => setOpen(e.open)} size="xl" placement="center">
       <Dialog.Trigger asChild>
         <IconButton
-          aria-label="Begin Pick/Ban Flow"
-          variant="outline"
+          aria-label={triggerLabel}
+          variant="surface"
           borderWidth={2}
           size="xl"
-          colorPalette={isLockedIn ? "blue" : "green"}
+          colorPalette={colorPalette}
           px={4}
         >
           {triggerLabel} <LuSquareMousePointer />

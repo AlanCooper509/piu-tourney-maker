@@ -158,6 +158,10 @@ function RoundPage() {
     }
   }, [queriedPlayersInRound]);
 
+  const stagesRef = useRef(stages);
+  useEffect(() => {
+    stagesRef.current = stages;
+  }, [stages]);
   useEffect(() => {
     if (queriedStagesInRound) {
       const sortedStages = [...queriedStagesInRound].sort((a, b) => a.id - b.id);
@@ -182,6 +186,10 @@ function RoundPage() {
     if (queriedPickbanRulesets) setPickbanRulesets(queriedPickbanRulesets);
   }, [queriedPickbanRulesets]);
 
+  const entriesRef = useRef(chartdrawEntries);
+  useEffect(() => {
+    entriesRef.current = chartdrawEntries;
+  }, [chartdrawEntries]);
   useEffect(() => {
     if (queriedChartdrawEntries) setChartdrawEntries(queriedChartdrawEntries);
   }, [queriedChartdrawEntries]);
@@ -263,14 +271,48 @@ function RoundPage() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'stages' },
-        payload => {
+        async (payload) => {
           if (payload.eventType === 'DELETE') {
             setStages(prev => deleteStage(prev, payload.old.id));
             return;
           }
+
           const incoming = payload.new as Stage;
           if (!incoming || (incoming.round_id !== activeRoundId)) return;
-          setStages(prev => upsertStage(prev, incoming));
+
+          try {
+            const existingStage = stagesRef.current.find(s => s.id === incoming.id);
+            const alreadyHasChart = existingStage?.charts?.id === incoming.chart_id;
+
+            let fetchedChart = null;
+
+            if (incoming.chart_id && !alreadyHasChart) {
+              const { data } = await supabaseClient
+                .from("charts")
+                .select("*")
+                .eq("id", incoming.chart_id)
+                .single();
+              fetchedChart = data;
+            }
+
+            setStages(prev => {
+              // Get the most up-to-date version of this stage at the exact moment of state update
+              const currentStage = prev.find(s => s.id === incoming.id);
+
+              const stageWithDetails = {
+                ...incoming,
+                // Fallback chain: New Fetch -> Existing State -> Null
+                charts: incoming.chart_id ? (fetchedChart ?? currentStage?.charts ?? null) : null,
+                scores: currentStage?.scores ?? incoming.scores ?? [],
+                chart_pools: currentStage?.chart_pools ?? incoming.chart_pools ?? undefined
+              };
+
+              return upsertStage(prev, stageWithDetails as Stage);
+            });
+
+          } catch (err) {
+            console.error("Error processing real-time stage hydration:", err);
+          }
         }
       )
       .subscribe();
@@ -543,6 +585,10 @@ function RoundPage() {
         error={errorRounds}
         tourneyId={Number(tourneyId)}
         tourneyType={tourney?.type ?? null}
+        activeConfig={activeConfig}
+        pickbanRulesets={pickbanRulesets}
+        chartdrawEntries={chartdrawEntries}
+        setChartdrawEntries={setChartdrawEntries}
       />
       {tourney?.type === 'Double Elimination' ? (
         <VStack gap={4} mt={4}>
@@ -555,20 +601,18 @@ function RoundPage() {
             loading={loadingPlayersInRound || loadingPlayersInTourney}
             error={errorPlayersInRound || errorPlayersInTourney}
           />
-          <ChosenStagesContainer
-            stages={stages}
-            players={players}
-          />
+          {stages.length > 0 &&
+            <ChosenStagesContainer
+              stages={stages}
+              players={players}
+            />
+          }
           {activeConfig && (
             <>
               <ChartDrawContainer
                 round={round}
-                players={players}
-                stages={stages}
                 activeConfig={activeConfig}
-                pickbanRulesets={pickbanRulesets}
                 chartdrawEntries={chartdrawEntries}
-                setChartdrawEntries={setChartdrawEntries}
               />
               <RulesetContainer
                 activeConfig={activeConfig}

@@ -1,4 +1,4 @@
-export type RoundStatus = 'Not Started' | 'In Progress' | 'Complete';
+export type RoundStatus = 'Not Started' | 'Pick Ban' | 'In Progress' | 'Complete';
 export interface Round {
   id: number;                        // bigint -> number
   tourney_id: number;                // bigint -> number

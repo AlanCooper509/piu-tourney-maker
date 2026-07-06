@@ -1,5 +1,5 @@
 import { Box, Card, Heading, Separator, Text, VStack, HStack, Grid, Input, IconButton, Center } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FaSeedling } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 import { CiEdit } from "react-icons/ci";
@@ -29,13 +29,10 @@ export default function ChosenStagesContainer({
 }: ChosenStagesContainerProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
-
-  const [localStages, setLocalStages] = useState<Stage[]>(stages);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
 
+  // sync form inputs when incoming data updates
   useEffect(() => {
-    setLocalStages(stages);
-
     const initialValues: Record<string, string> = {};
     stages.forEach(stage => {
       players.forEach(player => {
@@ -48,11 +45,13 @@ export default function ChosenStagesContainer({
     setInputValues(initialValues);
   }, [stages, players]);
 
-  const sortedStages = [...localStages].sort((a, b) => {
-    const orderA = a.play_order ?? Infinity;
-    const orderB = b.play_order ?? Infinity;
-    return orderA - orderB;
-  });
+  const sortedStages = useMemo(() => {
+    return [...stages].sort((a, b) => {
+      const orderA = a.play_order ?? Infinity;
+      const orderB = b.play_order ?? Infinity;
+      return orderA - orderB;
+    });
+  }, [stages]);
 
   const player1 = players[0];
   const player2 = players[1];
@@ -79,14 +78,7 @@ export default function ChosenStagesContainer({
 
     try {
       if (isAdding) {
-        const newScore = await handleAddScoreToStage(score, stageId, player.id, player.player_tourneys.player_name);
-        setLocalStages(prev =>
-          prev.map(stage =>
-            stage.id === stageId
-              ? { ...stage, scores: [...(stage.scores ?? []), newScore] }
-              : stage
-          )
-        );
+        await handleAddScoreToStage(score, stageId, player.id, player.player_tourneys.player_name);
         toaster.create({
           title: "Score Added",
           description: `Score "${score}" added successfully for ${player.player_tourneys.player_name}!`,
@@ -94,17 +86,7 @@ export default function ChosenStagesContainer({
           closable: true,
         });
       } else {
-        const updatedScore = await handleUpdateScoreOnStage(score, stageId, player.id, player.player_tourneys.player_name);
-        setLocalStages(prev =>
-          prev.map(stage =>
-            stage.id === stageId
-              ? {
-                ...stage,
-                scores: stage.scores?.map(s => (s.player_round_id === player.id ? updatedScore : s)),
-              }
-              : stage
-          )
-        );
+        await handleUpdateScoreOnStage(score, stageId, player.id, player.player_tourneys.player_name);
         toaster.create({
           title: "Score Updated",
           description: `Score "${score}" updated successfully for ${player.player_tourneys.player_name}!`,

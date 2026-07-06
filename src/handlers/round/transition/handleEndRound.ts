@@ -23,7 +23,7 @@ export default async function handleEndRound({ tourneyId, round, tourneyType }: 
   if (!players || players.length === 0) throw new Error('No players to advance!');
 
   try {
-    const { data: tourneyData } = await handleCheckTourneyStatus(round.id);
+    const { data: tourneyData } = await handleCheckTourneyStatus(undefined, tourneyId);
     if (!tourneyData || !tourneyData.tourneys || tourneyData.tourneys.status !== 'In Progress') {
       throw new Error('Tournament is not in progress. Cannot make modifications.');
     }
