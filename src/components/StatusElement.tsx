@@ -16,7 +16,7 @@ const getStatusConfig = (status: RoundStatus | string | null | undefined) => {
     case 'Complete':    return { color: "green.600",  icon: <IoIosCheckmarkCircleOutline />, label: "Complete" };
     case 'In Progress': return { color: "green.600",    icon: <RiProgress5Fill />, label: "Live" };
     case 'Ready':       return { color: "teal.400",   icon: <MdOutlinePlaylistAddCheck />, label: "Draft Complete" };
-    case 'Pick Ban':    return { color: "gray.500", icon: <MdOutlinePlaylistAddCheck />, label: "Draft Phase" };
+    case 'Pick Ban':    return { color: "gray.200", icon: <MdOutlinePlaylistAddCheck />, label: "Draft Phase" };
     default:            return { color: "gray.500",   icon: "○", label: status ?? 'Not Started' };
   }
 };

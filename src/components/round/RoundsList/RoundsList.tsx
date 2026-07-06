@@ -4,7 +4,6 @@ import {
   Stack,
   Text,
   HStack,
-  Badge,
   Separator,
   Center,
   LinkBox,
@@ -13,12 +12,12 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import type { RoundPool } from "../../../types/RoundPool";
-import type { Round, RoundStatus } from "../../../types/Round";
+import type { Round } from "../../../types/Round";
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
 import type { PlayerRound } from "../../../types/PlayerRound";
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
-import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
+import { StatusElement } from "../../StatusElement";
 
 interface RoundsListProps {
   chartdrawConfigs: ChartdrawConfigWithSpecs[];
@@ -28,17 +27,6 @@ interface RoundsListProps {
   playerRounds: PlayerRound[];
 }
 
-const getStatusColor = (status: RoundStatus | null): string => {
-  switch (status) {
-    case "Complete": return "green";
-    case "In Progress": return "blue";
-    case "Ready": return "blue";
-    case "Pick Ban": return "purple";
-    case "Not Started": return "gray";
-    default: return "gray";
-  }
-};
-
 export default function RoundsList({
   chartdrawConfigs,
   pickbanRulesets,
@@ -47,7 +35,6 @@ export default function RoundsList({
   playerRounds,
 }: RoundsListProps) {
   const { tourney } = useCurrentTourney();
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
 
   const navigate = useNavigate();
 
@@ -72,9 +59,8 @@ export default function RoundsList({
           borderColor: "cyan.muted"
         }}
       >
-        <HStack justifyContent="space-between" align="center" mb={2}>
-          <Text fontWeight="bold" fontSize="md">
-            {/* LinkOverlay captures the click action for the whole card */}
+        <HStack justifyContent="space-between" align="center" mb={2} gap={4}>
+          <Text fontWeight="bold" fontSize="md" minWidth={0} flex={1}>
             <LinkOverlay
               onClick={(e) => {
                 e.preventDefault();
@@ -87,7 +73,11 @@ export default function RoundsList({
               {round.name}
             </LinkOverlay>
           </Text>
-          <Badge colorPalette={getStatusColor(round.status)}>{round.status ?? "Not Started"}</Badge>
+          
+          {/* Integrated StatusElement wrapper */}
+          <Box flexShrink={0}>
+            <StatusElement element={round} />
+          </Box>
         </HStack>
 
         <Box mb={3}>
@@ -102,23 +92,18 @@ export default function RoundsList({
             </Text>
           )}
         </Box>
+
+        <Separator my={2} />
+        <Text fontSize="xs" color="fg.muted">
+          Advancing: <Text as="span" fontWeight="bold">{round.players_advancing}</Text>
+        </Text>
       </LinkBox>
     );
   };
 
   return (
-    <Box w="100%" px={4}>
-      <HStack
-        mb={3}
-        justifyContent="center"
-        alignItems="center"
-        px={1}
-        minHeight={!loadingTourneyAdminStatus && isTourneyAdmin ? "36px" : "24px"}
-      >
-        <Heading size="md">Rounds</Heading>
-      </HStack>
-      <Separator my={2} />
-      <Stack>
+    <Box w="100%" px={4} py={2}>
+      <Stack gap={6}>
         {rounds.map((round, index) => {
           const currentPool = roundPools?.find(p => p.id === round.round_pool_id);
           const prevRound = rounds[index - 1];
@@ -133,19 +118,19 @@ export default function RoundsList({
           return (
             <Box key={round.id}>
               {showPoolHeader && (
-                <Box mb={{base: 2, md: 4}} mt={index > 0 ? 6 : 0}>
+                <Box mb={4} mt={index > 0 ? 6 : 0}>
                   <Stack
-                    direction={{ base: "column", md: "row" }}
-                    justifyContent={{ base: "center", md: "space-between" }}
-                    alignItems={{ base: "center", md: "baseline" }}
-                    gap={{ base: 0, md: 4 }}
+                    direction={{ base: "column", sm: "row" }}
+                    justifyContent={{ base: "center", sm: "space-between" }}
+                    alignItems={{ base: "center", sm: "baseline" }}
+                    gap={{ base: 2, sm: 4 }}
                     width="100%"
                   >
                     <Heading
                       size="md"
                       letterSpacing="tight"
                       color="cyan.solid"
-                      textAlign={{ base: "center", md: "left" }}
+                      textAlign={{ base: "center", sm: "left" }}
                     >
                       {currentPool.name.toUpperCase()}
                     </Heading>
@@ -154,8 +139,8 @@ export default function RoundsList({
                       <Text
                         fontSize="xs"
                         color="fg.muted"
-                        textAlign={{ base: "center", md: "right" }}
-                        width={{ base: "100%", md: "auto" }}
+                        textAlign={{ base: "center", sm: "right" }}
+                        width={{ base: "100%", sm: "auto" }}
                       >
                         Ruleset: <Text as="span" fontWeight="semibold">{config.name}</Text>
                         {ruleset && ` (${ruleset.name})`}
@@ -175,7 +160,7 @@ export default function RoundsList({
                 </Box>
               )}
 
-              <Box>
+              <Box my={2}>
                 {renderRoundCard(round)}
               </Box>
             </Box>

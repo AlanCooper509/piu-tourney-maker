@@ -206,7 +206,7 @@ export default function TourneyHeaderText({
                           {item.parent && <Box w={4} />}
                           {!item.parent && item.poolName   &&  <Box w={4} />}
                           {item.status === "Ready"         &&  <Span color="teal.400"><MdOutlinePlaylistAddCheck /></Span>}
-                          {item.status === "Pick Ban"      &&  <Span color="gray.400"><MdOutlinePlaylistAddCheck /></Span>}
+                          {item.status === "Pick Ban"      &&  <Span color="gray.200"><MdOutlinePlaylistAddCheck /></Span>}
                           {item.status === "In Progress"   &&  <Span color="green.600"><RiProgress5Fill /></Span>}
                           {item.status === "Complete"      &&  <IoIosCheckmarkCircleOutline />}
                           {item.label}
