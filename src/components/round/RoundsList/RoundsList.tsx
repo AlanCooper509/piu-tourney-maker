@@ -60,7 +60,7 @@ export default function RoundsList({
         }}
       >
         <HStack justifyContent="space-between" align="center" mb={2} gap={4}>
-          <Text fontWeight="bold" fontSize="md" minWidth={0} flex={1}>
+          <Text fontWeight="bold" fontSize="md" minWidth={0} flex={1} textAlign="left">
             <LinkOverlay
               onClick={(e) => {
                 e.preventDefault();
@@ -76,7 +76,7 @@ export default function RoundsList({
           
           {/* Integrated StatusElement wrapper */}
           <Box flexShrink={0}>
-            <StatusElement element={round} />
+            <StatusElement element={round} shorten={true} />
           </Box>
         </HStack>
 
