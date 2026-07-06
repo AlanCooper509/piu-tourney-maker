@@ -119,7 +119,7 @@ function TourneyPage() {
     if (queriedPickbanRulesets) setPickbanRulesets(queriedPickbanRulesets);
   }, [queriedPickbanRulesets]);
 
-  const tourneyRounds = useMemo(() => {
+  const sortedRounds = useMemo(() => {
     if (!rounds.length) return [];
     const { sorted } = mergeAndFlattenRounds([], rounds, roundPools);
     return sorted;
@@ -334,7 +334,7 @@ function TourneyPage() {
     <Box mt={8}>
       <Toaster />
       <TourneyHeaderText
-        rounds={tourneyRounds}
+        rounds={sortedRounds}
         setRounds={setRounds}
         currentRoundId={NaN}
         roundPools={roundPools}
@@ -343,7 +343,7 @@ function TourneyPage() {
       <VStack separator={<StackSeparator />}>
         <TourneyDetails
           players={players}
-          rounds={tourneyRounds}
+          rounds={sortedRounds}
           loading={loadingTourney}
           error={errorTourney}
         />
@@ -363,7 +363,7 @@ function TourneyPage() {
               chartdrawConfigs={chartdrawConfigs || []}
               pickbanRulesets={pickbanRulesets || []}
               roundPools={roundPools || []}
-              rounds={rounds}
+              rounds={sortedRounds}
               playerRounds={roundPlayers}
             />
             <ChartRulesList
