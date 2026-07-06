@@ -1,10 +1,11 @@
-import { 
-  HStack, 
-  Text, 
-  IconButton, 
-  Popover, 
-  Portal, 
-  VStack
+import {
+  HStack,
+  Text,
+  IconButton,
+  Popover,
+  Portal,
+  VStack,
+  Box
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { CiEdit } from 'react-icons/ci';
@@ -48,11 +49,11 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
     try {
       setIsLoading(true);
       const seedValue = newSeed.trim() !== "" ? Number(newSeed) : null;
-      
+
       const updatedPlayer = await handleUpdatePlayerInTourney(player.id, newName.trim(), seedValue, tourney?.type ?? undefined);
       updatePlayer(updatedPlayer);
       setIsOpen(false);
-      
+
       toaster.create({
         title: 'Player Updated',
         description: `Player ${player.player_name} updated successfully.`,
@@ -77,14 +78,14 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
       await handleDeletePlayerFromTourney(player.id);
       removePlayer(player.id);
       setIsDeleteOpen(false);
-      
+
       toaster.create({
         title: "Player deleted",
         description: `"${player.player_name}" was removed.`,
         type: "success",
         closable: true,
       });
-      
+
       return true;
     } catch (err: any) {
       toaster.create({
@@ -93,7 +94,7 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
         type: "error",
         closable: true,
       });
-      
+
       return false;
     } finally {
       setIsDeleting(false);
@@ -107,24 +108,51 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
   };
 
   return (
-    <HStack w="full" maxW="100%" minW="0" justify={(!loadingTourneyAdminStatus && isTourneyAdmin) ? "space-between" : "center"} align="center">
-      {/* Left side: player seed/name display */}
-      <HStack gap={1} alignItems="center" title={player.player_name}>
-        {player.seed && (
-          <HStack gap={0.5} fontSize="xs" color="green.600" marginEnd={2}>
+    <HStack w="full" maxW="100%" minW="0" justify="space-between" align="center">
+      <HStack
+        gap={3}
+        align="center"
+        justify="center"
+        flex="1"
+        minW="0"
+        maxW={(!loadingTourneyAdminStatus && isTourneyAdmin) ? "200px" : "100%"}
+        mx="auto"
+        title={player.player_name}
+      >
+        {/* Seed Column: */}
+        {player.seed ? (
+          <HStack
+            gap={0.5}
+            fontSize="xs"
+            color="green.600"
+            flexShrink={0}
+            w="35px"
+            justify="flex-end"
+            marginEnd={1}
+          >
             <FaSeedling size={12} />
-            <Text as="span">{player.seed}</Text>
+            <Text as="span" fontWeight="bold">{player.seed}</Text>
           </HStack>
+        ) : (
+          <Box w="35px" flexShrink={0} marginEnd={1} />
         )}
-        <Text truncate fontWeight="medium">
+
+        {/* Player Name */}
+        <Text
+          truncate
+          fontWeight="medium"
+          textAlign="left"
+          flex="1"
+        >
           {player.player_name}
         </Text>
+
       </HStack>
 
       {/* Right side: admin action triggers */}
       {!loadingTourneyAdminStatus && isTourneyAdmin && (
         <HStack mx={4} flexShrink={0} gap={2}>
-          
+
           {/* Edit Player Popup Container */}
           <Popover.Root open={isOpen} onOpenChange={(e) => setIsOpen(e.open)} positioning={{ placement: "bottom-end" }}>
             <Popover.Trigger asChild>
@@ -142,8 +170,8 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
               <Popover.Positioner>
                 <Popover.Content p={4} w="300px" boxShadow="md">
                   <Popover.Arrow />
-                  
-                  <PlayerForm 
+
+                  <PlayerForm
                     name={newName}
                     setName={setNewName}
                     seed={newSeed}
@@ -168,7 +196,7 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
             open={isDeleteOpen}
             setOpen={setIsDeleteOpen}
             onSubmit={handleDeletePlayer}
-            onCancel={async () => { return true; }}             
+            onCancel={async () => { return true; }}
             trigger={
               <IconButton
                 aria-label="Delete player"

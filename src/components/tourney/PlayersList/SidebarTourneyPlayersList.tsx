@@ -93,7 +93,7 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
             <VStack 
               align="stretch" 
               gap={0}
-              maxH={{ md: "calc(100vh - 240px)" }} 
+              maxH={{ base: "40vh", md: "none" }}
               overflowY="auto"
             >
               {sortedPlayers.map((p, index) => (
