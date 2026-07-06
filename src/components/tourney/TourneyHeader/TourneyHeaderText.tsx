@@ -193,7 +193,6 @@ export default function TourneyHeaderText({
                       )}
                       <Select.Item item={item}>
                         <HStack 
-                          // Use your existing color logic here
                           color={
                             item.status === "Not Started" ? "fg.muted"
                             : item.status === "Pick Ban" ? "fg.muted"
