@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { VStack, StackSeparator, Separator, Box, Stack } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
 import { supabaseClient } from "../lib/supabaseClient";
@@ -11,6 +11,7 @@ import { ColumnarTourneyPlayersList } from "../components/tourney/PlayersList/Co
 import { Toaster } from "../components/ui/toaster";
 import ChartRulesList from "../components/rulesets/ChartRulesList";
 import { SidebarTourneyPlayersList } from "../components/tourney/PlayersList/SidebarTourneyPlayersList";
+import RoundsList from "../components/round/RoundsList/RoundsList";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 import { deleteRound, upsertRound } from "../helpers/state/rounds";
@@ -22,6 +23,8 @@ import type { Round } from "../types/Round";
 import type { RoundPool } from "../types/RoundPool";
 import type { ChartdrawConfig, ChartdrawConfigSpec, ChartdrawConfigWithSpecs } from "../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps, PickbanRulesetSteps } from "../types/Pickban";
+import type { PlayerRound } from "../types/PlayerRound";
+import { deletePlayerFromRound, upsertPlayerInRound } from "../helpers/state/playerRounds";
 
 function TourneyPage() {
   const { tourneyId } = useParams();
@@ -29,6 +32,8 @@ function TourneyPage() {
 
   const { tourney, setTourney } = useCurrentTourney();
   const [players, setPlayers] = useState<PlayerTourney[]>([]);
+  const tourneyPlayersRef = useRef<PlayerTourney[]>([]);
+  const [roundPlayers, setRoundPlayers] = useState<PlayerRound[]>([]);
   const [rounds, setRounds] = useState<Round[]>([]);
   const [roundPools, setRoundPools] = useState<RoundPool[]>([]);
   const [chartdrawConfigs, setChartdrawConfigs] = useState<ChartdrawConfigWithSpecs[]>([]);
@@ -43,6 +48,11 @@ function TourneyPage() {
   const { data: queriedTourneyPlayers, loading: loadingPlayers, error: errorPlayers } = getSupabaseTable<PlayerTourney>(
     'player_tourneys',
     { column: 'tourney_id', value: tourneyId }
+  );
+  const { data: queriedPlayersInRound } = getSupabaseTable<PlayerRound>(
+    "player_rounds",
+    { column: "player_tourneys.tourney_id", value: tourneyId }, // Filter via the joined table
+    "*, player_tourneys!inner(player_name, seed, tourney_id)"   // !inner makes it a hard filter
   );
   const { data: queriedRoundsInTourney } = getSupabaseTable<Round>(
     'rounds',
@@ -78,6 +88,20 @@ function TourneyPage() {
       setPlayers(sortedPlayers);
     }
   }, [queriedTourneyPlayers]);
+
+  useEffect(() => {
+    tourneyPlayersRef.current = players;
+  }, [players]);
+
+  useEffect(() => {
+    if (queriedPlayersInRound) {
+      const sortedPlayers = [...queriedPlayersInRound].sort(
+        (b, a) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setRoundPlayers(sortedPlayers);
+    }
+  }, [queriedPlayersInRound]);
 
   useEffect(() => {
     if (queriedRoundsInTourney) setRounds(queriedRoundsInTourney);
@@ -158,6 +182,22 @@ function TourneyPage() {
           const incoming = payload.new as PlayerTourney;
           if (String(incoming.tourney_id) !== String(tourneyId)) return;
           setPlayers(prev => upsertPlayerTourney(prev, incoming));
+        }
+      )
+      .subscribe();
+
+    const playerRoundsChannel = supabaseClient
+      .channel('player-rounds-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'player_rounds' },
+        (payload) => {
+          if (payload.eventType === 'DELETE') {
+            setRoundPlayers(prev => deletePlayerFromRound(prev, payload.old.id));
+            return;
+          }
+          const incoming = payload.new as PlayerRound;
+          setRoundPlayers(prev => upsertPlayerInRound(prev, incoming, tourneyPlayersRef.current ?? []));
         }
       )
       .subscribe();
@@ -282,6 +322,7 @@ function TourneyPage() {
       supabaseClient.removeChannel(roundsChannel);
       supabaseClient.removeChannel(roundPoolsChannel);
       supabaseClient.removeChannel(playerTourneyChannel);
+      supabaseClient.removeChannel(playerRoundsChannel);
       supabaseClient.removeChannel(chartdrawConfigChannel);
       supabaseClient.removeChannel(chartdrawConfigSpecsChannel);
       supabaseClient.removeChannel(pickbanRulesetChannel);
@@ -307,7 +348,7 @@ function TourneyPage() {
           error={errorTourney}
         />
         {tourney?.type === "Double Elimination" ? (
-          <Stack 
+          <Stack
             direction={{ base: "column", md: "row" }}
             alignItems={{ base: "stretch", md: "start" }}
             gap={4}
@@ -317,6 +358,13 @@ function TourneyPage() {
               setPlayers={setPlayers}
               loading={loadingPlayers}
               error={errorPlayers}
+            />
+            <RoundsList
+              chartdrawConfigs={chartdrawConfigs || []}
+              pickbanRulesets={pickbanRulesets || []}
+              roundPools={roundPools || []}
+              rounds={rounds}
+              playerRounds={roundPlayers}
             />
             <ChartRulesList
               chartdrawConfigs={chartdrawConfigs || []}
