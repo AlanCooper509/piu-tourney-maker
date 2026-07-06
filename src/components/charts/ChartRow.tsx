@@ -84,7 +84,7 @@ export function ChartRow({ chart, action }: ChartRowProps) {
           right={0}
           bottom={0}
           width={`${paddingOffset}px`}
-          bg={`${actionStyles.bg}/70`}
+          bg={`${actionStyles.bg}`}
           display="flex"
           alignItems="center"
           justifyContent="center"
