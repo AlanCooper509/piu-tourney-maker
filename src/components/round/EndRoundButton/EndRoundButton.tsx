@@ -51,9 +51,9 @@ export default function EndRoundButton({ tourneyId, tourneyType, round, setRound
   return (
     <IconButton
       px={2}
-      variant="outline"
+      variant="surface"
       borderWidth={2}
-      size="sm"
+      size="xl"
       colorPalette="orange"
       onClick={handleEndRoundClick}
       loading={isEnding}

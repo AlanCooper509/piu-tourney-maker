@@ -195,16 +195,17 @@ export default function TourneyHeaderText({
                         <HStack 
                           // Use your existing color logic here
                           color={
-                            item.value === currentSelectValue ? "fg"
-                            : item.status === "Not Started" ? "fg.muted"
+                            item.status === "Not Started" ? "fg.muted"
                             : item.status === "Pick Ban" ? "fg.muted"
+                            : item.status === "Ready" ? "fg.muted"
                             : item.status === "In Progress" ? "fg"
-                            : item.status === "Complete" ? "fg.muted"
+                            : item.status === "Complete" ? "green.600"
                             : ""
                           }
                         >
                           {item.parent && <Box w={4} />}
                           {!item.parent && item.poolName && <Box w={4} />}
+                          {item.status === "Ready" && <MdOutlinePlaylistAddCheck />}
                           {item.status === "Pick Ban" && <MdOutlinePlaylistAddCheck />}
                           {item.status === "In Progress" && <RiSwordLine />}
                           {item.status === "Complete" && <BiSolidMedal />}
