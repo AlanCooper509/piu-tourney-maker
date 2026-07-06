@@ -178,7 +178,7 @@ export function RoundDetails({
                     )}
                   </>
                 )}
-                {!loadingTourneyAdminStatus && isTourneyAdmin && tourneyType == "Double Elimination" && round?.status === "Pick Ban" && (
+                {!loadingTourneyAdminStatus && isTourneyAdmin && tourneyType == "Double Elimination" && round?.status !== "Not Started" && (
                   <>
                     {readyToStartPickBan && setChartdrawEntries && (
                       <StartPickBanDialog
