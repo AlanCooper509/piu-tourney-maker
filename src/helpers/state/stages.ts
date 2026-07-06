@@ -81,9 +81,9 @@ export function upsertStage(
     ...stages,
     {
       ...incoming,
-      scores: [],
-      chart_pools: [],
-      charts: null,
+      scores: incoming.scores ?? [],
+      chart_pools: incoming.chart_pools ?? [],
+      charts: incoming.charts ?? null,
     }
   ];
 }
