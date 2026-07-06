@@ -103,7 +103,7 @@ export default function RoundsList({
 
   return (
     <Box w="100%" px={4} py={2}>
-      <Stack gap={6}>
+      <Stack gap={2}>
         {rounds.map((round, index) => {
           const currentPool = roundPools?.find(p => p.id === round.round_pool_id);
           const prevRound = rounds[index - 1];
@@ -160,7 +160,7 @@ export default function RoundsList({
                 </Box>
               )}
 
-              <Box my={2}>
+              <Box>
                 {renderRoundCard(round)}
               </Box>
             </Box>
