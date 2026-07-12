@@ -65,6 +65,7 @@ export default function RoundsList({
               onClick={(e) => {
                 e.preventDefault();
                 navigate(roundUrl);
+                window.scrollTo({ top: 0, behavior: "instant" });
               }}
               href={roundUrl}
               color="fg"
@@ -73,7 +74,7 @@ export default function RoundsList({
               {round.name}
             </LinkOverlay>
           </Text>
-          
+
           {/* Integrated StatusElement wrapper */}
           <Box flexShrink={0}>
             <StatusElement element={round} shorten={true} />

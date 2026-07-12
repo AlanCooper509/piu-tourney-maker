@@ -102,7 +102,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
   const showAdminControls = !loadingTourneyAdminStatus && isTourneyAdmin;
 
   return (
-    <Box w="full" maxW="4xl" mx="auto" px={4} py={6}>
+    <Box w="full" maxW="4xl" mx="auto" px={4} pt={2} pb={6}>
       <Heading textAlign="center" mb={6}>Head-to-Head</Heading>
       <Flex
         position="relative"

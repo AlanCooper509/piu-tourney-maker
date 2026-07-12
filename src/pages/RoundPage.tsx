@@ -595,7 +595,7 @@ function RoundPage() {
         setChartdrawEntries={setChartdrawEntries}
       />
       {tourney?.type === 'Double Elimination' ? (
-        <VStack gap={4} mt={4}>
+        <VStack gap={4}>
           <PlayersH2H
             round={round}
             players={players}

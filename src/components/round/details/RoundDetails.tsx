@@ -1,16 +1,19 @@
-import { Box, HStack, Text, VStack } from "@chakra-ui/react";
+import { Box, HStack, Separator, Text, VStack } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
 import StartRoundButton from "../StartRoundButton";
 import SkipRoundButton from "../SkipRoundButton/SkipRoundButton";
 import EndRoundButton from "../EndRoundButton/EndRoundButton";
 import { StatusElement } from "../../StatusElement";
+import { NextRoundIndicator } from "./NextRoundIndicator";
 import LeaderboardLinkButton from "../LeaderboardLinkButton";
 import PlayersAdvancingElement from "./PlayersAdvancingElement";
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 import DeleteRoundButton from "./DeleteRoundButton";
 import EditRoundDetailsButton from "./EditRoundDetailsButton";
 import ScoringDetailsText from "./ScoringDetailsText";
+import DrawChartsButton from "../ChartDraw/DrawChartsButton";
+import StartPickBanDialog from "../PickBan/StartPickBanDialog";
 
 import type { Round } from "../../../types/Round";
 import type { PlayerRound } from "../../../types/PlayerRound";
@@ -19,8 +22,6 @@ import type { TourneyType } from "../../../types/Tourney";
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
 import type { ChartdrawEntryWithDetails } from "../../../types/ChartDrawEntry";
-import DrawChartsButton from "../ChartDraw/DrawChartsButton";
-import StartPickBanDialog from "../PickBan/StartPickBanDialog";
 
 interface RoundDetailsProps {
   round: Round | null;
@@ -127,35 +128,23 @@ export function RoundDetails({
                 />
               )}
 
+              <Separator mt={4}></Separator>
               {round && round.next_round_id && nextRound && (
-                <Text>
-                  {tourneyType === "Double Elimination" ? "Next Round (Winner)" : "Next Round"}:{" "}
-                  <Text
-                    as="span"
-                    color="cyan.solid"
-                    cursor="pointer"
-                    fontWeight="bold"
-                    onClick={() => navigate(`/tourney/${tourneyId}/round/${nextRound.id}`)}
-                  >
-                    {nextRound.name}
-                  </Text>
-                </Text>
+                <NextRoundIndicator
+                  label={tourneyType === "Double Elimination" ? "Next Round (Winner)" : "Next Round"}
+                  tourneyId={tourneyId}
+                  nextRound={nextRound}
+                />
               )}
 
               {round && round.lost_next_round_id && nextLoserRound && (
-                <Text>
-                  {tourneyType === "Double Elimination" ? "Next Round (Loser)" : "Next Round (Redemption)"}:{" "}
-                  <Text
-                    as="span"
-                    color="cyan.solid"
-                    cursor="pointer"
-                    fontWeight="bold"
-                    onClick={() => navigate(`/tourney/${tourneyId}/round/${nextLoserRound.id}`)}
-                  >
-                    {nextLoserRound.name}
-                  </Text>
-                </Text>
+                <NextRoundIndicator
+                  label={tourneyType === "Double Elimination" ? "Next Round (Loser)" : "Next Round (Redemption)"}
+                  tourneyId={tourneyId}
+                  nextRound={nextLoserRound}
+                />
               )}
+
               <HStack mt={2}>
                 {tourneyType !== "Double Elimination" && (
                   <LeaderboardLinkButton
