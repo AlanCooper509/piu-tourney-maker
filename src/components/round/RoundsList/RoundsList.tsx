@@ -81,23 +81,18 @@ export default function RoundsList({
           </Box>
         </HStack>
 
-        <Box mb={3}>
+        <Box>
           <Text fontSize="xs" fontWeight="semibold" color="fg.muted" textTransform="uppercase">
             Players ({currentRoundPlayers.length})
           </Text>
           {currentRoundPlayers.length === 0 ? (
             <Text fontSize="xs" color="fg.subtle" fontStyle="italic">No players assigned yet</Text>
           ) : (
-            <Text fontSize="xs" maxLines={1} color="fg.info">
+            <Text fontSize="xs" fontWeight="bold" maxLines={1}>
               {currentRoundPlayers.map((pr) => pr.player_tourneys?.player_name ?? "Unknown").join(", ")}
             </Text>
           )}
         </Box>
-
-        <Separator my={2} />
-        <Text fontSize="xs" color="fg.muted">
-          Advancing: <Text as="span" fontWeight="bold">{round.players_advancing}</Text>
-        </Text>
       </LinkBox>
     );
   };

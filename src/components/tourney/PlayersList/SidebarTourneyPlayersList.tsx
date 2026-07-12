@@ -67,8 +67,8 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
 
   return (
     <Box 
-      w={{ base: "100%", md: "320px" }} 
-      minW={{ md: "280px" }}
+      w={{ base: "100%", lg: "300px" }}
+      minW={{ md: "180px", lg: "260px" }}
       h="fit-content"
     >
       {/* Header Area remains outside as a section title */}

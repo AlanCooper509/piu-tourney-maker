@@ -38,7 +38,12 @@ export default function ChartRulesList({
   );
 
   return (
-    <Box w={{ base: "100%", md: "600px" }} h="fit-content">
+    <Box
+      minW={{ base: "100%", md: "30%" }}
+      maxW="450px"
+      flexShrink={0}
+      h="fit-content"
+    >
       <HStack
         mb={3}
         justifyContent="center"

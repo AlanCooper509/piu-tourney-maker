@@ -8,7 +8,8 @@ import {
   Span,
   Spinner,
   Portal,
-  createListCollection
+  createListCollection,
+  Stack
 } from "@chakra-ui/react";
 import { LuX } from "react-icons/lu";
 
@@ -131,7 +132,7 @@ export default function RoundPoolsList({
   return (
     <Box>
       {matchingPools.length > 0 ? (
-        <HStack gap={2} flexWrap="wrap" alignItems="center" width="100%">
+        <Stack gap={2} flexWrap="wrap" alignItems="start" width="100%">
           <Text fontSize="xs" fontWeight="medium" color="fg.muted" whiteSpace="nowrap">
             Applied to all Rounds in:
           </Text>
@@ -192,7 +193,7 @@ export default function RoundPoolsList({
               );
             })}
           </HStack>
-        </HStack>
+        </Stack>
       ) : (
         <Text fontSize="xs" color="fg.muted" fontStyle="italic">
           Not currently assigned to any Rounds.
