@@ -1,5 +1,4 @@
 import { Box, HStack, Separator, Text, VStack } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
 
 import StartRoundButton from "../StartRoundButton";
 import SkipRoundButton from "../SkipRoundButton/SkipRoundButton";
@@ -58,7 +57,6 @@ export function RoundDetails({
 
 }: RoundDetailsProps) {
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourneyId);
-  const navigate = useNavigate();
 
   const roundName = round?.name ?? "";
   const playersAdvancing = round?.players_advancing ?? -1;
