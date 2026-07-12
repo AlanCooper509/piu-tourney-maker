@@ -149,13 +149,19 @@ export default function ChosenStagesContainer({
             placeholder={isAdding ? "Score..." : ""}
             value={inputValues[inputKey] ?? ""}
             onChange={e => handleInputChange(stage.id, player.id, e.target.value)}
+            onBlur={() => handleScoreSubmit(stage.id, player, isAdding)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.currentTarget.blur();
+              }
+            }}
           />
+          {/* button is just "fluff" since above onBlur handles the actual submit */}
           <IconButton
             colorPalette={isAdding ? "green" : "blue"}
             variant="outline"
             size="xs"
             borderRadius="sm"
-            onClick={() => handleScoreSubmit(stage.id, player, isAdding)}
             title={isAdding ? "Add Score" : "Update Score"}
           >
             {isAdding ? <IoMdSend /> : <CiEdit />}
