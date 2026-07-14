@@ -10,6 +10,7 @@ import type { PickbanAction } from '../../types/Pickban'
 interface ChartRowProps {
   chart: Chart,
   action?: PickbanAction
+  darken?: boolean
 }
 
 function color(type: ChartType | null): string {
@@ -35,15 +36,18 @@ function getActionStyles(action: PickbanAction | undefined) {
 
 const paddingOffset = 65
 
-export function ChartRow({ chart, action }: ChartRowProps) {
+export function ChartRow({ chart, action, darken = true }: ChartRowProps) {
   const actionStyles = getActionStyles(action);
+  const gradient = darken 
+    ? "linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8))"
+    : "linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4))";
 
   return (
     <Card.Root 
       width="100%" 
       size="sm" 
       variant="elevated" 
-      bgImage={`linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), url('${chart.image_url}')`} 
+      bgImage={`${gradient}, url('${chart.image_url}')`} 
       bgPos="center" 
       bgSize="cover"
       position="relative"

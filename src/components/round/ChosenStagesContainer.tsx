@@ -286,7 +286,7 @@ export default function ChosenStagesContainer({
                       {/* Column 1: Chart Metadata */}
                       <Box minW={0} width="100%">
                         {currentChart ? (
-                          <ChartRow chart={currentChart} />
+                          <ChartRow chart={currentChart} darken={false} />
                         ) : (
                           <Text fontWeight="medium" fontSize="sm" color="fg.muted" fontStyle="italic" textAlign={{ base: "center", sm: "left" }}>
                             {`Unknown Chart (ID: ${stage.chart_id})`}

@@ -350,6 +350,8 @@ function TourneyPage() {
         {tourney?.type === "Double Elimination" ? (
           <Stack
             direction={{ base: "column", lg: "row" }}
+            alignItems={{ base: "center", lg: "start" }}
+            justifyContent="center"
             gap={4}
           >
             <SidebarTourneyPlayersList

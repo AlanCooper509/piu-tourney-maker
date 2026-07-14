@@ -1,5 +1,5 @@
 import { Box, Center, Heading, HStack, Text, VStack, Card } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 import AddPlayer from '../../players/AddPlayer';
 import EditablePlayerRow from '../EditablePlayerRow';
@@ -22,6 +22,26 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
   const [addingPlayer, setAddingPlayer] = useState(false);
   const [newName, setNewName] = useState("");
+  
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const checkScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    // Calculate if user has scrolled near the absolute bottom
+    const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 5;
+    setShowScrollIndicator(target.scrollHeight > target.clientHeight && !isAtBottom);
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (scrollContainerRef.current) {
+        const target = scrollContainerRef.current;
+        setShowScrollIndicator(target.scrollHeight > target.clientHeight);
+      }
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [players]);
 
   const onAddPlayer = async (name: string, seed: number | null) => {
     if (!tourney) return;    
@@ -67,11 +87,10 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
 
   return (
     <Box 
-      w={{ base: "100%", lg: "300px" }}
-      minW={{ md: "180px", lg: "260px" }}
+      w={{ base: "90%", lg: "300px" }}
+      minW={{ md: "180px", lg: "300px" }}
       h="fit-content"
     >
-      {/* Header Area remains outside as a section title */}
       <HStack mb={3} justifyContent="center" alignItems="center" px={1}>
         <Heading size="md">Players</Heading>
         {!loadingTourneyAdminStatus && isTourneyAdmin && (
@@ -89,11 +108,13 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
 
       {!loading && !error && sortedPlayers.length ? (
         <Card.Root variant="outline" size="sm">
-          <Card.Body p={1.5}>
+          <Card.Body p={1.5} position="relative" overflow="hidden">
             <VStack 
+              ref={scrollContainerRef}
+              onScroll={checkScroll}
               align="stretch" 
               gap={0}
-              maxH={{ base: "40vh", md: "none" }}
+              maxH={{ base: "25vh", md: "400px" }}
               overflowY="auto"
             >
               {sortedPlayers.map((p, index) => (
@@ -114,6 +135,28 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
                 </Box>
               ))}
             </VStack>
+
+            {showScrollIndicator && (
+              <Box
+                position="absolute"
+                bottom={0}
+                left={0}
+                right={0}
+                h="30px"
+                bgGradient="to-t"
+                gradientFrom="bg.panel"
+                gradientTo="transparent"
+                pointerEvents="none"
+                display="flex"
+                alignItems="flex-end"
+                justifyContent="center"
+                pb={1}
+              >
+                <Text fontSize="2xs" color="gray.500" fontWeight="bold" letterSpacing="widest">
+                  MORE PLAYERS
+                </Text>
+              </Box>
+            )}
           </Card.Body>
         </Card.Root>
       ) : (

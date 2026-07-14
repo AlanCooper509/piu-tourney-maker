@@ -119,7 +119,7 @@ export default function RoundsList({
                     direction={{ base: "column", sm: "row" }}
                     justifyContent={{ base: "center", sm: "space-between" }}
                     alignItems={{ base: "center", sm: "baseline" }}
-                    gap={{ base: 2, sm: 4 }}
+                    gap={{ base: 0, sm: 4 }}
                     width="100%"
                   >
                     <Heading
