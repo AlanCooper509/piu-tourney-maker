@@ -35,12 +35,11 @@ export default function ChartDrawContainer({ round, activeConfig, chartdrawEntri
         chartdrawConfig={activeConfig}
         borderWidth={0}
         badgePadding={1.5}
-        badgeVariant="outline"
-
+        badgeVariant="surface"
       />
       <ChartdrawSpecsDurationsList chartdrawConfig={activeConfig} />
     </VStack>
-  )
+  );
 
   return (
     <Box w={{ base: "100%", md: "700px" }} h="fit-content">
@@ -56,12 +55,11 @@ export default function ChartDrawContainer({ round, activeConfig, chartdrawEntri
                   Charts have not been drawn yet!
                 </Text>
               </>
-
             ) : (
               <VStack align="stretch" width="100%" mt={2} gap={1.5}>
                 {chartdrawSpecsRender}
                 <Separator mt={2} width="100%" />
-                {chartdrawEntries.sort((a, b) => a.draw_order - b.draw_order).map((entry) => (
+                {chartdrawEntries.map((entry) => (
                   <ChartDrawEntry
                     key={entry.id}
                     chartdrawEntry={entry}

@@ -12,6 +12,7 @@ import {
 import { LuChevronDown } from "react-icons/lu";
 
 import { InteractiveChartCard } from "./InteractiveChartCard";
+import { comparePlayableOrder, comparePoolOrder, sortChartdrawEntries } from "../../../helpers/sortChartdrawEntries";
 
 import type { ChartdrawEntryWithDetails } from "../../../types/ChartDrawEntry";
 import type { UIChartState } from "./PickBanDialogContent";
@@ -27,10 +28,6 @@ interface PickBanGridProps {
   onCardClick: (entryId: number) => Promise<void>;
 }
 
-const STATE_SORT_WEIGHTS: Record<UIChartState, number> = {
-  PICK: 1, AUTOPICK: 2, PROTECT: 3, available: 4, BAN: 5, IGNORE: 6,
-};
-
 export function PickBanGrid({
   chartdrawEntries,
   chartStates,
@@ -40,24 +37,6 @@ export function PickBanGrid({
   selectingId,
   onCardClick,
 }: PickBanGridProps) {
-
-  const comparePlayableOrder = (a: ChartdrawEntryWithDetails, b: ChartdrawEntryWithDetails) => {
-    if (a.group !== b.group) {
-      if (a.group === null || a.group === undefined) return -1;
-      if (b.group === null || b.group === undefined) return 1;
-      return a.group - b.group;
-    }
-    return (a.play_order ?? 0) - (b.play_order ?? 0);
-  };
-
-  const comparePoolOrder = (a: ChartdrawEntryWithDetails, b: ChartdrawEntryWithDetails) => {
-    if (a.group !== b.group) {
-      if (a.group === null || a.group === undefined) return -1;
-      if (b.group === null || b.group === undefined) return 1;
-      return a.group - b.group;
-    }
-    return a.draw_order - b.draw_order;
-  };
 
   const finalPickedEntries = useMemo(() => {
     return chartdrawEntries
@@ -73,23 +52,8 @@ export function PickBanGrid({
   }, [chartdrawEntries, chartStates, isDone]);
 
   const sortedDisplayEntries = useMemo(() => {
-    return [...chartdrawEntries].sort((a, b) => {
-      const stateA = chartStates[a.id] || "available";
-      const stateB = chartStates[b.id] || "available";
-
-      const isPickedA = stateA === "PICK" || stateA === "AUTOPICK";
-      const isPickedB = stateB === "PICK" || stateB === "AUTOPICK";
-
-      if (isPickedA && isPickedB) {
-        return comparePlayableOrder(a, b);
-      }
-
-      const diff = STATE_SORT_WEIGHTS[stateA] - STATE_SORT_WEIGHTS[stateB];
-      if (diff !== 0) return diff;
-
-      return comparePoolOrder(a, b);
-    });
-  }, [chartdrawEntries, chartStates]);
+    return sortChartdrawEntries(chartdrawEntries);
+  }, [chartdrawEntries]);
 
   if (isDone) {
     return (

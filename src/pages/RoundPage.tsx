@@ -16,6 +16,7 @@ import { deletePlayerFromRound, upsertPlayerInRound } from "../helpers/state/pla
 import { deletePlayerTourney, upsertPlayerTourney } from "../helpers/state/playerTourney";
 import { deleteRound, upsertRound } from "../helpers/state/rounds";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
+import { sortChartdrawEntries } from "../helpers/sortChartdrawEntries";
 import RulesetContainer from "../components/round/Ruleset/RulesetContainer";
 import ChartDrawContainer from "../components/round/ChartDraw/ChartDrawContainer";
 import ChosenStagesContainer from "../components/round/ChosenStagesContainer";
@@ -69,6 +70,9 @@ function RoundPage() {
     if (!activeRoundPool?.chartdraw_config_id) return null;
     return chartdrawConfigs.find(c => c.id === activeRoundPool.chartdraw_config_id) || null;
   }, [activeRoundPool, chartdrawConfigs]);
+  const sortedChartdrawEntries = useMemo(() => {
+    return sortChartdrawEntries(chartdrawEntries);
+  }, [chartdrawEntries]);
 
   // Supabase queries to fetch data on initial page load
   const { data: tourneys } = getSupabaseTable<Tourney>(
@@ -616,7 +620,7 @@ function RoundPage() {
               <ChartDrawContainer
                 round={round}
                 activeConfig={activeConfig}
-                chartdrawEntries={chartdrawEntries}
+                chartdrawEntries={sortedChartdrawEntries}
               />
               <RulesetContainer
                 activeConfig={activeConfig}
@@ -633,7 +637,6 @@ function RoundPage() {
           <Separator mt={"24px"} mb={"24px"} />
           <Container maxW="4xl">
             <Flex direction={["column", "column", "column", "row"]} gap={4}>
-              {/* Players List Code */}
               <Box
                 flex="1"
                 width={["100%", "100%", "100%", "50%"]}
@@ -650,8 +653,6 @@ function RoundPage() {
                   error={errorPlayersInRound || errorPlayersInTourney}
                 />
               </Box>
-
-              {/* Stages List Code */}
               <Box
                 flex="1"
                 width={["100%", "100%", "100%", "50%"]}
