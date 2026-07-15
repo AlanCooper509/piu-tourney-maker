@@ -1,4 +1,4 @@
-import { Card, Badge, HStack, Text, Box } from '@chakra-ui/react'
+import { Card, Badge, HStack, Text, Box, VStack } from '@chakra-ui/react'
 import { LuCheck } from "react-icons/lu";
 import { IoBan } from "react-icons/io5";
 import { MdShield } from "react-icons/md";
@@ -8,9 +8,10 @@ import type { ChartType } from '../../types/ChartType'
 import type { PickbanAction } from '../../types/Pickban'
 
 interface ChartRowProps {
-  chart: Chart,
-  action?: PickbanAction
-  darken?: boolean
+  chart: Chart;
+  subtext?: string;
+  action?: PickbanAction;
+  darken?: boolean;
 }
 
 function color(type: ChartType | null): string {
@@ -36,11 +37,11 @@ function getActionStyles(action: PickbanAction | undefined) {
 
 const paddingOffset = 65
 
-export function ChartRow({ chart, action, darken = true }: ChartRowProps) {
+export function ChartRow({ chart, subtext, action, darken = true }: ChartRowProps) {
   const actionStyles = getActionStyles(action);
   const gradient = darken 
     ? "linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8))"
-    : "linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4))";
+    : "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6))";
 
   return (
     <Card.Root 
@@ -55,7 +56,7 @@ export function ChartRow({ chart, action, darken = true }: ChartRowProps) {
     >
       <Card.Body>
         <HStack justifyContent="space-between" width="100%" pr={actionStyles ? `${paddingOffset - 20}px` : 0}>
-          <HStack flex="1" minW={0}>
+          <HStack flex="1" minW={0} align="center"> {/* Keep alignment centered relative to Badge */}
             <Badge
               colorPalette={color(chart.type)}
               variant="surface"
@@ -66,16 +67,30 @@ export function ChartRow({ chart, action, darken = true }: ChartRowProps) {
               {chart.level}
             </Badge>
 
-            <Text
-              fontSize="md"
-              fontWeight="bold"
-              color="white"
-              truncate
-              flex="1"
-              minW={0}
-            >
-              {chart.name_en}
-            </Text>
+            <VStack flex="1" minW={0} align="start" gap={0} justify="center">
+              <Text
+                fontSize="md"
+                fontWeight="bold"
+                color="white"
+                truncate
+                width="100%"
+              >
+                {chart.name_en}
+              </Text>
+              
+              {subtext && (
+                <Text
+                  fontSize="2xs"
+                  color="gray.400"
+                  fontStyle="italic"
+                  truncate
+                  width="100%"
+                  mt="-1px"
+                >
+                  {subtext}
+                </Text>
+              )}
+            </VStack>
           </HStack>
         </HStack>
       </Card.Body>

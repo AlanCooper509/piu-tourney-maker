@@ -11,25 +11,26 @@ import type { Stage } from "../../types/Stage";
 
 interface DeleteStageButtonProps {
   round: Round | null;
-  stageId: number;
+  stage: Stage;
   setStages: React.Dispatch<React.SetStateAction<Stage[]>>;
 }
 
-export default function DeleteStageButton({ round, stageId, setStages }: DeleteStageButtonProps) {
+export default function DeleteStageButton({ round, stage, setStages }: DeleteStageButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   async function onDeleteStage() {
     if (!round) return true;
+    if(!stage) return true;
     
     setIsDeleting(true);
     try {
-      await handleDeleteStage(stageId);
-      setStages((prev: Stage[]) => prev.filter(stage => stage.id !== stageId));
+      await handleDeleteStage(stage.id);
+      setStages((prev: Stage[]) => prev.filter(existingStage => existingStage.id !== stage.id));
       
       toaster.create({
         title: "Stage deleted",
-        description: `Stage ${stageId} was removed from the round.`,
+        description: `Stage ID: ${stage.id} (${stage.charts?.name_en}) was removed from the round.`,
         type: "success",
         closable: true,
       });

@@ -611,7 +611,9 @@ function RoundPage() {
           />
           {stages.length > 0 &&
             <ChosenStagesContainer
+              round={round}
               stages={stages}
+              setStages={setStages}
               players={players}
             />
           }

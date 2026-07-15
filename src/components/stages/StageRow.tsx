@@ -69,7 +69,7 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
                 {!loadingTourneyAdminStatus && isTourneyAdmin && (
                   <DeleteStageButton
                     round={round}
-                    stageId={stage.id}
+                    stage={stage}
                     setStages={setStages}
                   />                  
                 )}

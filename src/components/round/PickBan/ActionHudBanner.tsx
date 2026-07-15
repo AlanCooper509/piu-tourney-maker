@@ -1,4 +1,4 @@
-import { Box, HStack, VStack, Text, Badge } from "@chakra-ui/react";
+import { Box, HStack, VStack, Text, Badge, Stack } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import type { PickbanAction, PickbanRulesetSteps } from "../../../types/Pickban";
 import type { PlayerRound } from "../../../types/PlayerRound";
@@ -33,11 +33,11 @@ const lockInPulse = keyframes`
   }
 `;
 
-export function ActionHudBanner({ 
-  currentStepRule, 
-  pbStep, 
-  totalSteps, 
-  playerLeft, 
+export function ActionHudBanner({
+  currentStepRule,
+  pbStep,
+  totalSteps,
+  playerLeft,
   playerRight,
   resolvedName,
   isDone = false,
@@ -80,11 +80,11 @@ export function ActionHudBanner({
         }}
       >
         <VStack gap={0} width="100%" textAlign="center" py={1}>
-          <Text 
-            fontSize="2xs" 
-            fontWeight="bold" 
-            letterSpacing="2px" 
-            color="green.400" 
+          <Text
+            fontSize="2xs"
+            fontWeight="bold"
+            letterSpacing="2px"
+            color="green.400"
             textTransform="uppercase"
           >
             {isLockedIn ? "Stages Confirmed" : "Pick/Ban Complete"}
@@ -109,62 +109,139 @@ export function ActionHudBanner({
       bg={actionTheme.bg}
       borderColor={actionTheme.border}
       transition="border-color 0.2s ease, background-color 0.2s ease"
+      width="100%"
     >
-      <HStack width="100%" justify="space-between" align="center" gap={4}>
-        {/* Left Section */}
-        <Box flex="1" flexBasis={0} minW={0}>
+      <Stack
+        direction={{ base: "column", sm: "row" }}
+        width="100%"
+        justify="space-between"
+        align="center"
+        gap={4}
+      >
+
+        {/* 1. Left Section: Given a reliable fixed layout footprint */}
+        <VStack
+          display={{ base: "none", md: "inline" }}
+          width={{ base: "100%", sm: "90px" }}
+          flexShrink={0}
+          align={{ base: "center", sm: "flex-start" }}
+          gap={0}
+        >
           <Text fontSize="2xs" fontWeight="bold" letterSpacing="wider" color="fg.muted" textTransform="uppercase">
             Current Step
           </Text>
           <Badge colorPalette={actionTheme.palette} size="lg" mt={1} variant="solid">
             {activeAction}
           </Badge>
-        </Box>
+        </VStack>
 
-        {/* Center Section */}
+        {/* 2. Center Section: Stretches to fill space in row mode, stays centered in column mode */}
         <VStack
           gap={0}
           px={2}
-          flex="2"
+          flex="1"
+          width="100%"
           minW={0}
-          maxW={{ base: "100%", lg: "550px" }}
           mx="auto"
-          alignItems={isAutomation ? "center" : { base: "center", lg: isLeftPlayerTurn ? "flex-start" : "flex-end" }}
+          alignItems="center"
         >
-          <Text fontSize="2xs" fontWeight="bold" letterSpacing="2px" color="fg.muted" textTransform="uppercase" width="100%" textAlign="center">
-            {isAutomation ? "SYSTEM STEP" : "YOUR TURN"}
+          <Text fontSize="2xs" fontWeight="bold" letterSpacing="2px" color="fg.muted" textTransform="uppercase" width="100%" textAlign="center" mb={1}>
+            {isAutomation ? "SYSTEM STEP" : "CURRENT TURN"}
           </Text>
-          <Text
-            fontSize={{ base: "lg", sm: "xl", md: "3xl" }}
-            fontWeight="black"
-            lineHeight="normal"
-            pb="4px"
-            color="gray.200"
-            width="100%"
-            textAlign={isAutomation ? "center" : { base: "center", lg: isLeftPlayerTurn ? "left" : "right" }}
-            truncate
-          >
-            {resolvedName}
-          </Text>
+
+          <Box width="100%">
+            {isAutomation ? (
+              <Text
+                fontSize={{ base: "lg", sm: "xl", md: "2xl" }}
+                fontWeight="black"
+                color="gray.200"
+                textAlign="center"
+                lineHeight="shorter"
+                py={0.5}
+                truncate
+              >
+                {resolvedName}
+              </Text>
+            ) : (
+              <>
+                {/* Mobile View */}
+                <Text
+                  display={{ base: "block", sm: "none" }}
+                  fontSize={{ base: "lg", sm: "xl" }}
+                  fontWeight="black"
+                  color="white"
+                  textAlign="center"
+                  lineHeight="shorter"
+                  py={0.5}
+                  truncate
+                >
+                  {resolvedName}
+                </Text>
+
+                {/* Large Screen View */}
+                <HStack
+                  display={{ base: "none", sm: "flex" }}
+                  width="100%"
+                  justify="space-between"
+                  gap={4}
+                  align="center"
+                >
+                  <Text
+                    fontSize={{ base: "xl", xl: "2xl" }}
+                    fontWeight={isLeftPlayerTurn ? "black" : "medium"}
+                    color={isLeftPlayerTurn ? "white" : "gray.600"}
+                    opacity={isLeftPlayerTurn ? 1 : 0.5}
+                    textAlign="right"
+                    flex="1"
+                    lineHeight="shorter"
+                    py={0.5}
+                    truncate
+                    transition="all 0.2s ease"
+                  >
+                    {playerLeft?.player_tourneys?.player_name ?? "PLAYER 1"}
+                  </Text>
+
+                  <Text fontSize="xs" fontWeight="bold" color="gray.500" px={2} flexShrink={0}>
+                    VS
+                  </Text>
+
+                  <Text
+                    fontSize="xl"
+                    fontWeight={!isLeftPlayerTurn ? "black" : "medium"}
+                    color={!isLeftPlayerTurn ? "white" : "gray.600"}
+                    opacity={!isLeftPlayerTurn ? 1 : 0.5}
+                    textAlign="left"
+                    flex="1"
+                    lineHeight="shorter"
+                    py={0.5}
+                    truncate
+                    transition="all 0.2s ease"
+                  >
+                    {playerRight?.player_tourneys?.player_name ?? "PLAYER 2"}
+                  </Text>
+                </HStack>
+              </>
+            )}
+          </Box>
         </VStack>
 
-        {/* Right Section */}
+        {/* 3. Right Section: Stretches full width on mobile to center-align the steps */}
         <VStack
-          align="flex-end"
+          align={{ base: "center", sm: "flex-end" }}
           gap={0}
-          flex="1"
-          flexBasis={0}
-          minW={0}
-          textAlign="end"
+          width={{ base: "100%", sm: "90px" }}
+          flexShrink={0}
+          textAlign={{ base: "center", sm: "end" }}
         >
           <Text fontSize="2xs" fontWeight="bold" letterSpacing="wider" color="fg.muted" textTransform="uppercase">
             Step {pbStep + 1} of {totalSteps}
           </Text>
-          <Text fontSize="xs" fontWeight="bold">
+          <Text fontSize="xs" fontWeight="bold" truncate width="100%">
             {actionTheme.instruction}
           </Text>
         </VStack>
-      </HStack>
+
+      </Stack>
     </Box>
   );
 }

@@ -2,9 +2,10 @@ import { Text, HStack, IconButton, Input, Tag } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { IoMdSend } from 'react-icons/io';
 
+import { toaster } from '../ui/toaster';
 import { handleAddScoreToStage } from '../../handlers/handleAddScoreToStage';
 import { handleUpdateScoreOnStage } from '../../handlers/handleUpdateScoreOnStage';
-import { toaster } from '../ui/toaster';
+import { isValidScore1mil } from '../../helpers/isValidScore1mil';
 
 import type { Stage } from '../../types/Stage';
 import type { PlayerRound } from '../../types/PlayerRound';
@@ -13,10 +14,6 @@ interface EditablePlayerScoresProps {
   player: PlayerRound;
   stages: Stage[] | null;
   incrementStagesPlayed: () => void;
-}
-
-function isValidScore(score: number) {
-  return !Number.isNaN(score) && score >= 0 && score <= 1000000;
 }
 
 export default function EditablePlayerScores({ player, stages, incrementStagesPlayed }: EditablePlayerScoresProps) {
@@ -116,7 +113,7 @@ export default function EditablePlayerScores({ player, stages, incrementStagesPl
     if (!value) return;
 
     const score = Number(value);
-    if (!isValidScore(score)) {
+    if (!isValidScore1mil(score)) {
       toaster.create({
         title: 'Invalid score',
         description: `Invalid score submitted for ${player.player_tourneys.player_name}`,
@@ -134,7 +131,7 @@ export default function EditablePlayerScores({ player, stages, incrementStagesPl
     if (!value) return;
 
     const score = Number(value);
-    if (!isValidScore(score)) {
+    if (!isValidScore1mil(score)) {
       toaster.create({
         title: 'Invalid score',
         description: `Invalid score submitted for ${player.player_tourneys.player_name}`,

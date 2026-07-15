@@ -11,25 +11,34 @@ import { handleUpdateScoreOnStage } from "../../handlers/handleUpdateScoreOnStag
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 
+import type { Round } from "../../types/Round";
 import type { Stage } from "../../types/Stage";
 import type { PlayerRound } from "../../types/PlayerRound";
+import { isValidScore1mil } from "../../helpers/isValidScore1mil";
+import { LuLock, LuLockOpen } from "react-icons/lu";
+import DeleteStageButton from "../stages/DeleteStageButton";
 
 interface ChosenStagesContainerProps {
+  round: Round | null;
   stages: Stage[];
+  setStages: React.Dispatch<React.SetStateAction<Stage[]>>;
   players: PlayerRound[];
 }
 
-function isValidScore(score: number) {
-  return !Number.isNaN(score) && score >= 0 && score <= 1000000;
-}
-
 export default function ChosenStagesContainer({
+  round,
   stages,
+  setStages,
   players,
 }: ChosenStagesContainerProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
+  const [overrideLock, setOverrideLock] = useState<boolean>(false);
+
+  useEffect(() => {
+    setOverrideLock(round?.status !== "Complete");
+  }, [round?.id]);
 
   // sync form inputs when incoming data updates
   useEffect(() => {
@@ -66,7 +75,7 @@ export default function ChosenStagesContainer({
     if (!value) return;
 
     const score = Number(value);
-    if (!isValidScore(score)) {
+    if (!isValidScore1mil(score)) {
       toaster.create({
         title: "Invalid score",
         description: `Invalid score submitted for ${player.player_tourneys.player_name}`,
@@ -119,13 +128,14 @@ export default function ChosenStagesContainer({
     const oppScore = opponent ? stage.scores?.find(s => s.player_round_id === opponent.id)?.score : undefined;
 
     const isAdding = pScore == null;
+    const isRoundComplete = round?.status === "Complete";
     const showAdminControls = !loadingTourneyAdminStatus && isTourneyAdmin;
+    const isFieldDisabled = isRoundComplete && !overrideLock;
+
     const inputKey = `${stage.id}-${player.id}`;
 
     if (showAdminControls) {
       const semanticColor = getScoreColors(pScore, oppScore);
-
-      // Match the precise return strings from getScoreColors ("green.400" and "red.700")
       let inputBorderColor = "gray.600";
       if (semanticColor === "green.400") inputBorderColor = "green.400/50";
       if (semanticColor === "red.700") inputBorderColor = "red.700/60";
@@ -135,6 +145,7 @@ export default function ChosenStagesContainer({
           <Input
             size="xs"
             bg="gray.900"
+            disabled={isFieldDisabled}
             borderColor={inputBorderColor}
             _focus={{
               borderColor: semanticColor !== "fg.muted" && semanticColor !== "fg.default"
@@ -149,19 +160,19 @@ export default function ChosenStagesContainer({
             placeholder={isAdding ? "Score..." : ""}
             value={inputValues[inputKey] ?? ""}
             onChange={e => handleInputChange(stage.id, player.id, e.target.value)}
-            onBlur={() => handleScoreSubmit(stage.id, player, isAdding)}
+            onBlur={() => !isFieldDisabled && handleScoreSubmit(stage.id, player, isAdding)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === 'Enter' && !isFieldDisabled) {
                 e.currentTarget.blur();
               }
             }}
           />
-          {/* button is just "fluff" since above onBlur handles the actual submit */}
           <IconButton
             colorPalette={isAdding ? "green" : "blue"}
             variant="outline"
             size="xs"
             borderRadius="sm"
+            disabled={isFieldDisabled}
             title={isAdding ? "Add Score" : "Update Score"}
           >
             {isAdding ? <IoMdSend /> : <CiEdit />}
@@ -208,8 +219,36 @@ export default function ChosenStagesContainer({
   };
 
   return (
-    <Box w={{ base: "100%", md: "750px" }} h="fit-content">
-      <Heading mb={2}>Match Results</Heading>
+    <Box w={{ base: "90%", md: "750px" }} h="fit-content">
+      <HStack justify="space-between" align="center" mb={2}>
+        <Heading>Match Results</Heading>
+
+        {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Complete" && (
+          <HStack
+            gap={2}
+            bg={overrideLock ? "green.900/20" : "red.900/20"}
+            borderColor={overrideLock ? "green.700/30" : "red.700/30"}
+            borderWidth="1px"
+            borderRadius="md"
+            px={2}
+            py={1}
+          >
+            <Text fontSize="xs" color={overrideLock ? "green.500" : "red.500"} fontWeight="medium">
+              {overrideLock ? "Unlocked" : "Locked"}
+            </Text>
+            <IconButton
+              size="2xs"
+              variant={overrideLock ? "solid" : "surface"}
+              colorPalette={overrideLock ? "green" : "red"}
+              onClick={() => setOverrideLock(!overrideLock)}
+              aria-label={overrideLock ? "Lock Inputs" : "Unlock Inputs"}
+              title={overrideLock ? "Lock Score Inputs" : "Enable Score Amendments"}
+            >
+              {overrideLock ? <LuLockOpen size={12} /> : <LuLock size={12} />}
+            </IconButton>
+          </HStack>
+        )}
+      </HStack>
 
       <Card.Root variant="outline" size="sm">
         <Card.Body>
@@ -224,12 +263,11 @@ export default function ChosenStagesContainer({
               fontSize="xs"
               alignItems="center"
             >
-              <Text color="fg.muted" textAlign={{ base: "center", sm: "left" }}>Chart / Stage</Text>
+              <Text color="fg.muted" textAlign={{ base: "center", sm: "left" }} ps={!loadingTourneyAdminStatus && isTourneyAdmin ? 10 : 0}>
+                Chart / Stage
+              </Text>
 
-              {/* Group both player headers together on mobile, split into grid columns on desktop */}
               <HStack width="100%" display={{ base: "flex", sm: "contents" }} justify="space-between" gap={2}>
-
-                {/* Player 1 Header */}
                 <Box flex={1} minW={0} mt={{ base: 2, sm: 0 }}>
                   <HStack justify="center" gap={1} minW={0}>
                     {player1?.player_tourneys?.seed != null && (
@@ -244,7 +282,6 @@ export default function ChosenStagesContainer({
                   </HStack>
                 </Box>
 
-                {/* Player 2 Header */}
                 <Box flex={1} minW={0} mt={{ base: 2, sm: 0 }}>
                   <HStack justify="center" gap={1} minW={0}>
                     {player2?.player_tourneys?.seed != null && (
@@ -258,7 +295,6 @@ export default function ChosenStagesContainer({
                     </Text>
                   </HStack>
                 </Box>
-
               </HStack>
             </Grid>
 
@@ -271,6 +307,9 @@ export default function ChosenStagesContainer({
             ) : (
               sortedStages.map((stage) => {
                 const currentChart = stage.charts;
+                const showAdminControls = !loadingTourneyAdminStatus && isTourneyAdmin;
+                const isRoundComplete = round?.status === "Complete";
+                const isDeleteDisabled = isRoundComplete && !overrideLock;
 
                 return (
                   <React.Fragment key={stage.id}>
@@ -283,14 +322,33 @@ export default function ChosenStagesContainer({
                       borderBottom={{ base: "1px solid", sm: "none" }}
                       borderColor="border.muted/20"
                     >
-                      {/* Column 1: Chart Metadata */}
+                      {/* Column 1: Trash Icon + Chart Metadata Row Layout */}
                       <Box minW={0} width="100%">
-                        {currentChart ? (
-                          <ChartRow chart={currentChart} darken={false} />
+                        {showAdminControls && !isDeleteDisabled ? (
+                          <HStack gap={2} w="100%">
+                            <DeleteStageButton
+                              round={round}
+                              stage={stage}
+                              setStages={setStages}
+                            />
+                            <Box flex="1" minW={0}>
+                              {currentChart ? (
+                                <ChartRow chart={currentChart} darken={false} />
+                              ) : (
+                                <Text fontWeight="medium" fontSize="sm" color="fg.muted" fontStyle="italic" textAlign={{ base: "center", sm: "left" }}>
+                                  {`Unknown Chart (ID: ${stage.chart_id})`}
+                                </Text>
+                              )}
+                            </Box>
+                          </HStack>
                         ) : (
-                          <Text fontWeight="medium" fontSize="sm" color="fg.muted" fontStyle="italic" textAlign={{ base: "center", sm: "left" }}>
-                            {`Unknown Chart (ID: ${stage.chart_id})`}
-                          </Text>
+                          currentChart ? (
+                            <ChartRow chart={currentChart} darken={false} />
+                          ) : (
+                            <Text fontWeight="medium" fontSize="sm" color="fg.muted" fontStyle="italic" textAlign={{ base: "center", sm: "left" }}>
+                              {`Unknown Chart (ID: ${stage.chart_id})`}
+                            </Text>
+                          )
                         )}
                       </Box>
 

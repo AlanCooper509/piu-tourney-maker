@@ -31,12 +31,12 @@ const STATE_THEMES: Record<
   IGNORE: { bg: "black.400", border: "border", opacity: 0.5, label: "IGNORED", icon: null, palette: "gray" },
 };
 
-const HOVER_THEMES: Record<PickbanAction, { bg: string; border: string; actionLabel: string }> = {
-  BAN: { bg: "red.950", border: "red.600", actionLabel: "BANNING" },
-  PROTECT: { bg: "blue.950", border: "blue.600", actionLabel: "PROTECTING" },
-  PICK: { bg: "green.950", border: "green.600", actionLabel: "PICK THIS CHART" },
-  AUTOPICK: { bg: "teal.950", border: "teal.600", actionLabel: "AUTOPICKING" },
-  IGNORE: { bg: "bg.emphasized", border: "border", actionLabel: "SELECTING" },
+const HOVER_THEMES: Record<PickbanAction, { bg: string; border: string; actionLabel: string, actionColor: string }> = {
+  BAN: { bg: "red.950", border: "red.600", actionLabel: "BANNING", actionColor: "red.500" },
+  PROTECT: { bg: "blue.950", border: "blue.600", actionLabel: "PROTECTING", actionColor: "blue.500" },
+  PICK: { bg: "green.950", border: "green.600", actionLabel: "PICK THIS CHART", actionColor: "green.500" },
+  AUTOPICK: { bg: "teal.950", border: "teal.600", actionLabel: "AUTOPICKING", actionColor: "teal.500" },
+  IGNORE: { bg: "bg.emphasized", border: "red.600", actionLabel: "SELECTING", actionColor: "red.500" },
 };
 
 export function InteractiveChartCard({ entry, state, currentStepRule, resolvedActorName, isDone, isSelecting, onClick }: InteractiveChartCardProps) {
@@ -49,7 +49,7 @@ export function InteractiveChartCard({ entry, state, currentStepRule, resolvedAc
 
   return (
     <Box
-      p={3}
+      pb={1}
       borderWidth="2px"
       borderColor={theme.border}
       bg={theme.bg}
@@ -80,7 +80,7 @@ export function InteractiveChartCard({ entry, state, currentStepRule, resolvedAc
           left={0}
           right={0}
           bottom={0}
-          bg={isSelecting ? "rgba(0, 0, 0, 0.75)" : "rgba(0, 0, 0, 0.6)"}
+          bg={isSelecting ? "rgba(0, 0, 0, 0.25)" : "rgba(0, 0, 0, 0.70)"}
           display="flex"
           flexDirection="column"
           alignItems="center"
@@ -123,7 +123,7 @@ export function InteractiveChartCard({ entry, state, currentStepRule, resolvedAc
               <Text
                 fontSize="2xs"
                 fontWeight="bold"
-                color="gray.400"
+                color={hoverTheme.actionColor}
                 letterSpacing="wider"
                 textTransform="uppercase"
               >

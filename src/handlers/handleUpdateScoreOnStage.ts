@@ -32,12 +32,7 @@ export async function handleUpdateScoreOnStage(
   const roundId = stageData.round_id;
   const currentStatus = round?.status;
 
-  // 2. Safeguard: Prevent changes if the round is already complete
-  if (currentStatus === "Complete") {
-    throw new Error("Completed rounds cannot be modified.");
-  }
-
-  // 3. Update the existing score
+  // 2. Update the existing score
   const { data: scoreData, error: updateError } = await supabaseClient
     .from("scores")
     .update({ score: newScore })
@@ -54,7 +49,7 @@ export async function handleUpdateScoreOnStage(
     throw new Error(`${playerName} does not have a score on this stage yet.`);
   }
 
-  // 4. Update the round to "In Progress" if it isn't already there
+  // 3. Update the round to "In Progress" if it isn't already there
   if (currentStatus !== "In Progress") {
     const { error: roundUpdateError } = await supabaseClient
       .from("rounds")

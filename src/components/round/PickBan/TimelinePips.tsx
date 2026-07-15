@@ -77,11 +77,11 @@ export function TimelinePips({ sequence, pbStep }: TimelinePipsProps) {
             textAlign="center"
           >
             {/* Render the short version on small screens, full version on md and up */}
-            <Box as="span" display={{ base: "inline", lg: "none" }}>
+            <Box as="span" display={{ base: "inline", "2xl": "none" }}>
               {getActorName(step.actor, "short")}
             </Box>
-            <Box as="span" display={{ base: "none", lg: "inline" }}>
-              {getActorName(step.actor, "full")}
+            <Box as="span" display={{ base: "none", "2xl": "inline" }}>
+              {getActorName(step.actor, "first")}
             </Box>
           </Text>
           </Box>
