@@ -7,7 +7,8 @@ import {
   Text,
   Box,
   HStack,
-  Badge
+  Badge,
+  Flex
 } from "@chakra-ui/react";
 import { LuChevronDown } from "react-icons/lu";
 
@@ -60,31 +61,42 @@ export function PickBanGrid({
       <VStack width="100%" gap={6} p={4} align="stretch">
         {/* Picks Display */}
         <Center width="100%">
-          <Grid
-            templateColumns={{
-              base: "minmax(0, 1fr)",
-              sm: "repeat(2, minmax(0, 1fr))",
-              md: `repeat(${Math.min(finalPickedEntries.length, 3)}, minmax(0, 1fr))`,
-              lg: `repeat(${Math.min(finalPickedEntries.length, 4)}, minmax(0, 1fr))`,
-            }}
+          <Flex
+            wrap="wrap"
             gap={4}
-            justifyContent="center"
-            alignItems="center"
+            justify="center"
+            align="center"
             width="100%"
           >
             {finalPickedEntries.map((entry) => (
-              <InteractiveChartCard
+              <Flex
                 key={entry.id}
-                entry={entry}
-                state={chartStates[entry.id] || "available"}
-                currentStepRule={currentStepRule as PickbanRulesetSteps}
-                resolvedActorName={activeActorName}
-                isDone={isDone}
-                isSelecting={false}
-                onClick={() => { }}
-              />
+                flexBasis={{
+                  base: "calc(50% - 8px)",                                                // 2 columns (adjusting for gap)
+                  md: `calc(${100 / Math.min(finalPickedEntries.length, 3)}% - 12px)`,    // max 3 cols
+                  "2xl": `calc(${100 / Math.min(finalPickedEntries.length, 5)}% - 13px)`, // max 5 cols
+                }}
+                // tops items from growing awkwardly beyond their standard column sizes
+                maxW={{
+                  base: "calc(50% - 8px)",
+                  md: `calc(${100 / Math.min(finalPickedEntries.length, 3)}% - 12px)`,
+                  "2xl": `calc(${100 / Math.min(finalPickedEntries.length, 5)}% - 13px)`,
+                }}
+                flexGrow={0}
+                flexShrink={0}
+              >
+                <InteractiveChartCard
+                  entry={entry}
+                  state={chartStates[entry.id] || "available"}
+                  currentStepRule={currentStepRule as PickbanRulesetSteps}
+                  resolvedActorName={activeActorName}
+                  isDone={isDone}
+                  isSelecting={false}
+                  onClick={() => { }}
+                />
+              </Flex>
             ))}
-          </Grid>
+          </Flex>
         </Center>
 
         {finalBannedEntries.length > 0 && (
