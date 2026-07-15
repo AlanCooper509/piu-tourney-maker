@@ -3,21 +3,20 @@ import { useState } from "react";
 import { GrChapterNext } from "react-icons/gr";
 
 import { toaster } from "../../ui/toaster";
+import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import handleEndRound from "../../../handlers/round/transition/handleEndRound";
 
 import type { Round } from "../../../types/Round";
-import type { TourneyType } from "../../../types/Tourney";
 
 const toasterErrorTitleText = 'Failed to End Round';
 
 interface StartRoundButtonProps {
-  tourneyId: number;
-  tourneyType: TourneyType | null;
   round: Round | null;
   setRound: (round: Round | null) => void;
 }
 
-export default function EndRoundButton({ tourneyId, tourneyType, round, setRound }: StartRoundButtonProps) {
+export default function EndRoundButton({ round, setRound }: StartRoundButtonProps) {
+  const { tourney } = useCurrentTourney();
   const [isEnding, setIsEnding] = useState(false);
   const handleEndRoundClick = async () => {
     if (!round) return;
@@ -27,8 +26,9 @@ export default function EndRoundButton({ tourneyId, tourneyType, round, setRound
     }
 
     try {
+      if (!tourney) return;
       setIsEnding(true);
-      const { updatedRound } = await handleEndRound({ tourneyId, round, tourneyType });
+      const { updatedRound } = await handleEndRound({ tourneyId: tourney.id, tourneyType: tourney.type ?? null, round });
       setRound({ ...updatedRound[0] });
       toaster.create({
         title: "Round Ended",
