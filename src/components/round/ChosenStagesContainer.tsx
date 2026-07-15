@@ -218,12 +218,14 @@ export default function ChosenStagesContainer({
     );
   };
 
+  const showAdminLock = !loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Complete";
+
   return (
     <Box w={{ base: "90%", md: "750px" }} h="fit-content">
-      <HStack justify="space-between" align="center" mb={2}>
-        <Heading>Match Results</Heading>
+      <HStack justify={showAdminLock ? "space-between" : "center"} align="center" mb={2}>
+        <Heading textAlign={showAdminLock ? "left" : "center"} width={showAdminLock ? "auto" : "100%"}>Match Results</Heading>
 
-        {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Complete" && (
+        {showAdminLock && (
           <HStack
             gap={2}
             bg={overrideLock ? "green.900/20" : "red.900/20"}
