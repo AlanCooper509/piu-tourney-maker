@@ -10,12 +10,17 @@ import type { Round } from '../../../types/Round';
 import type { TourneyType } from '../../../types/Tourney';
 import type { PlayerRound } from '../../../types/PlayerRound';
 
+interface PlayerRankPair {
+  playerTourneyId: number;
+  sortOrder: number;
+}
+
 interface TransitionProps {
   tourneyId: number;
   round: Round;
   tourneyType: TourneyType | null;
-  advancingIds: number[];
-  nonAdvancingIds: number[];
+  advancingPlayers: PlayerRankPair[];
+  nonAdvancingPlayers: PlayerRankPair[];
 }
 
 function getRoundFromId(roundId: number, rounds: Round[]): Round | undefined {
@@ -37,29 +42,29 @@ export async function executeRoundTransition({
   tourneyId,
   round,
   tourneyType,
-  advancingIds,
-  nonAdvancingIds,
+  advancingPlayers,
+  nonAdvancingPlayers,
 }: TransitionProps) {
   // fetch rounds associated with tourney for progression mapping
   const rounds = await getRoundsInTourney(tourneyId);
 
   // winner(s) path
   const nextRoundId = round.next_round_id ?? null;
-  if (nextRoundId && advancingIds.length > 0) {
-    await handleAddPlayersToRound(advancingIds, nextRoundId);
+  if (nextRoundId && advancingPlayers.length > 0) {
+    await handleAddPlayersToRound(advancingPlayers, nextRoundId);
   }
 
   // (optional) redemption path
   const childRounds = determineChildRounds(round.id, rounds);
   const upcomingRedemptionRound = round.parent_round_id === null ? childRounds[0] ?? null : null;
-  if (upcomingRedemptionRound && nonAdvancingIds.length > 0) {
-    await handleAddPlayersToRound(nonAdvancingIds, upcomingRedemptionRound.id);
+  if (upcomingRedemptionRound && nonAdvancingPlayers.length > 0) {
+    await handleAddPlayersToRound(nonAdvancingPlayers, upcomingRedemptionRound.id);
   }
 
-  // (Optional) loser(s) path
+  // (optional) loser(s) path
   const upcomingLoserRoundId = round.lost_next_round_id;
-  if (upcomingLoserRoundId && nonAdvancingIds.length > 0) {
-    await handleAddPlayersToRound(nonAdvancingIds, upcomingLoserRoundId);
+  if (upcomingLoserRoundId && nonAdvancingPlayers.length > 0) {
+    await handleAddPlayersToRound(nonAdvancingPlayers, upcomingLoserRoundId);
   }
 
   // handle Double Elimination dynamic naming updates

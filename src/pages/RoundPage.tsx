@@ -609,14 +609,12 @@ function RoundPage() {
             loading={loadingPlayersInRound || loadingPlayersInTourney}
             error={errorPlayersInRound || errorPlayersInTourney}
           />
-          {stages.length > 0 &&
-            <ChosenStagesContainer
-              round={round}
-              stages={stages}
-              setStages={setStages}
-              players={players}
-            />
-          }
+          <ChosenStagesContainer
+            round={round}
+            stages={stages}
+            setStages={setStages}
+            players={players}
+          />
           {activeConfig && (
             <>
               <ChartDrawContainer

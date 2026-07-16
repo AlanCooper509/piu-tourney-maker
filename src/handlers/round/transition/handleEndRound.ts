@@ -33,15 +33,22 @@ export default async function handleEndRound({ tourneyId, round, tourneyType }: 
 
     const idMap = Object.fromEntries(players.map(p => [p.id, p.player_tourney_id]));
     
-    const selectedAdvancingIds = rankings.slice(0, cutoff).map(([pRoundId]) => idMap[pRoundId] ?? pRoundId);
-    const selectedLoserIds = rankings.slice(cutoff).map(([pRoundId]) => idMap[pRoundId] ?? pRoundId);
+    const advancingRankings = rankings.slice(0, cutoff).map(([pRoundId], index) => ({
+      playerTourneyId: idMap[pRoundId] ?? pRoundId,
+      sortOrder: index + 1 // 1-based indexing (Rank 1 = sort_order 1)
+    }));
+
+    const nonAdvancingRankings = rankings.slice(cutoff).map(([pRoundId], index) => ({
+      playerTourneyId: idMap[pRoundId] ?? pRoundId,
+      sortOrder: index + 1 // 1-based indexing (Rank 1 = sort_order 1)
+    }));
 
     return await executeRoundTransition({
       tourneyId,
       round,
       tourneyType,
-      advancingIds: selectedAdvancingIds,
-      nonAdvancingIds: selectedLoserIds
+      advancingPlayers: advancingRankings,
+      nonAdvancingPlayers: nonAdvancingRankings
     });
   } catch (error) {
     console.error('Failed to end round:', error);

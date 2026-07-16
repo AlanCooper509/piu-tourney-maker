@@ -1,10 +1,29 @@
 import { supabaseClient } from "../../lib/supabaseClient";
 
-export async function handleAddPlayersToRound(playerTourneysIds: number[], roundId: number) {
-  const entries = playerTourneysIds.map(id => ({
-    round_id: roundId,
-    player_tourney_id: id,
-  }));
+interface PlayerRankPair {
+  playerTourneyId: number;
+  sortOrder: number;
+}
+
+export async function handleAddPlayersToRound(
+  players: number[] | PlayerRankPair[], 
+  roundId: number
+) {
+  // Map incoming input to match the player_rounds schema structure
+  const entries = players.map(player => {
+    if (typeof player === 'number') {
+      return {
+        round_id: roundId,
+        player_tourney_id: player,
+        sort_order: null
+      };
+    }
+    return {
+      round_id: roundId,
+      player_tourney_id: player.playerTourneyId,
+      sort_order: player.sortOrder
+    };
+  });
 
   const { data, error } = await supabaseClient
     .from("player_rounds")
@@ -27,6 +46,7 @@ export async function handleAddPlayersMapToRounds(
       playerIds.map(playerId => ({
         round_id: Number(roundId),
         player_tourney_id: playerId,
+        sort_order: null
       }))
   );
 

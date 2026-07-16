@@ -7,7 +7,6 @@ import AddPlayer from '../players/AddPlayer'
 import { toaster } from '../ui/toaster'
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import { useCurrentTourney } from '../../context/CurrentTourneyContext'
-import calculatePlayerRankingsInRound from '../../helpers/calculatePlayerRankingsInRound'
 
 import type { PlayerRound } from '../../types/PlayerRound'
 import type { PlayerTourney } from '../../types/PlayerTourney'
@@ -23,13 +22,14 @@ interface PlayersListProps {
   loading: boolean
   error: Error | null
 }
+
 export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers, loading, error }: PlayersListProps) {
   const { tourney } = useCurrentTourney();
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
 
   const [addingPlayer, setAddingPlayer] = useState(false);
   const [newName, setNewName] = useState("");
-  
+
   const onAddPlayer = async (name: string) => {
     if (!round) return;
     try {
@@ -54,9 +54,17 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
     }
   };
 
-  if (round && round.status === "Complete" && players && stages) {
-    players = sortPlayers(players, stages, round);
-  }
+  // Sort players using the player_rounds.sort_order column (null/undefined values are placed at the end)
+  const sortedPlayers = useMemo(() => {
+    if (!players) return [];
+    return [...players].sort((a, b) => {
+      const aVal = a.sort_order;
+      const bVal = b.sort_order;
+      if (aVal === null || aVal === undefined) return 1;
+      if (bVal === null || bVal === undefined) return -1;
+      return bVal - aVal; // sorted greatest to least by default (use-case was for BITE9)
+    });
+  }, [players]);
 
   const collection = usePlayerCollection({ players, tourneyPlayers, searchTerm: newName });
 
@@ -79,15 +87,15 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
       {loading && <Text>Loading players...</Text>}
       {error && <Text color="red">Error: {error.message}</Text>}
       <VStack align={{ base: "center", md: "center", lg: "start" }} justify="center" gap={0}>
-        {!loading && !error && players?.length ? (
-          (players).map(p => p ? (
-              <DeletablePlayerRow
-                key={p.id}
-                player={p}
-                stages={stages}
-                removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
-              />
-            ): null)
+        {!loading && !error && sortedPlayers.length ? (
+          sortedPlayers.map(p => p ? (
+            <DeletablePlayerRow
+              key={p.id}
+              player={p}
+              stages={stages}
+              removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
+            />
+          ) : null)
         ) : (
           !loading && !error && (
             <Center w="100%" mt={2}>
@@ -98,17 +106,6 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
       </VStack>
     </Box>
   )
-}
-
-function sortPlayers(players: PlayerRound[], stages: Stage[], round: Round) {
-  const {rankings} = calculatePlayerRankingsInRound({ players, stages, round });
-  let sortedPlayers = [];
-  for (let i = 0; i < rankings.length; i++) {
-    const playerId = rankings[i][0];
-    const player = players?.find(p => p.id === playerId);
-    if (player) sortedPlayers.push(player);
-  }
-  return sortedPlayers;
 }
 
 interface UsePlayerCollectionProps {
@@ -136,8 +133,8 @@ function usePlayerCollection({ players, tourneyPlayers, searchTerm }: UsePlayerC
 
   // 3. Memoize the final collection (filtered by search term)
   const collection = useMemo(() => {
-    const filtered = !searchTerm 
-      ? playerOptions 
+    const filtered = !searchTerm
+      ? playerOptions
       : playerOptions.filter((item) => contains(item.label, searchTerm));
 
     return createListCollection({

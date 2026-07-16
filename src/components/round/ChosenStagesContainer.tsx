@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { FaSeedling } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 import { CiEdit } from "react-icons/ci";
+import { LuLock, LuLockOpen } from "react-icons/lu";
 
 import { toaster } from "../ui/toaster";
 import { ChartRow } from "../charts/ChartRow";
@@ -11,12 +12,14 @@ import { handleUpdateScoreOnStage } from "../../handlers/handleUpdateScoreOnStag
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import DeleteStageButton from "../stages/DeleteStageButton";
+import AddChartForm from "../charts/AddChartForm";
+import { isValidScore1mil } from "../../helpers/isValidScore1mil";
+import { handleAddStageToRound } from "../../handlers/round/handleAddStageToRound";
 
 import type { Round } from "../../types/Round";
 import type { Stage } from "../../types/Stage";
 import type { PlayerRound } from "../../types/PlayerRound";
-import { isValidScore1mil } from "../../helpers/isValidScore1mil";
-import { LuLock, LuLockOpen } from "react-icons/lu";
+import type { ChartQuery } from "../../types/ChartQuery";
 
 interface ChosenStagesContainerProps {
   round: Round | null;
@@ -68,6 +71,32 @@ export default function ChosenStagesContainer({
   const handleInputChange = (stageId: number, playerId: number, value: string) => {
     setInputValues(prev => ({ ...prev, [`${stageId}-${playerId}`]: value }));
   };
+
+  const onAddStageWithChart = async (
+    name: string,
+    level: number,
+    type: 'Single' | 'Double' | 'Co-Op' | 'UCS'
+  ) => {
+    try {
+      if (!round) throw new Error("No round selected to add a stage.");
+
+      const newStage = await handleAddStageToRound(round.id, { name, level, type });
+      setStages((prev) => [...prev, newStage]);
+
+      toaster.create({
+        title: "Stage Added",
+        description: `Successfully added ${name} [${type} ${level}] to the round.`,
+        type: "success",
+      });
+    } catch (err: any) {
+      toaster.create({
+        title: "Failed to Add Stage",
+        description: err.message || "An unexpected error occurred while adding the stage.",
+        type: "error",
+      });
+    }
+  };
+
 
   const handleScoreSubmit = async (stageId: number, player: PlayerRound, isAdding: boolean) => {
     const key = `${stageId}-${player.id}`;
@@ -174,6 +203,7 @@ export default function ChosenStagesContainer({
             borderRadius="sm"
             disabled={isFieldDisabled}
             title={isAdding ? "Add Score" : "Update Score"}
+            aria-label={isAdding ? "Add Score" : "Update Score"}
           >
             {isAdding ? <IoMdSend /> : <CiEdit />}
           </IconButton>
@@ -220,10 +250,12 @@ export default function ChosenStagesContainer({
 
   const showAdminLock = !loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Complete";
 
+  if (stages.length == 0 && !isTourneyAdmin) return null;
+
   return (
     <Box w={{ base: "90%", md: "750px" }} h="fit-content">
       <HStack justify={showAdminLock ? "space-between" : "center"} align="center" mb={2}>
-        <Heading textAlign={showAdminLock ? "left" : "center"} width={showAdminLock ? "auto" : "100%"}>Match Results</Heading>
+        <Heading size="md" textAlign={showAdminLock ? "left" : "center"} width={showAdminLock ? "auto" : "100%"}>Match Results</Heading>
 
         {showAdminLock && (
           <HStack
@@ -363,6 +395,29 @@ export default function ChosenStagesContainer({
                   </React.Fragment>
                 );
               })
+            )}
+
+            {!loadingTourneyAdminStatus && isTourneyAdmin && (
+              <>
+                {sortedStages.length > 0 && (
+                  <Separator size="md" borderColor="border.muted/20" my={4} />
+                )}
+
+                <Box w="full" px={2} py={2}>
+                  <Text fontSize="sm" mb={2} color="fg.muted">
+                    Add stages:
+                  </Text>
+                  <AddChartForm
+                    onSubmit={async (chartQuery: ChartQuery) => {
+                      await onAddStageWithChart(
+                        chartQuery.name,
+                        chartQuery.level,
+                        chartQuery.type
+                      );
+                    }}
+                  />
+                </Box>
+              </>
             )}
 
           </VStack>
