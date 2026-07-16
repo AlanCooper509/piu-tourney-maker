@@ -1,4 +1,4 @@
-import { Center, Text, IconButton, Box } from "@chakra-ui/react";
+import { Center, Text, IconButton, Box, Flex } from "@chakra-ui/react";
 import { Tooltip } from "../ui/tooltip";
 import { MdOutlinePersonRemoveAlt1 } from "react-icons/md";
 import "@fontsource/exo-2/400.css";
@@ -13,23 +13,62 @@ import type { PlayerRound } from "../../types/PlayerRound";
 interface PlayerRoundNameProps {
   playerRound: PlayerRound | null;
   color: string | null;
+  score?: string | number | null;
+  scoreSuffix?: string;
   onDelete?: () => void;
+  flipped?: boolean;
 }
 
-export function PlayerRoundName({ playerRound, color, onDelete }: PlayerRoundNameProps) {
+export function PlayerRoundName({
+  playerRound,
+  color,
+  score,
+  scoreSuffix,
+  onDelete,
+  flipped = false
+}: PlayerRoundNameProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
 
   const playerName = playerRound?.player_tourneys?.player_name;
   const skew = 20;
 
-  const containerBg = playerRound && color 
-    ? (color.includes("red") ? "red.950/20" : "blue.950/20") 
+  const containerBg = playerRound && color
+    ? (color.includes("red") ? "red.950/20" : "blue.950/20")
     : "bg.muted/20";
 
-  const containerBorder = playerRound && color 
-    ? (color.includes("red") ? "red.600/40" : "blue.600/40") 
+  const containerBorder = playerRound && color
+    ? (color.includes("red") ? "red.600/40" : "blue.600/40")
     : "border.muted";
+
+  const playerNameRender = playerRound && playerName ? (
+    <Tooltip content={playerName}>
+      <Text
+        fontFamily="'Exo 2', sans-serif"
+        fontWeight="black"
+        letterSpacing="wide"
+        fontSize={playerName.length > 16 ? "lg" : playerName.length > 12 ? "xl" : "2xl"}
+        color="white"
+        truncate
+        flex={1}
+      >
+        {playerName}
+      </Text>
+    </Tooltip>
+  ) : null;
+
+  const playerScoreRender = score !== undefined && score !== null ? (
+    <Text
+      fontFamily="'Exo 2', sans-serif"
+      fontWeight="black"
+      fontSize="md"
+      color={color?.includes("red") ? "red.300" : "blue.300"}
+      whiteSpace="nowrap"
+    >
+      {score}
+      {scoreSuffix ? ` ${scoreSuffix}` : ""}
+    </Text>
+  ) : null;
 
   return (
     <Center
@@ -49,26 +88,33 @@ export function PlayerRoundName({ playerRound, color, onDelete }: PlayerRoundNam
       _hover={playerRound ? {
         transform: `skewX(-${skew}deg) scale(1.03)`,
         borderColor: color || "border.strong",
-        boxShadow: color?.includes("red") 
-          ? "0 0 15px -3px var(--chakra-colors-red-500/30)" 
+        boxShadow: color?.includes("red")
+          ? "0 0 15px -3px var(--chakra-colors-red-500/30)"
           : "0 0 15px -3px var(--chakra-colors-blue-500/30)"
       } : {}}
     >
       {playerRound && playerName ? (
         <>
-          <Tooltip content={playerName}>
-            <Text 
-              fontFamily="'Exo 2', sans-serif"
-              fontWeight="bold"
-              letterSpacing="wide"
-              fontSize={playerName.length > 16 ? "xl" : playerName.length > 12 ? "2xl" : "3xl"}
-              color="white"
-              truncate
-              transform={`skewX(${skew}deg)`}
-            >
-              {playerName}
-            </Text>
-          </Tooltip>
+          {/* Main Content Layout */}
+          <Flex
+            align="center"
+            justify="space-between"
+            w="full"
+            gap={3}
+            transform={`skewX(${skew}deg)`}
+          >
+            {flipped ? (
+              <>
+                {playerScoreRender}
+                {playerNameRender}
+              </>
+            ) : (
+              <>
+                {playerNameRender}
+                {playerScoreRender}
+              </>
+            )}
+          </Flex>
 
           {/* Admin Control: delete action */}
           {!loadingTourneyAdminStatus && isTourneyAdmin && onDelete && (
@@ -102,9 +148,9 @@ export function PlayerRoundName({ playerRound, color, onDelete }: PlayerRoundNam
           )}
         </>
       ) : (
-        <Text 
-          fontWeight="bold" 
-          letterSpacing="wider" 
+        <Text
+          fontWeight="bold"
+          letterSpacing="wider"
           fontSize="2xl"
           fontStyle="italic"
           color="fg.muted/40"

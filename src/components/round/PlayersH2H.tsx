@@ -32,7 +32,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
 
   const [addingPlayer, setAddingPlayer] = useState(false);
   const [newName, setNewName] = useState("");
-  
+
   // Controlled modal hooks
   const [deletingPlayer, setDeletingPlayer] = useState<PlayerRound | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -86,6 +86,77 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
     }
   };
 
+  const isPointsBased = Boolean(round?.points_per_stage);
+
+  const scoringData = useMemo(() => {
+    const totalsMap: Record<number, number> = {};
+    const hasScoresMap: Record<number, boolean> = {};
+
+    if (!players || !stages) {
+      return { totalsMap, hasScoresMap };
+    }
+
+    // Initialize maps for all active players
+    players.forEach(player => {
+      totalsMap[player.id] = 0;
+      hasScoresMap[player.id] = false;
+    });
+
+    const pointsScale = round?.points_per_stage
+      ? round.points_per_stage.split(",").map(str => Number(str.trim()))
+      : [];
+
+    stages.forEach((stage) => {
+      // Gather scores specifically for our active players
+      const stageScores = players
+        .map(p => {
+          const matchedScore = stage.scores?.find(s => s.player_round_id === p.id);
+          return {
+            playerId: p.id,
+            score: matchedScore && matchedScore.score !== undefined && matchedScore.score !== null
+              ? Number(matchedScore.score)
+              : null
+          };
+        });
+
+      // Check if ANY of our active players are missing a score for this stage
+      const isStageIncomplete = stageScores.some(item => item.score === null);
+
+      // If a player hasn't played this stage yet, skip calculating points for it completely
+      if (isStageIncomplete) {
+        return;
+      }
+
+      // Keep track of which players have finalized scores counted toward their total
+      stageScores.forEach(item => {
+        hasScoresMap[item.playerId] = true;
+      });
+
+      if (isPointsBased && pointsScale.length > 0) {
+        // --- POINTS-BASED LOCAL METRIC (Rank Highest to Lowest) ---
+        const validScores = stageScores as { playerId: number; score: number }[];
+
+        // Sort highest score to lowest
+        validScores.sort((a, b) => b.score - a.score);
+        validScores.forEach((item) => {
+          // Find position for dense ranking (handling ties)
+          const tieIndex = validScores.findIndex(x => x.score === item.score);
+          const pointsAwarded = pointsScale[tieIndex] ?? 0;
+          totalsMap[item.playerId] += pointsAwarded;
+        });
+      } else {
+        // --- CUMULATIVE LOCAL METRIC ---
+        stageScores.forEach(item => {
+          if (item.score !== null) {
+            totalsMap[item.playerId] += item.score;
+          }
+        });
+      }
+    });
+
+    return { totalsMap, hasScoresMap };
+  }, [players, stages, round, isPointsBased]);
+
   let managedPlayers = players ?? [];
   if (round && round.status === "Complete" && players && stages) {
     managedPlayers = sortPlayers(players, stages, round);
@@ -121,32 +192,31 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
           alignItems="center"
           justifyContent={{ base: "flex-start", md: "flex-end" }}
         >
-          {showAdminControls ? (
-            player1 ? (
-              <PlayerRoundName 
-                playerRound={player1} 
-                color="red.solid" 
-                onDelete={() => {
-                  setDeletingPlayer(player1);
-                  setIsDeleteOpen(true);
-                }}
+          {player1 ? (
+            <PlayerRoundName
+              playerRound={player1}
+              color="red.solid"
+              score={scoringData.hasScoresMap[player1.id] ? scoringData.totalsMap[player1.id].toLocaleString() : "-"}
+              scoreSuffix={isPointsBased && scoringData.hasScoresMap[player1.id] ? "pts" : undefined}
+              flipped={true}
+              onDelete={showAdminControls ? () => {
+                setDeletingPlayer(player1);
+                setIsDeleteOpen(true);
+              } : undefined}
+            />
+          ) : showAdminControls ? (
+            <Box maxW="xs" w="full">
+              <AddPlayer
+                onAdd={onAddPlayer}
+                newName={newName}
+                setNewName={setNewName}
+                loading={addingPlayer}
+                collection={collection}
+                hideSeed={true}
+                text="Add Player"
               />
-            ) : (
-              <Box maxW="xs" w="full">
-                <AddPlayer
-                  onAdd={onAddPlayer}
-                  newName={newName}
-                  setNewName={setNewName}
-                  loading={addingPlayer}
-                  collection={collection}
-                  hideSeed={true}
-                  text={"Add Player"}
-                />
-              </Box>
-            )
-          ) : (
-            <PlayerRoundName playerRound={player1} color="red.solid" />
-          )}
+            </Box>
+          ) : null}
         </Box>
 
         {/* Middle vs Divider */}
@@ -188,32 +258,31 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
           alignItems="center"
           justifyContent={{ base: "flex-end", md: "flex-start" }}
         >
-          {showAdminControls ? (
-            player2 ? (
-              <PlayerRoundName 
-                playerRound={player2} 
-                color="blue.solid" 
-                onDelete={() => {
-                  setDeletingPlayer(player2);
-                  setIsDeleteOpen(true);
-                }}
+          {player2 ? (
+            <PlayerRoundName
+              playerRound={player2}
+              color="blue.solid"
+              score={scoringData.hasScoresMap[player2.id] ? scoringData.totalsMap[player2.id].toLocaleString() : "-"}
+              scoreSuffix={isPointsBased && scoringData.hasScoresMap[player2.id] ? "pts" : undefined}
+              flipped={false}
+              onDelete={showAdminControls ? () => {
+                setDeletingPlayer(player2);
+                setIsDeleteOpen(true);
+              } : undefined}
+            />
+          ) : (showAdminControls && managedPlayers.length < 2) ? (
+            <Box maxW="xs" w="full">
+              <AddPlayer
+                onAdd={onAddPlayer}
+                newName={newName}
+                setNewName={setNewName}
+                loading={addingPlayer}
+                collection={collection}
+                hideSeed={true}
+                text="Add Player"
               />
-            ) : managedPlayers.length < 2 ? (
-              <Box maxW="xs" w="full">
-                <AddPlayer
-                  onAdd={onAddPlayer}
-                  newName={newName}
-                  setNewName={setNewName}
-                  loading={addingPlayer}
-                  collection={collection}
-                  hideSeed={true}
-                  text={"Add Player"}
-                />
-              </Box>
-            ) : null
-          ) : (
-            <PlayerRoundName playerRound={player2} color="blue.solid" />
-          )}
+            </Box>
+          ) : null}
         </Box>
       </Flex>
 
