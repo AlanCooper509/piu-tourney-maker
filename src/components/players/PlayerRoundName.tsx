@@ -14,7 +14,6 @@ interface PlayerRoundNameProps {
   playerRound: PlayerRound | null;
   color: string | null;
   score?: string | number | null;
-  scoreSuffix?: string;
   onDelete?: () => void;
   flipped?: boolean;
 }
@@ -23,7 +22,6 @@ export function PlayerRoundName({
   playerRound,
   color,
   score,
-  scoreSuffix,
   onDelete,
   flipped = false
 }: PlayerRoundNameProps) {
@@ -60,13 +58,12 @@ export function PlayerRoundName({
   const playerScoreRender = score !== undefined && score !== null ? (
     <Text
       fontFamily="'Exo 2', sans-serif"
-      fontWeight="black"
+      fontWeight="extrabold"
       fontSize="md"
       color={color?.includes("red") ? "red.300" : "blue.300"}
       whiteSpace="nowrap"
     >
-      {score}
-      {scoreSuffix ? ` ${scoreSuffix}` : ""}
+      ({score})
     </Text>
   ) : null;
 

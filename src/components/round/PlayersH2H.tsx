@@ -197,7 +197,6 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
               playerRound={player1}
               color="red.solid"
               score={scoringData.hasScoresMap[player1.id] ? scoringData.totalsMap[player1.id].toLocaleString() : "-"}
-              scoreSuffix={isPointsBased && scoringData.hasScoresMap[player1.id] ? "pts" : undefined}
               flipped={true}
               onDelete={showAdminControls ? () => {
                 setDeletingPlayer(player1);
@@ -263,7 +262,6 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
               playerRound={player2}
               color="blue.solid"
               score={scoringData.hasScoresMap[player2.id] ? scoringData.totalsMap[player2.id].toLocaleString() : "-"}
-              scoreSuffix={isPointsBased && scoringData.hasScoresMap[player2.id] ? "pts" : undefined}
               flipped={false}
               onDelete={showAdminControls ? () => {
                 setDeletingPlayer(player2);
