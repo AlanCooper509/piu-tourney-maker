@@ -10,13 +10,13 @@ import { handleAddScoreToStage } from "../../handlers/handleAddScoreToStage";
 import { handleUpdateScoreOnStage } from "../../handlers/handleUpdateScoreOnStage";
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
+import DeleteStageButton from "../stages/DeleteStageButton";
 
 import type { Round } from "../../types/Round";
 import type { Stage } from "../../types/Stage";
 import type { PlayerRound } from "../../types/PlayerRound";
 import { isValidScore1mil } from "../../helpers/isValidScore1mil";
 import { LuLock, LuLockOpen } from "react-icons/lu";
-import DeleteStageButton from "../stages/DeleteStageButton";
 
 interface ChosenStagesContainerProps {
   round: Round | null;
@@ -40,7 +40,7 @@ export default function ChosenStagesContainer({
     setOverrideLock(round?.status !== "Complete");
   }, [round?.id]);
 
-  // sync form inputs when incoming data updates
+  // Sync form inputs when incoming data updates
   useEffect(() => {
     const initialValues: Record<string, string> = {};
     stages.forEach(stage => {
@@ -195,12 +195,12 @@ export default function ChosenStagesContainer({
           borderStyle="solid"
           borderColor={
             pScore != null && oppScore != null
-              ? pScore > oppScore ? "green.500/30" : "red.500/30"
+              ? pScore >= oppScore ? "green.500/30" : "red.500/30"
               : "border.muted/40"
           }
           bg={
             pScore != null && oppScore != null
-              ? pScore > oppScore ? "green.800/10" : "red.800/10"
+              ? pScore >= oppScore ? "green.800/10" : "red.800/10"
               : "transparent"
           }
         >

@@ -7,7 +7,6 @@ import AddPlayer from '../players/AddPlayer'
 import { toaster } from '../ui/toaster'
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext"
 import { useCurrentTourney } from '../../context/CurrentTourneyContext'
-import calculatePlayerRankingsInRound from '../../helpers/calculatePlayerRankingsInRound'
 import DialogForm from '../../components/ui/DialogForm'
 import { PlayerRoundName } from '../players/PlayerRoundName'
 
@@ -157,15 +156,10 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
     return { totalsMap, hasScoresMap };
   }, [players, stages, round, isPointsBased]);
 
-  let managedPlayers = players ?? [];
-  if (round && round.status === "Complete" && players && stages) {
-    managedPlayers = sortPlayers(players, stages, round);
-  }
+  const collection = usePlayerCollection({ players: players, tourneyPlayers, searchTerm: newName });
 
-  const collection = usePlayerCollection({ players: managedPlayers, tourneyPlayers, searchTerm: newName });
-
-  const player1 = managedPlayers[0] || null;
-  const player2 = managedPlayers[1] || null;
+  const player1 = players?.[0] || null;
+  const player2 = players?.[1] || null;
 
   if (loading) return <Text textAlign="center">Loading players...</Text>;
   if (error) return <Text color="red" textAlign="center">Error: {error.message}</Text>;
@@ -268,7 +262,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
                 setIsDeleteOpen(true);
               } : undefined}
             />
-          ) : (showAdminControls && managedPlayers.length < 2) ? (
+          ) : (showAdminControls && (!players || players.length < 2)) ? (
             <Box maxW="xs" w="full">
               <AddPlayer
                 onAdd={onAddPlayer}
@@ -310,17 +304,6 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
       />
     </Box>
   )
-}
-
-function sortPlayers(players: PlayerRound[], stages: Stage[], round: Round) {
-  const { rankings } = calculatePlayerRankingsInRound({ players, stages, round });
-  let sortedPlayers = [];
-  for (let i = 0; i < rankings.length; i++) {
-    const playerId = rankings[i][0];
-    const player = players?.find(p => p.id === playerId);
-    if (player) sortedPlayers.push(player);
-  }
-  return sortedPlayers;
 }
 
 interface UsePlayerCollectionProps {
