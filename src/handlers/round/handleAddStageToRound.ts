@@ -25,12 +25,12 @@ export async function handleAddStageToRound(
     if (chartError) {
       throw new Error(`Database error finding chart: ${chartError.message}`);
     }
-    if (!chartData) {
+    if (!chartData || !chartData.length) {
       throw new Error(
         `The chart "${chartParams.name}" [${chartParams.type} ${chartParams.level}] was not found in the database.`
       );
     }
-    chartId = chartData.id;
+    chartId = chartData[0].id;
   }
 
 
