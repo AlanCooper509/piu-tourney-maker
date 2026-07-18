@@ -20,7 +20,7 @@ export async function handleAddStageToRound(
       .eq("name_en", chartParams.name)
       .eq("level", chartParams.level)
       .eq("type", chartParams.type)
-      .maybeSingle();
+      .limit(1); // TODO: temp fix for BITE9 (after adding PHX2 charts, >1 rows returned, just take the first to prevent exception)
 
     if (chartError) {
       throw new Error(`Database error finding chart: ${chartError.message}`);
