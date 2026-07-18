@@ -33,7 +33,8 @@ export async function handleDrawChartsFromConfig(
       .select("id")
       .eq("type", spec.chart_type)
       .gte("level", spec.level_min)
-      .lte("level", spec.level_max);
+      .lte("level", spec.level_max)
+      .is("game_id", null); // TODO: hotfix for BITE9 Pros
 
     // 3. Apply the null-safe duration filter
     if (allowedDurations.length > 0) {
