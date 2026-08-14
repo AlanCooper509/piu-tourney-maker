@@ -1,13 +1,21 @@
 import { supabaseClient } from "../lib/supabaseClient";
 import type { TourneyType } from "../types/Tourney";
 
-export default async function handleAddNewTourney(name: string, startDate: string, endDate: string, eventId: number, tourneyFormat: string[]) {
+export default async function handleAddNewTourney(
+  name: string, 
+  gameId: number, 
+  startDate: string, 
+  endDate: string, 
+  eventId: number, 
+  tourneyFormat: string[]
+) {
   // 1. Insert new tourney
   const { data, error } = await supabaseClient
     .from("tourneys")
     .insert([
       {
         name,
+        game_id: gameId,
         start_date: startDate,
         end_date: endDate,
         event_id: eventId,
@@ -48,6 +56,6 @@ export default async function handleAddNewTourney(name: string, startDate: strin
     throw adminError;
   }
 
-  // 4. return the tourney to append to tourney listing
+  // 4. Return the tourney to append to tourney listing
   return data;
 }

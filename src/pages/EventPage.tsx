@@ -11,6 +11,7 @@ import TourneyCard from "../components/ui/TourneyCard";
 import { SpotlightEventItem } from "../components/home/SpotlightEventItem";
 import CreateTourneyButton from "../components/event/CreateTourneyButton/CreateTourneyButton";
 import { useIsAdminForEvent } from "../context/admin/AdminEventContext";
+import type { Game } from "../types/Game";
 
 function EventPage() {
   const { eventId } = useParams();
@@ -28,6 +29,10 @@ function EventPage() {
     loading: tourneysLoading,
     error: tourneysError,
   } = getSupabaseTable<Tourney>("tourneys", { column: "event_id", value: eventId });
+
+  const {
+    data: queriedGameData
+  } = getSupabaseTable<Game>("games");
 
   useEffect(() => {
     if (tourneysData) {
@@ -74,8 +79,8 @@ function EventPage() {
           {!loadingEventAdminStatus && isEventAdmin && (
             <CreateTourneyButton 
               eventId={event.id}
-              tourneys={tourneys}
               setTourneys={setTourneys}
+              gameData={queriedGameData ? queriedGameData : null}
             />
           )}
         </Flex>

@@ -4,19 +4,34 @@ import handleAddNewTourney from '../../../handlers/handleAddNewTourney';
 
 interface OnSubmitHandlerProps {
   tourneyName: string;
+  gameId: number | null;
   startDate: Date | null;
   endDate: Date | null;
   eventId: number;
   tourneyFormat: string[];
   resetForm: () => void;
-  tourneys: Tourney[];
   setTourneys: React.Dispatch<React.SetStateAction<Tourney[]>>;
   addTourneyAdminId: (id: number) => void;
 }
 
-export default async function onSubmitHandler({ tourneyName, startDate, endDate, eventId, tourneyFormat, resetForm, tourneys, setTourneys, addTourneyAdminId }: OnSubmitHandlerProps): Promise<boolean> {
+export default async function onSubmitHandler({ 
+  tourneyName, 
+  gameId,
+  startDate, 
+  endDate, 
+  eventId, 
+  tourneyFormat, 
+  resetForm, 
+  setTourneys, 
+  addTourneyAdminId 
+}: OnSubmitHandlerProps): Promise<boolean> {
   if (!isValidTourneyName(tourneyName)) {
     sendToast("Error", "Enter a tourney name!", "error");
+    return false; // Prevent form submission
+  }
+
+  if (!isValidGameId(gameId)) {
+    sendToast("Error", "Select a game!", "error");
     return false; // Prevent form submission
   }
 
@@ -43,7 +58,14 @@ export default async function onSubmitHandler({ tourneyName, startDate, endDate,
   // All validations passed, attempt to create the tourney on supabase
   let data = null;
   try {
-    const response = await handleAddNewTourney(tourneyName.trim(), startDate.toISOString(), endDate.toISOString(), eventId, tourneyFormat);
+    const response = await handleAddNewTourney(
+      tourneyName.trim(), 
+      gameId, 
+      startDate.toISOString(), 
+      endDate.toISOString(), 
+      eventId, 
+      tourneyFormat
+    );
     if (!response) {
       sendToast("Error", "Failed to create tourney: No data returned", "error");
       return false; // Prevent form submission
@@ -65,8 +87,6 @@ export default async function onSubmitHandler({ tourneyName, startDate, endDate,
   resetForm();
 
   // Update the tourneys state with the new tourney
-  const tourneys_data = [...tourneys, data];
-  tourneys_data?.sort((a, b) => a.start_date.localeCompare(b.start_date));
   setTourneys(prev => {
     const updated = [...prev, data].sort((a, b) =>
       a.start_date.localeCompare(b.start_date)
@@ -90,6 +110,10 @@ function sendToast(title: string, description: string, type: "error" | "success"
 
 function isValidTourneyName(name: string): boolean {
   return name.trim().length > 0;
+}
+
+function isValidGameId(gameId: number | null): gameId is number {
+  return gameId !== null && !isNaN(gameId);
 }
 
 function isValidDates(start: Date, end: Date): boolean {

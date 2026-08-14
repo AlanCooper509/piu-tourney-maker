@@ -1,6 +1,5 @@
 import { Field, IconButton, Text, Input, VStack, Select, createListCollection } from "@chakra-ui/react";
 import { IoAddCircleSharp } from "react-icons/io5";
-import { tourneyTypes, type Tourney } from "../../../types/Tourney";
 
 import onSubmitHandler from "./onSubmitHandler";
 import DialogForm from "../../ui/DialogForm";
@@ -8,32 +7,46 @@ import { useState } from "react";
 import DateTimeInput from "../../ui/DateTimeInput/DateTimeInput";
 import { useAdminTourneyContext } from "../../../context/admin/AdminTourneyContext";
 
+import { tourneyTypes, type Tourney } from "../../../types/Tourney";
+import type { Game } from "../../../types/Game";
+
 interface CreateTourneyButtonProps {
   eventId: number;
-  tourneys: Tourney[];
   setTourneys: React.Dispatch<React.SetStateAction<Tourney[]>>;
+  gameData: Game[] | null;
 }
 
-export default function CreateTourneyButton({ eventId, tourneys, setTourneys }: CreateTourneyButtonProps) {
+export default function CreateTourneyButton({ 
+  eventId, 
+  setTourneys, 
+  gameData 
+}: CreateTourneyButtonProps) {
   const [open, setOpen] = useState(false);
   const [tourneyName, setTourneyName] = useState("");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [tourneyFormat, setFormTourneyFormat] = useState<string[]>([]);
-const { addTourneyAdminId } = useAdminTourneyContext();
+  const [selectedGameId, setSelectedGameId] = useState<string[]>([]);
+
+  const { addTourneyAdminId } = useAdminTourneyContext();
 
   const tourneyTypeCollection = createListCollection({
-    items: tourneyTypes.map(type => ({
+    items: tourneyTypes.map((type) => ({
       label: type,
       value: type,
     })),
   });
 
+  const gamesCollection = createListCollection({
+    items: (gameData ?? []).map((game) => ({
+      label: game.name,
+      value: game.id.toString(),
+    })),
+  });
+
   const onStartDateChange = (val: Date | null) => {
-    // update startDate
     setStartDate(val);
 
-    // If endDate is before new startDate, update endDate to be same as startDate
     if (val && endDate) {
       const start = Array.isArray(val) ? val[0] : val;
       const end = Array.isArray(endDate) ? endDate[0] : endDate;
@@ -41,13 +54,11 @@ const { addTourneyAdminId } = useAdminTourneyContext();
         setEndDate(start);
       }
     }
-  }
+  };
 
   const onEndDateChange = (val: Date | null) => {
-    // update endDate
     setEndDate(val);
 
-    // If startDate is after new endDate, update startDate to be same as endDate
     if (val && startDate) {
       const end = Array.isArray(val) ? val[0] : val;
       const start = Array.isArray(startDate) ? startDate[0] : startDate;
@@ -55,7 +66,7 @@ const { addTourneyAdminId } = useAdminTourneyContext();
         setStartDate(end);
       }
     }
-  }
+  };
 
   const button = (
     <IconButton
@@ -67,9 +78,10 @@ const { addTourneyAdminId } = useAdminTourneyContext();
       px={2}
       ml={4}
       mt={2}
-      onClick={() => { }}
+      onClick={() => {}}
     >
-      <Text fontSize={"md"}>Create New Tourney</Text><IoAddCircleSharp />
+      <Text fontSize={"md"}>Create New Tourney</Text>
+      <IoAddCircleSharp />
     </IconButton>
   );
 
@@ -85,15 +97,47 @@ const { addTourneyAdminId } = useAdminTourneyContext();
         />
       </Field.Root>
 
+      {/* Game Selector */}
+      <Field.Root>
+        <Select.Root
+          collection={gamesCollection}
+          value={selectedGameId}
+          onValueChange={({ value }) => setSelectedGameId(value)}
+          size="sm"
+        >
+          <Select.HiddenSelect />
+          <Select.Label>Game</Select.Label>
+          <Select.Control>
+            <Select.Trigger>
+              <Select.ValueText placeholder="Select game" />
+            </Select.Trigger>
+            <Select.IndicatorGroup>
+              <Select.ClearTrigger />
+              <Select.Indicator />
+            </Select.IndicatorGroup>
+          </Select.Control>
+          <Select.Positioner>
+            <Select.Content>
+              {gamesCollection.items.map((game) => (
+                <Select.Item item={game} key={game.value}>
+                  {game.label}
+                  <Select.ItemIndicator />
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Positioner>
+        </Select.Root>
+      </Field.Root>
+
       {/* Start DateTimeInput component */}
-      <DateTimeInput 
+      <DateTimeInput
         label="Tourney Start"
         value={startDate}
         onChange={onStartDateChange}
       />
 
       {/* End DateTimeInput component */}
-      <DateTimeInput 
+      <DateTimeInput
         label="Tourney End"
         value={endDate}
         onChange={onEndDateChange}
@@ -103,9 +147,9 @@ const { addTourneyAdminId } = useAdminTourneyContext();
       <Field.Root>
         <Select.Root
           collection={tourneyTypeCollection}
-          defaultValue={[]}
+          value={tourneyFormat}
           onValueChange={({ value }) => setFormTourneyFormat(value)}
-          size="sm" 
+          size="sm"
         >
           <Select.HiddenSelect />
           <Select.Label>Tourney Format</Select.Label>
@@ -131,13 +175,14 @@ const { addTourneyAdminId } = useAdminTourneyContext();
         </Select.Root>
       </Field.Root>
     </VStack>
-  )
-  
+  );
+
   function resetForm() {
     setTourneyName("");
     setStartDate(null);
     setEndDate(null);
     setFormTourneyFormat([]);
+    setSelectedGameId([]);
   }
 
   return (
@@ -147,7 +192,20 @@ const { addTourneyAdminId } = useAdminTourneyContext();
       formBody={formBody}
       open={open}
       setOpen={setOpen}
-      onSubmit={async () => { return onSubmitHandler({ tourneyName, startDate, endDate, eventId, tourneyFormat, resetForm, tourneys, setTourneys, addTourneyAdminId }) }}
+      onSubmit={async () => {
+        const gameId = selectedGameId.length > 0 ? Number(selectedGameId[0]) : null;
+        return onSubmitHandler({
+          tourneyName,
+          startDate,
+          endDate,
+          eventId,
+          tourneyFormat,
+          gameId,
+          resetForm,
+          setTourneys,
+          addTourneyAdminId,
+        });
+      }}
       onCancel={resetForm}
     />
   );

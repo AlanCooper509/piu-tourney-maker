@@ -9,6 +9,7 @@ export const tourneyTypes: TourneyType[] = [
 export interface Tourney {
   id: number;                    // bigint -> number
   event_id: number;              // bigint -> number
+  game_id: number;               // bigint -> number
   created_at: string;            // ISO timestamp string
   name: string;                  // text
   start_date: string;            // ISO date string (yyyy-mm-dd)
