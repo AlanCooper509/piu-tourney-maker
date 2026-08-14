@@ -10,8 +10,8 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import type { Tourney } from "../../types/Tourney";
+import { StatusElement } from "../StatusElement"; // Import StatusElement
 
 interface TourneyCardProps {
   row: Tourney;
@@ -26,8 +26,6 @@ const TourneyCard: React.FC<TourneyCardProps> = ({
   isNested = false,
   adminTourneyIds,
 }) => {
-  const { user } = useAuth();
-  const userId = user?.id ?? null;
   const isAdmin = adminTourneyIds.includes(row.id);
 
   const formatDate = (dateStr?: string) => {
@@ -44,18 +42,14 @@ const TourneyCard: React.FC<TourneyCardProps> = ({
     <LinkBox
       as="article"
       key={`${keyPrefix}-${row.id}`}
-      // Layout Adjustments
       w={{ base: "90%", md: "60%" }}
       mx="auto"
       p={{ base: 4, sm: 5 }}
-      // Nested vs. Standalone Styling
       bg={isNested ? "gray.800" : "gray.900"}
       borderWidth="1px"
       borderTopWidth={isNested ? "0" : "1px"}
       borderRadius={isNested ? "none" : "lg"}
-      borderBottomRadius={isNested ? "none" : "lg"} // Keep it flat if nested
-      mb={isNested ? "0px" : "15px"}
-      // Interaction
+      borderBottomRadius={isNested ? "none" : "lg"}
       shadow={isNested ? "none" : "sm"}
       transition="all 0.2s"
       _hover={{
@@ -83,57 +77,42 @@ const TourneyCard: React.FC<TourneyCardProps> = ({
             </Box>
 
             {/* Content Section */}
-            <Flex direction="column" flex="1" justify="center">
-              <HStack justify="space-between" align="baseline">
+            <Flex direction="column" flex="1" justify="center" align="flex-start">
+              {/* Header Row */}
+              <Flex align="center" gap={2} w="100%" justify="space-between">
                 <Heading
                   as="h4"
                   fontSize={{
                     base: "md",
                     sm: "lg",
-                    md: isNested ? "xl" : "2xl",
+                    md: isNested ? "xl" : "xl",
+                    xl: isNested ? "xl" : "2xl"
                   }}
                   color="white"
+                  textAlign="left"
+                  m={0}
                 >
                   {row.name}
                 </Heading>
 
                 {isAdmin && (
-                  <Badge colorPalette="green" variant="outline" fontSize="xs">
+                  <Badge colorPalette="green" variant="outline" fontSize="xs" ml="auto">
                     Admin
                   </Badge>
                 )}
-              </HStack>
+              </Flex>
 
-              <HStack gap={4} mt={1} wrap="wrap">
-                <Text fontSize="sm" color="gray.400">
+              {/* Status & Date Metadata Row */}
+              <HStack justify="space-between" align="center" w="100%" mt={3} wrap="wrap">
+                {/* Unified Status Component */}
+                <StatusElement element={row} shorten={true} />
+
+                <Text fontSize="sm" color="gray.500" textAlign="left">
                   {formatDate(row.start_date)}
                   {row.end_date && ` - ${formatDate(row.end_date)}`}
                 </Text>
-
-                <Badge
-                  variant="subtle"
-                  colorPalette={
-                    row.status === "In Progress"
-                      ? "yellow"
-                      : row.status === "Not Started"
-                      ? "blue"
-                      : "green"
-                  }
-                  fontSize="2xs"
-                  px={2}
-                  borderRadius="full"
-                >
-                  {row.status}
-                </Badge>
               </HStack>
             </Flex>
-
-            {/* Subtle ID for logged in users */}
-            {userId && !isNested && (
-              <Text fontSize="xs" color="gray.600" alignSelf="flex-end">
-                #{row.id}
-              </Text>
-            )}
           </HStack>
         </Link>
       </LinkOverlay>
