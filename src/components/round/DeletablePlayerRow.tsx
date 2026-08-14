@@ -7,14 +7,19 @@ import { toaster } from '../ui/toaster';
 
 import type { PlayerRound } from '../../types/PlayerRound';
 import type { Stage } from '../../types/Stage';
+import type { Round } from '../../types/Round';
+import type { CalculatedPlayerStats } from './PlayersList';
 
 interface DeletablePlayerRowProps {
   player: PlayerRound;
+  round: Round | null;
   stages: Stage[] | null;
+  allScoresReported?: boolean;
+  stats?: CalculatedPlayerStats;
   removePlayer: (playerId: number) => void;
 }
 
-export default function DeletablePlayerRow({ player, stages, removePlayer }: DeletablePlayerRowProps) {
+export default function DeletablePlayerRow({ player, round, stages, allScoresReported, stats, removePlayer }: DeletablePlayerRowProps) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -49,7 +54,10 @@ export default function DeletablePlayerRow({ player, stages, removePlayer }: Del
     <HStack justify="space-between" w="full">
       <PlayerRoundStats 
         player={player} 
+        round={round}
         stages={stages} 
+        allScoresReported={allScoresReported}
+        stats={stats}
         handleDeletePlayer={handleDeletePlayer}
         isDeleting={isDeleting}
         isDeleteOpen={isDeleteOpen}

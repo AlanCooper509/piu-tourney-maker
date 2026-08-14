@@ -144,6 +144,17 @@ export default function EditablePlayerScores({ player, stages, incrementStagesPl
     makeUpdateSupabaseCall(score, stageId);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, stageId: number, isAdding: boolean) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (isAdding) {
+        handleSubmitAddScore(stageId);
+      } else {
+        handleSubmitEditScore(stageId);
+      }
+    }
+  };
+
   return (
     localStages?.map(stage => {
       const chartName = stage.charts?.name_en ?? 'awaiting chart selection...';
@@ -155,8 +166,9 @@ export default function EditablePlayerScores({ player, stages, incrementStagesPl
       const isAdding = !playerScore;
 
       return (
-        <HStack key={stage.id} my={1}>
+        <HStack key={stage.id} my={1} w="full" overflow="hidden" justify="space-between" gap={2}>
           <Tag.Root
+            flexShrink={0}
             colorPalette={chartType === 'D' ? 'green' : chartType === 'S' ? 'red' : chartType === 'C' ? 'yellow' : 'blue'}
           >
             <Tag.Label>{chartLevel}</Tag.Label>
@@ -167,25 +179,31 @@ export default function EditablePlayerScores({ player, stages, incrementStagesPl
               placeholder={chartName}
               borderColor="white"
               size="xs"
+              flex="1"
+              minW={0}
               value={inputValues[stage.id] ?? ''}
               onChange={e => handleChange(stage.id, e.target.value)}
+              onKeyDown={e => handleKeyDown(e, stage.id, true)}
             />
           ) : (
             <>
-              <Text w="5xl" truncate fontSize="sm">
+              <Text flex="1" minW={0} truncate fontSize="sm" title={chartName}>
                 {chartName}
               </Text>
               <Input
                 size="xs"
                 borderColor="white"
-                minWidth="69px"
+                w="80px"
+                flexShrink={0}
                 value={inputValues[stage.id] ?? playerScore?.score?.toString() ?? ''}
                 onChange={e => handleChange(stage.id, e.target.value)}
+                onKeyDown={e => handleKeyDown(e, stage.id, false)}
               />
             </>
           )}
 
           <IconButton
+            flexShrink={0}
             colorPalette={isAdding ? 'green' : 'blue'}
             variant="outline"
             borderRadius={5}

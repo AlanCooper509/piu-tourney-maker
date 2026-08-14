@@ -2,6 +2,7 @@ import { Box, Checkbox, Collapsible, HStack, IconButton, Text, VStack } from '@c
 import { useEffect, useState } from 'react';
 import { IoChevronForward } from 'react-icons/io5';
 import { MdOutlinePersonRemoveAlt1 } from "react-icons/md";
+import { FaSeedling } from 'react-icons/fa';
 
 import EditablePlayerScores from '../players/EditablePlayerScores';
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
@@ -12,11 +13,15 @@ import DialogForm from '../../components/ui/DialogForm';
 
 import type { PlayerRound } from "../../types/PlayerRound";
 import type { Stage } from '../../types/Stage';
-import { FaSeedling } from 'react-icons/fa';
+import type { Round } from '../../types/Round';
+import type { CalculatedPlayerStats } from './PlayersList';
 
 interface PlayerRoundStatsProps {
   player: PlayerRound;
+  round: Round | null;
   stages: Stage[] | null;
+  allScoresReported?: boolean;
+  stats?: CalculatedPlayerStats;
   handleDeletePlayer: () => Promise<boolean>;
   isDeleting: boolean;
   isDeleteOpen: boolean;
@@ -25,7 +30,10 @@ interface PlayerRoundStatsProps {
 
 export default function PlayerRoundStats({ 
   player, 
+  round,
   stages, 
+  allScoresReported,
+  stats,
   handleDeletePlayer,
   isDeleting,
   isDeleteOpen,
@@ -76,12 +84,14 @@ export default function PlayerRoundStats({
                 transition: 'transform 0.2s ease',
               }}
             />
-            <HStack flex="1" overflow="hidden">
-              {!loadingTourneyAdminStatus && isTourneyAdmin && stagesPlayed == stages?.length && stages.length > 0 && (
-                <Checkbox.Root readOnly checked variant="outline" colorPalette="green">
-                  <Checkbox.Control />
-                </Checkbox.Root>
+            <HStack flex="1" overflow="hidden" gap={2}>
+              {/* Placement / Rank */}
+              {stats && allScoresReported && (
+                <Text fontSize="sm" fontWeight="bold" flexShrink={0}>
+                  #{stats.rank}
+                </Text>
               )}
+
               {/* Player Seed */}
               {player && player.player_tourneys && player.player_tourneys.seed ? (
                 <HStack
@@ -99,10 +109,34 @@ export default function PlayerRoundStats({
               ) : (
                 <Box w="35px" flexShrink={0} marginEnd={1} />
               )}
+
               {/* Player Name */}
-              <Text truncate title={playerName}>
+              <Text truncate title={playerName} flex="1">
                 {playerName}
               </Text>
+
+              {/* Scores / Points Display */}
+              {stats && (
+                <HStack flexShrink={0} fontSize="sm" gap={2} mr={2}>
+                  {/* Cumulative Score (when points_per_stage exists) */}
+                  {round?.points_per_stage && (
+                    <Text color="gray.400" fontSize="xs">
+                      ({stats.cumulative.toLocaleString()})
+                    </Text>
+                  )}
+
+                  {/* Total Points or Cumulative Total */}
+                  <Text fontWeight="bold">
+                    {stats.total.toLocaleString()} {round?.points_per_stage ? "pts" : ""}
+                  </Text>
+                </HStack>
+              )}
+
+              {!loadingTourneyAdminStatus && isTourneyAdmin && stagesPlayed == stages?.length && stages.length > 0 && (
+                <Checkbox.Root readOnly checked variant="outline" colorPalette="green">
+                  <Checkbox.Control />
+                </Checkbox.Root>
+              )}
             </HStack>
 
             {!loadingTourneyAdminStatus && isTourneyAdmin && (
@@ -161,6 +195,8 @@ export default function PlayerRoundStats({
               <NonEditablePlayerScores
                 player={player}
                 stages={stages}
+                round={round}
+                stats={stats}
               />
             )
           ) : (

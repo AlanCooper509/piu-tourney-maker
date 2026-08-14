@@ -7,11 +7,20 @@ import AddPlayer from '../players/AddPlayer'
 import { toaster } from '../ui/toaster'
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import { useCurrentTourney } from '../../context/CurrentTourneyContext'
+import calculatePlayerRankingsInRound from "../../helpers/calculatePlayerRankingsInRound";
+import { getScoresForPlayer } from '../../helpers/getScoresForPlayer';
 
 import type { PlayerRound } from '../../types/PlayerRound'
 import type { PlayerTourney } from '../../types/PlayerTourney'
 import type { Round } from '../../types/Round'
 import type { Stage } from '../../types/Stage'
+
+export interface CalculatedPlayerStats {
+  rank: number;
+  total: number;       // Points or cumulative score depending on round mode
+  cumulative: number;  // Raw cumulative score
+  stagePointsMap: Map<number, number>; // stageId -> stagePoints for this player
+}
 
 interface PlayersListProps {
   round: Round | null
@@ -54,17 +63,65 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
     }
   };
 
-  // Sort players using the player_rounds.sort_order column (null/undefined values are placed at the end)
+  // Calculate live rankings & scores for all players in this round
+  const calculatedStatsMap = useMemo(() => {
+    const map = new Map<number, CalculatedPlayerStats>();
+    if (!players?.length || !stages?.length || !round) return map;
+
+    const { rankings, cumulativeScores, pointsMap } = calculatePlayerRankingsInRound({ players, stages, round });
+
+    rankings.forEach(([playerId, total], idx) => {
+      // Extract stage-level points for this player: stageId -> points
+      const stagePointsMap = new Map<number, number>();
+      stages.forEach((stage) => {
+        const key = `${playerId}-${stage.id}`;
+        if (pointsMap.has(key)) {
+          stagePointsMap.set(stage.id, pointsMap.get(key)!);
+        }
+      });
+
+      map.set(playerId, {
+        rank: idx + 1,
+        total,
+        cumulative: cumulativeScores[playerId] ?? 0,
+        stagePointsMap,
+      });
+    });
+
+    return map;
+  }, [players, stages, round]);
+
+  // Check if ALL players have played ALL stages
+  const areAllScoresReported = useMemo(() => {
+    if (!players?.length || !stages?.length) return false;
+
+    const totalStages = stages.length;
+    return players.every(player => {
+      const entries = getScoresForPlayer(player, stages);
+      const playedCount = entries.filter(entry => entry.score !== null).length;
+      return playedCount === totalStages;
+    });
+  }, [players, stages]);
+
+  // Sort by leaderboard score if all scores are reported; otherwise sort by default sort_order
   const sortedPlayers = useMemo(() => {
     if (!players) return [];
+
     return [...players].sort((a, b) => {
+      if (areAllScoresReported) {
+        const rankA = calculatedStatsMap.get(a.id)?.rank ?? Infinity;
+        const rankB = calculatedStatsMap.get(b.id)?.rank ?? Infinity;
+        return rankA - rankB; // Low to high (#1 first)
+      }
+
+      // Default sorting by sort_order descending
       const aVal = a.sort_order;
       const bVal = b.sort_order;
       if (aVal === null || aVal === undefined) return 1;
       if (bVal === null || bVal === undefined) return -1;
-      return bVal - aVal; // sorted greatest to least by default (use-case was for BITE9)
+      return bVal - aVal;
     });
-  }, [players]);
+  }, [players, areAllScoresReported, calculatedStatsMap]);
 
   const collection = usePlayerCollection({ players, tourneyPlayers, searchTerm: newName });
 
@@ -92,7 +149,10 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
             <DeletablePlayerRow
               key={p.id}
               player={p}
+              round={round}
               stages={stages}
+              allScoresReported={areAllScoresReported}
+              stats={calculatedStatsMap.get(p.id)}
               removePlayer={(id) => setPlayers(prev => prev.filter(p => p.id !== id))}
             />
           ) : null)
