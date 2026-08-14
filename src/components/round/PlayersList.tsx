@@ -126,7 +126,7 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
   const collection = usePlayerCollection({ players, tourneyPlayers, searchTerm: newName });
 
   return (
-    <Box w={"md"}>
+    <Box w="full" minW={{ base: "100%", sm: "xs" }} maxW="md">
       <HStack mb={2} justifyContent="center">
         <Heading mb={2}>Players</Heading>
         {!loadingTourneyAdminStatus && isTourneyAdmin &&
@@ -143,7 +143,7 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
       </HStack>
       {loading && <Text>Loading players...</Text>}
       {error && <Text color="red">Error: {error.message}</Text>}
-      <VStack align={{ base: "center", md: "center", lg: "start" }} justify="center" gap={0}>
+      <VStack align={{ base: "center", md: "center", lg: "start" }} justify="center" gap={1}>
         {!loading && !error && sortedPlayers.length ? (
           sortedPlayers.map(p => p ? (
             <DeletablePlayerRow

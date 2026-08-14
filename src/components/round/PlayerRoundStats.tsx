@@ -28,10 +28,10 @@ interface PlayerRoundStatsProps {
   setIsDeleteOpen: (open: boolean) => void;
 }
 
-export default function PlayerRoundStats({ 
-  player, 
+export default function PlayerRoundStats({
+  player,
   round,
-  stages, 
+  stages,
   allScoresReported,
   stats,
   handleDeletePlayer,
@@ -117,19 +117,19 @@ export default function PlayerRoundStats({
 
               {/* Scores / Points Display */}
               {stats && (
-                <HStack flexShrink={0} fontSize="sm" gap={2} mr={2}>
-                  {/* Cumulative Score (when points_per_stage exists) */}
+                <VStack flexShrink={0} align="flex-end" gap={1} mr={2}>
+                  {/* Primary metric (Points) */}
+                  <Text fontWeight="bold" fontSize="xs" lineHeight="1">
+                    {stats.total.toLocaleString()}{round?.points_per_stage ? " pts" : ""}
+                  </Text>
+
+                  {/* Secondary metric (Cumulative EX Score) */}
                   {round?.points_per_stage && (
-                    <Text color="gray.400" fontSize="xs">
-                      ({stats.cumulative.toLocaleString()})
+                    <Text color="gray.400" fontSize="2xs" lineHeight="1">
+                      {stats.cumulative.toLocaleString()}
                     </Text>
                   )}
-
-                  {/* Total Points or Cumulative Total */}
-                  <Text fontWeight="bold">
-                    {stats.total.toLocaleString()} {round?.points_per_stage ? "pts" : ""}
-                  </Text>
-                </HStack>
+                </VStack>
               )}
 
               {!loadingTourneyAdminStatus && isTourneyAdmin && stagesPlayed == stages?.length && stages.length > 0 && (
@@ -149,7 +149,7 @@ export default function PlayerRoundStats({
                   open={isDeleteOpen}
                   setOpen={setIsDeleteOpen}
                   onSubmit={handleDeletePlayer}
-                  onCancel={async () => true}             
+                  onCancel={async () => true}
                   trigger={
                     <IconButton
                       aria-label="Delete player"
