@@ -63,6 +63,21 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
     }
   };
 
+  // Check if ALL players have played ALL stages, OR if the round is marked complete
+  const areAllScoresReported = useMemo(() => {
+    // If explicitly completed, consider all scores finalized
+    if (round?.status === "Complete") return true;
+
+    if (!players?.length || !stages?.length) return false;
+
+    const totalStages = stages.length;
+    return players.every(player => {
+      const entries = getScoresForPlayer(player, stages);
+      const playedCount = entries.filter(entry => entry.score !== null).length;
+      return playedCount === totalStages;
+    });
+  }, [players, stages, round]);
+
   // Calculate live rankings & scores for all players in this round
   const calculatedStatsMap = useMemo(() => {
     const map = new Map<number, CalculatedPlayerStats>();
@@ -70,7 +85,32 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
 
     const { rankings, cumulativeScores, pointsMap } = calculatePlayerRankingsInRound({ players, stages, round });
 
-    rankings.forEach(([playerId, total], idx) => {
+    const isPointsMode = Boolean(round.points_per_stage);
+
+    // Sort rankings dynamically based on points vs. cumulative score mode
+    const sortedRankings = [...rankings].sort((a, b) => {
+      const [p1Id, p1Total] = a;
+      const [p2Id, p2Total] = b;
+
+      const cumA = cumulativeScores[p1Id] ?? 0;
+      const cumB = cumulativeScores[p2Id] ?? 0;
+
+      if (isPointsMode) {
+        // Points Mode: Primary = Total Points, Secondary = Cumulative EX Score
+        if (p1Total !== p2Total) {
+          return p2Total - p1Total;
+        }
+        return cumB - cumA;
+      } else {
+        // Cumulative EX Score Mode: Primary = Cumulative EX Score, Secondary = Total Points
+        if (cumA !== cumB) {
+          return cumB - cumA;
+        }
+        return p2Total - p1Total;
+      }
+    });
+
+    sortedRankings.forEach(([playerId, total], idx) => {
       // Extract stage-level points for this player: stageId -> points
       const stagePointsMap = new Map<number, number>();
       stages.forEach((stage) => {
@@ -91,19 +131,7 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
     return map;
   }, [players, stages, round]);
 
-  // Check if ALL players have played ALL stages
-  const areAllScoresReported = useMemo(() => {
-    if (!players?.length || !stages?.length) return false;
-
-    const totalStages = stages.length;
-    return players.every(player => {
-      const entries = getScoresForPlayer(player, stages);
-      const playedCount = entries.filter(entry => entry.score !== null).length;
-      return playedCount === totalStages;
-    });
-  }, [players, stages]);
-
-  // Sort by leaderboard score if all scores are reported; otherwise sort by default sort_order
+  // Sort by leaderboard score if all scores are reported or round is completed; otherwise sort by default sort_order
   const sortedPlayers = useMemo(() => {
     if (!players) return [];
 
