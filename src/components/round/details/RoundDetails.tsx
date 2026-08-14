@@ -120,13 +120,13 @@ export function RoundDetails({
                 />
               )}
 
-              {tourneyType !== "Double Elimination" || round.parent_round_id !== null && (
+              {tourneyType !== "Double Elimination" && (
                 <ScoringDetailsText
                   pointsPerStage={round?.points_per_stage}
                 />
               )}
 
-              <Separator mt={4}></Separator>
+              <Separator mt={2}></Separator>
               {round && round.next_round_id && nextRound && (
                 <NextRoundIndicator
                   label={tourneyType === "Double Elimination" ? "Next Round (Winner)" : "Next Round"}

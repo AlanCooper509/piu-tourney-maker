@@ -12,6 +12,7 @@ import DialogForm from '../../components/ui/DialogForm';
 
 import type { PlayerRound } from "../../types/PlayerRound";
 import type { Stage } from '../../types/Stage';
+import { FaSeedling } from 'react-icons/fa';
 
 interface PlayerRoundStatsProps {
   player: PlayerRound;
@@ -53,7 +54,7 @@ export default function PlayerRoundStats({
   }
 
   return (
-    <Box w={["xs", "md", "md", "sm"]}>
+    <Box w={"full"}>
       <Collapsible.Root
         textAlign="left"
         borderWidth={isOpen ? "1px" : "0px"}
@@ -81,11 +82,29 @@ export default function PlayerRoundStats({
                   <Checkbox.Control />
                 </Checkbox.Root>
               )}
+              {/* Player Seed */}
+              {player && player.player_tourneys && player.player_tourneys.seed ? (
+                <HStack
+                  gap={0.5}
+                  fontSize="xs"
+                  color="green.600"
+                  flexShrink={0}
+                  w="35px"
+                  justify="flex-end"
+                  marginEnd={1}
+                >
+                  <FaSeedling size={12} />
+                  <Text as="span" fontWeight="bold">{player.player_tourneys.seed}</Text>
+                </HStack>
+              ) : (
+                <Box w="35px" flexShrink={0} marginEnd={1} />
+              )}
+              {/* Player Name */}
               <Text truncate title={playerName}>
                 {playerName}
               </Text>
             </HStack>
-            
+
             {!loadingTourneyAdminStatus && isTourneyAdmin && (
               <Box onClick={(e) => e.stopPropagation()}>
                 <DialogForm
