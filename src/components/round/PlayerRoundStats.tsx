@@ -85,14 +85,18 @@ export default function PlayerRoundStats({
               }}
             />
             <HStack flex="1" overflow="hidden" gap={2}>
-              {/* Placement / Rank */}
-              {stats && allScoresReported && (
-                <Text fontSize="sm" fontWeight="bold" flexShrink={0}>
-                  #{stats.rank}
-                </Text>
+              {/* Placement / Rank (Fixed width column so double digits don't push names) */}
+              {stats && allScoresReported ? (
+                <Box w="32px" flexShrink={0} textAlign="right">
+                  <Text fontSize="sm" fontWeight="bold">
+                    #{stats.rank}
+                  </Text>
+                </Box>
+              ) : (
+                <Box w="32px" flexShrink={0} />
               )}
 
-              {/* Player Seed */}
+              {/* Player Seed (Fixed width column) */}
               {player && player.player_tourneys && player.player_tourneys.seed ? (
                 <HStack
                   gap={0.5}
@@ -104,7 +108,9 @@ export default function PlayerRoundStats({
                   marginEnd={1}
                 >
                   <FaSeedling size={12} />
-                  <Text as="span" fontWeight="bold">{player.player_tourneys.seed}</Text>
+                  <Text as="span" fontWeight="bold">
+                    {player.player_tourneys.seed}
+                  </Text>
                 </HStack>
               ) : (
                 <Box w="35px" flexShrink={0} marginEnd={1} />
