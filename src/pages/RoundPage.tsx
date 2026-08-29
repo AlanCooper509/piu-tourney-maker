@@ -355,7 +355,7 @@ function RoundPage() {
           setStages(prev => {
             const stage = prev.find(s => s.id === incoming?.stage_id);
             if (!stage || stage.round_id !== activeRoundId) return prev;
-            return upsertChartPoolInStages(prev, incoming);
+            return upsertChartPoolInStages(prev, incoming, tourney?.game_id ?? undefined);
           });
         }
       )

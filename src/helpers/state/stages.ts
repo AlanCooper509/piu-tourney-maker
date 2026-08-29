@@ -1,6 +1,5 @@
-import chartsData from "../../data/charts-v2_12_0.json";
+import { CHARTS_BY_GAME_ID } from "../../data/charts"
 import type { Chart } from "../../types/Chart";
-
 import type { ChartPool } from "../../types/ChartPool";
 import type { Score } from "../../types/Score";
 import type { Stage } from "../../types/Stage";
@@ -98,13 +97,14 @@ export function deleteStage(
 
 export function upsertChartPoolInStages(
   stages: Stage[],
-  incoming: ChartPool
+  incoming: ChartPool,
+  gameId?: number
 ): Stage[] {
   return stages.map(stage => {
     if (stage.id !== incoming.stage_id) return stage;
 
-    // hydrate with charts data
-    const chart = getChartById(chartsData, incoming.chart_id);
+    // hydrate with charts data if not present on incoming
+    const chart = incoming.charts ?? getChartById(incoming.chart_id, gameId);
     const hydratedIncoming = chart ? { ...incoming, charts: chart } : incoming;
 
     const pool = stage.chart_pools ?? [];
@@ -116,17 +116,17 @@ export function upsertChartPoolInStages(
             )
         : [...pool, hydratedIncoming];
 
-        return {
-        ...stage,
-        chart_pools: nextPool,
-        // Update stage.charts if its chart_id matches the incoming one
-        charts:
-            stage.chart_id === hydratedIncoming.chart_id
-            ? hydratedIncoming.charts ?? stage.charts
-            : stage.charts,
-        // Keep existing scores intact
-        scores: stage.scores ?? [],
-        };
+    return {
+      ...stage,
+      chart_pools: nextPool,
+      // Update stage.charts if its chart_id matches the incoming one
+      charts:
+        stage.chart_id === hydratedIncoming.chart_id
+          ? hydratedIncoming.charts ?? stage.charts
+          : stage.charts,
+      // Keep existing scores intact
+      scores: stage.scores ?? [],
+    };
   });
 }
 
@@ -151,24 +151,23 @@ export function deleteChartPoolFromStages(
   });
 }
 
-// necessary because TS is not smart enough to infer types from JSON imports
 function getChartById(
-  chartsData: any[],
-  chartId: number | null | undefined
+  chartId: number | null | undefined,
+  gameId?: number
 ): Chart | null {
   if (chartId == null) return null;
 
-  const raw = chartsData.find(c => Number(c.id) === chartId);
-  if (!raw) return null;
+  // Search in target game list first if gameId is provided
+  if (gameId && CHARTS_BY_GAME_ID[gameId]) {
+    const found = CHARTS_BY_GAME_ID[gameId].find(c => c.id === chartId);
+    if (found) return found;
+  }
 
-  return {
-    id: Number(raw.id),
-    name_en: raw.name_en,
-    name_kr: raw.name_kr ?? null,
-    level: Number(raw.level),
-    type: raw.type,
-    duration: raw.duration ?? null,
-    image_url: raw.image_url ?? null,
-    created_at: raw.created_at,
-  };
+  // Fallback: search across all registered games
+  for (const charts of Object.values(CHARTS_BY_GAME_ID)) {
+    const found = charts.find(c => c.id === chartId);
+    if (found) return found;
+  }
+
+  return null;
 }
