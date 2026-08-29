@@ -78,9 +78,10 @@ export default function ChosenStagesContainer({
     type: 'Single' | 'Double' | 'Co-Op' | 'UCS'
   ) => {
     try {
+      if (!tourney) throw new Error("Invalid or missing tourney for adding a stage.");
       if (!round) throw new Error("No round selected to add a stage.");
 
-      const newStage = await handleAddStageToRound(round.id, { name, level, type });
+      const newStage = await handleAddStageToRound(round.id, { name, level, type, game_id: tourney.game_id });
       setStages((prev) => [...prev, newStage]);
 
       toaster.create({

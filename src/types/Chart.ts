@@ -9,5 +9,6 @@ export interface Chart {
   type: ChartType | null;         // enum type
   duration: ChartDuration | null; // enum type
   image_url: string | null;       // text
+  game_id: number;                // bigint -> number
   created_at: string;             // ISO timestamp string
 }

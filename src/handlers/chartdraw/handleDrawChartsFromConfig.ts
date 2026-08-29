@@ -4,7 +4,8 @@ import handleUpdateRoundStatus from "../round/handleUpdateRoundStatus";
 
 export async function handleDrawChartsFromConfig(
   roundId: number,
-  activeConfig: ChartdrawConfigWithSpecs
+  activeConfig: ChartdrawConfigWithSpecs,
+  gameId: number
 ) {
   // 1. Build an array of allowed durations based on activeConfig
   const allowedDurations: (string | null)[] = [];
@@ -32,9 +33,9 @@ export async function handleDrawChartsFromConfig(
       .from("charts")
       .select("id")
       .eq("type", spec.chart_type)
+      .eq("game_id", gameId)
       .gte("level", spec.level_min)
       .lte("level", spec.level_max)
-      .is("game_id", null); // TODO: hotfix for BITE9 Pros
 
     // 3. Apply the null-safe duration filter
     if (allowedDurations.length > 0) {

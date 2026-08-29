@@ -4,6 +4,7 @@ import { GiRollingDices } from "react-icons/gi";
 
 import { toaster } from "../../ui/toaster";
 import { handleDrawChartsFromConfig } from "../../../handlers/chartdraw/handleDrawChartsFromConfig";
+import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 
 import type { Round } from "../../../types/Round";
 import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
@@ -14,6 +15,7 @@ interface DrawChartsButtonProps {
 }
 
 export default function DrawChartsButton({ round, activeConfig }: DrawChartsButtonProps) {
+  const { tourney } = useCurrentTourney();
   const [isLoading, setIsLoading] = useState(false);
 
   // Calculate the total aggregate count of charts for the button label
@@ -24,10 +26,11 @@ export default function DrawChartsButton({ round, activeConfig }: DrawChartsButt
 
   const onDrawCharts = async () => {
     try {
+      if (!tourney) throw new Error("Invalid or missing tourney for chart draw.");
       if (!round) throw new Error("No round selected for chart draw.");
       setIsLoading(true);
 
-      await handleDrawChartsFromConfig(round.id, activeConfig);
+      await handleDrawChartsFromConfig(round.id, activeConfig, tourney.game_id);
 
       toaster.create({
         title: "Charts Drawn",

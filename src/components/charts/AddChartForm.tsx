@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   useBreakpointValue,
   Combobox,
@@ -9,26 +9,35 @@ import {
   Portal
 } from "@chakra-ui/react";
 import { IoAddCircleSharp } from "react-icons/io5";
+import { CHARTS_BY_GAME_ID } from "../../data/charts";
 
 import { toaster } from "../ui/toaster";
-import type { ChartQuery } from "../../types/ChartQuery";
-import chartsData from "../../data/charts-v2_12_0.json";
 import { ChartTypeLevelSelect } from "./ChartOptionsSelect";
+import { useCurrentTourney } from "../../context/CurrentTourneyContext";
+
+import type { ChartQuery } from "../../types/ChartQuery";
 
 interface AddChartFormProps {
   onSubmit: (chartQuery: ChartQuery) => Promise<void>;
 }
 
 export default function AddChartForm({ onSubmit }: AddChartFormProps) {
+  const { tourney } = useCurrentTourney();
   const [chartName, setChartName] = useState("");
   const [chartLevel, setChartLevel] = useState<number | "">("");
   const [chartType, setChartType] = useState<ChartQuery["type"] | "">("");
 
-  // combobox options for chart names (unique)
+  // 1. Resolve dataset based on active gameId
+  const chartsData = useMemo(() => {
+    if (!tourney) return [];
+    return CHARTS_BY_GAME_ID[tourney.game_id] ?? [];
+  }, [tourney]);
+
+  // 2. Extract unique song names for the Combobox
   const songOptions = useMemo(() => {
     const unique = Array.from(
       new Map(
-        chartsData.map((chart: any) => [
+        chartsData.map((chart) => [
           chart.name_en,
           { label: chart.name_en, value: chart.name_en },
         ])
@@ -36,7 +45,7 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
     );
     unique.sort((a, b) => a.label.localeCompare(b.label));
     return unique;
-  }, []);
+  }, [chartsData]);
 
   const { contains } = useFilter({ sensitivity: "base" });
   const { collection, filter, reset: resetInput } = useListCollection({
@@ -44,22 +53,32 @@ export default function AddChartForm({ onSubmit }: AddChartFormProps) {
     filter: contains,
   });
 
-  // chart type and difficulty for a specified chartName
+  // Reset form selections if the gameId changes
+  useEffect(() => {
+    setChartName("");
+    setChartType("");
+    setChartLevel("");
+    resetInput();
+  }, [tourney?.game_id, resetInput]);
+
+  // 3. Filter types and levels for the selected chartName
   const typeLevelOptions = useMemo(() => {
     if (!chartName) return [];
-    
+
     return chartsData
-      .filter((chart) => chart.name_en === chartName)
+      .filter((chart): chart is typeof chart & { type: ChartQuery["type"] } =>
+        chart.name_en === chartName && chart.type !== null
+      )
       .map((chart) => ({
         type: chart.type,
         level: Number(chart.level),
       }))
       .sort((a, b) => {
-        const typeDiff = typeOrder[a.type] - typeOrder[b.type];
+        const typeDiff = (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99);
         if (typeDiff !== 0) return typeDiff;
         return a.level - b.level;
       });
-  }, [chartName]);
+  }, [chartName, chartsData]);
 
   const handleSubmit = async () => {
     if (!chartName || !chartType || chartLevel === "") {
@@ -158,7 +177,7 @@ const typeOrder: Record<string, number> = {
   "Single": 0,
   "Double": 1,
   "Co-Op": 2,
-  "UCS": 3, // (if ever included)
+  "UCS": 3,
 };
 
 // helper type guard
