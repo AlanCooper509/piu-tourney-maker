@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, type BoxProps } from "@chakra-ui/react";
+import { Image, Box, type BoxProps } from "@chakra-ui/react";
 
 interface PlayerAvatarProps extends Omit<BoxProps, "as" | "src"> {
   src: string | null | undefined;
@@ -29,7 +29,7 @@ export function PlayerAvatar({ src, alt, size, ...rest }: PlayerAvatarProps) {
   }
 
   return (
-    <Box
+    <Image
       as="img"
       src={src}
       alt={alt}
