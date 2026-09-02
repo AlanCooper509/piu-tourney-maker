@@ -1,190 +1,354 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
 import { supabaseClient } from "../lib/supabaseClient";
-import getSupabaseTable from "./getSupabaseTable";
-import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
-import { deleteRound, upsertRound } from "../helpers/state/rounds";
-import {
-  deletePlayerFromRound,
-  upsertPlayerInRound,
-} from "../helpers/state/playerRounds";
-import { useCurrentTourney } from "../context/CurrentTourneyContext";
 
+import type { Tourney } from "../types/Tourney";
 import type { Round } from "../types/Round";
 import type { RoundPool } from "../types/RoundPool";
 import type { PlayerRound } from "../types/PlayerRound";
-import type { PlayerTourney } from "../types/PlayerTourney";
-import type { Tourney } from "../types/Tourney";
 
-/**
- * Shared data-fetching + realtime wiring for the OBS-facing stream pages
- * (StreamHelper, StreamViewer): the current tourney, its sorted rounds, all
- * tournament player_rounds, and whichever round is active/pinned.
- */
 export function useRoundStreamData(
   tourneyId: string,
-  roundIdOverride: string | null,
-  channelPrefix: string,
+  roundIdOverride?: string | null,
+  channelIdPrefix = "stream-data",
 ) {
-  const { tourney, setTourney } = useCurrentTourney();
+  const [tourney, setTourney] = useState<Tourney | null>(null);
   const [rounds, setRounds] = useState<Round[]>([]);
   const [roundPools, setRoundPools] = useState<RoundPool[]>([]);
-  const [tourneyPlayers, setTourneyPlayers] = useState<PlayerTourney[]>([]);
-  const tourneyPlayersRef = useRef<PlayerTourney[]>([]);
   const [playerRounds, setPlayerRounds] = useState<PlayerRound[]>([]);
 
-  // --- Initial fetches -----------------------------------------------
-  const { data: tourneys } = getSupabaseTable<Tourney>(
-    "tourneys",
-    { column: "id", value: tourneyId }
-  );
-  const { data: queriedRounds } = getSupabaseTable<Round>(
-    "rounds",
-    { column: "tourney_id", value: tourneyId }
-  );
-  const { data: queriedRoundPools } = getSupabaseTable<RoundPool>(
-    "round_pools",
-    { column: "tourney_id", value: tourneyId }
-  );
-  const { data: queriedTourneyPlayers } = getSupabaseTable<PlayerTourney>(
-    "player_tourneys",
-    { column: "tourney_id", value: tourneyId }
-  );
-  // Fetch ALL player_rounds for this tournament via inner join on player_tourneys
-  const { data: queriedPlayersInRound } = getSupabaseTable<PlayerRound>(
-    "player_rounds",
-    { column: "player_tourneys.tourney_id", value: tourneyId },
-    "*, player_tourneys!inner(player_name, seed, player_img, tourney_id)"
-  );
+  async function fetchPlayerRounds() {
+    const { data: playerTourneys, error: playerTourneysError } =
+      await supabaseClient
+        .from("player_tourneys")
+        .select("id")
+        .eq("tourney_id", tourneyId);
 
-  useEffect(() => {
-    if (tourneys?.length && tourneys[0].id !== tourney?.id) {
-      setTourney(tourneys[0]);
-    }
-  }, [tourneys, tourney?.id, setTourney]);
-
-  useEffect(() => {
-    if (queriedRounds) setRounds(queriedRounds);
-  }, [queriedRounds]);
-
-  useEffect(() => {
-    if (queriedRoundPools) setRoundPools(queriedRoundPools);
-  }, [queriedRoundPools]);
-
-  useEffect(() => {
-    if (queriedTourneyPlayers) setTourneyPlayers(queriedTourneyPlayers);
-  }, [queriedTourneyPlayers]);
-
-  useEffect(() => {
-    tourneyPlayersRef.current = tourneyPlayers;
-  }, [tourneyPlayers]);
-
-  useEffect(() => {
-    if (queriedPlayersInRound) {
-      const sorted = [...queriedPlayersInRound].sort(
-        (a, b) =>
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    if (playerTourneysError) {
+      console.error(
+        "Error fetching player tourneys:",
+        playerTourneysError,
       );
-      setPlayerRounds(sorted);
+      return;
     }
-  }, [queriedPlayersInRound]);
 
-  const sortedRounds = useMemo(() => {
-    if (!rounds.length) return [];
-    const { sorted } = mergeAndFlattenRounds([], rounds, roundPools);
-    return sorted;
-  }, [rounds, roundPools]);
-
-  // --- Active/Pinned Round helper ------------------------------------
-  const currentRound: Round | null = useMemo(() => {
-    if (!rounds.length) return null;
-    if (roundIdOverride) {
-      return rounds.find((r) => String(r.id) === roundIdOverride) ?? null;
+    if (!playerTourneys || playerTourneys.length === 0) {
+      setPlayerRounds([]);
+      return;
     }
-    return rounds.find((r) => r.status === "In Progress") ?? null;
-  }, [rounds, roundIdOverride]);
 
-  // --- Realtime Subscriptions ----------------------------------------
+    const playerTourneyIds = playerTourneys.map(
+      (pt) => pt.id,
+    );
+
+    const { data, error } = await supabaseClient
+      .from("player_rounds")
+      .select(`
+        *,
+        player_tourneys(
+          player_name,
+          seed,
+          player_img
+        )
+      `)
+      .in("player_tourney_id", playerTourneyIds);
+
+    if (error) {
+      console.error(
+        "Error fetching player rounds:",
+        error,
+      );
+      return;
+    }
+
+    if (data) {
+      setPlayerRounds(data as PlayerRound[]);
+    }
+  }
+
   useEffect(() => {
-    const roundsChannel = supabaseClient
-      .channel(`${channelPrefix}-rounds-${tourneyId}`)
+    async function fetchTourney() {
+      const { data, error } = await supabaseClient
+        .from("tourneys")
+        .select("*")
+        .eq("id", tourneyId)
+        .single();
+
+      if (error) {
+        console.error(
+          "Error fetching tourney:",
+          error,
+        );
+        return;
+      }
+
+      if (data) {
+        setTourney(data);
+      }
+    }
+
+    fetchTourney();
+
+    const channel = supabaseClient
+      .channel(
+        `${channelIdPrefix}-tourney-${tourneyId}`,
+      )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "rounds" },
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "tourneys",
+          filter: `id=eq.${tourneyId}`,
+        },
         (payload) => {
-          setRounds((prev) => {
-            if (payload.eventType === "DELETE") {
-              return deleteRound(prev, payload.old.id);
-            }
-            const incoming = payload.new as Round;
-            if (String(incoming.tourney_id) !== String(tourneyId)) return prev;
-            return upsertRound(prev, incoming);
-          });
-        }
+          setTourney((prev) =>
+            prev
+              ? { ...prev, ...payload.new }
+              : (payload.new as Tourney),
+          );
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabaseClient.removeChannel(channel);
+    };
+  }, [tourneyId, channelIdPrefix]);
+
+  useEffect(() => {
+    async function fetchRoundsAndPlayers() {
+      const {
+        data: roundsData,
+        error: roundsError,
+      } = await supabaseClient
+        .from("rounds")
+        .select("*")
+        .eq("tourney_id", tourneyId);
+
+      if (roundsError) {
+        console.error(
+          "Error fetching rounds:",
+          roundsError,
+        );
+      } else if (roundsData) {
+        setRounds(roundsData);
+      }
+
+      const {
+        data: roundPoolsData,
+        error: roundPoolsError,
+      } = await supabaseClient
+        .from("round_pools")
+        .select("*")
+        .eq("tourney_id", tourneyId)
+        .order("sort_order", {
+          ascending: true,
+          nullsFirst: false,
+        });
+
+      if (roundPoolsError) {
+        console.error(
+          "Error fetching round pools:",
+          roundPoolsError,
+        );
+      } else if (roundPoolsData) {
+        setRoundPools(roundPoolsData);
+      }
+
+      await fetchPlayerRounds();
+    }
+
+    fetchRoundsAndPlayers();
+
+    const roundsChannel = supabaseClient
+      .channel(
+        `${channelIdPrefix}-rounds-${tourneyId}`,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "rounds",
+          filter: `tourney_id=eq.${tourneyId}`,
+        },
+        (payload) => {
+          if (payload.eventType === "UPDATE") {
+            setRounds((prev) =>
+              prev.map((round) =>
+                round.id === payload.new.id
+                  ? (payload.new as Round)
+                  : round,
+              ),
+            );
+          } else if (payload.eventType === "INSERT") {
+            setRounds((prev) => [
+              ...prev,
+              payload.new as Round,
+            ]);
+          } else if (payload.eventType === "DELETE") {
+            setRounds((prev) =>
+              prev.filter(
+                (round) =>
+                  round.id !== payload.old.id,
+              ),
+            );
+          }
+        },
       )
       .subscribe();
 
     const roundPoolsChannel = supabaseClient
-      .channel(`${channelPrefix}-pools-${tourneyId}`)
+      .channel(
+        `${channelIdPrefix}-round-pools-${tourneyId}`,
+      )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "round_pools" },
+        {
+          event: "*",
+          schema: "public",
+          table: "round_pools",
+          filter: `tourney_id=eq.${tourneyId}`,
+        },
         (payload) => {
-          if (payload.eventType === "DELETE") {
+          if (payload.eventType === "INSERT") {
             setRoundPools((prev) =>
-              prev.filter((p) => p.id !== payload.old.id)
+              [...prev, payload.new as RoundPool].sort(
+                (a, b) =>
+                  (a.sort_order ??
+                    Number.MAX_SAFE_INTEGER) -
+                  (b.sort_order ??
+                    Number.MAX_SAFE_INTEGER),
+              ),
             );
-            return;
+          } else if (payload.eventType === "UPDATE") {
+            setRoundPools((prev) =>
+              prev
+                .map((pool) =>
+                  pool.id === payload.new.id
+                    ? (payload.new as RoundPool)
+                    : pool,
+                )
+                .sort(
+                  (a, b) =>
+                    (a.sort_order ??
+                      Number.MAX_SAFE_INTEGER) -
+                    (b.sort_order ??
+                      Number.MAX_SAFE_INTEGER),
+                ),
+            );
+          } else if (payload.eventType === "DELETE") {
+            setRoundPools((prev) =>
+              prev.filter(
+                (pool) =>
+                  pool.id !== payload.old.id,
+              ),
+            );
           }
-          const incoming = payload.new as RoundPool;
-          if (String(incoming.tourney_id) !== String(tourneyId)) return;
-          setRoundPools((prev) => {
-            const exists = prev.find((p) => p.id === incoming.id);
-            if (exists)
-              return prev.map((p) => (p.id === incoming.id ? incoming : p));
-            return [...prev, incoming];
-          });
-        }
+        },
       )
       .subscribe();
 
-    const playerRoundsChannel = supabaseClient
-      .channel(`${channelPrefix}-player-rounds-${tourneyId}`)
+    const playersChannel = supabaseClient
+      .channel(
+        `${channelIdPrefix}-players-${tourneyId}`,
+      )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "player_rounds" },
-        (payload) => {
-          if (payload.eventType === "DELETE") {
-            setPlayerRounds((prev) =>
-              deletePlayerFromRound(prev, payload.old.id)
-            );
-            return;
-          }
-          const incoming = payload.new as PlayerRound;
-          setPlayerRounds((prev) =>
-            upsertPlayerInRound(
-              prev,
-              incoming,
-              tourneyPlayersRef.current ?? []
-            )
-          );
-        }
+        {
+          event: "*",
+          schema: "public",
+          table: "player_rounds",
+        },
+        () => {
+          fetchPlayerRounds();
+        },
+      )
+      .subscribe();
+
+    const playerTourneysChannel = supabaseClient
+      .channel(
+        `${channelIdPrefix}-player-tourneys-${tourneyId}`,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "player_tourneys",
+          filter: `tourney_id=eq.${tourneyId}`,
+        },
+        () => {
+          fetchPlayerRounds();
+        },
       )
       .subscribe();
 
     return () => {
       supabaseClient.removeChannel(roundsChannel);
       supabaseClient.removeChannel(roundPoolsChannel);
-      supabaseClient.removeChannel(playerRoundsChannel);
+      supabaseClient.removeChannel(playersChannel);
+      supabaseClient.removeChannel(
+        playerTourneysChannel,
+      );
     };
-  }, [tourneyId, channelPrefix]);
+  }, [tourneyId, channelIdPrefix]);
+
+  const currentRound = useMemo(() => {
+    if (!rounds.length) {
+      return null;
+    }
+
+    // Explicit URL parameter takes highest priority.
+    if (roundIdOverride) {
+      return (
+        rounds.find(
+          (round) =>
+            String(round.id) ===
+            String(roundIdOverride),
+        ) ?? null
+      );
+    }
+
+    // Follow tourney.stream_round_id.
+    if (tourney?.stream_round_id) {
+      return (
+        rounds.find(
+          (round) =>
+            String(round.id) ===
+            String(tourney.stream_round_id),
+        ) ?? null
+      );
+    }
+
+    // Fallback: first round in progress or first available round.
+    return (
+      rounds.find(
+        (round) =>
+          round.status === "In Progress",
+      ) ??
+      rounds[0] ??
+      null
+    );
+  }, [
+    rounds,
+    tourney?.stream_round_id,
+    roundIdOverride,
+  ]);
+
+  const sortedRounds = useMemo(() => {
+    return [...rounds].sort(
+      (a, b) => (a.id ?? 0) - (b.id ?? 0),
+    );
+  }, [rounds]);
 
   return {
     tourney,
+    rounds,
     sortedRounds,
     roundPools,
-    setRounds,
     currentRound,
     playerRounds,
+    setRounds,
   };
 }

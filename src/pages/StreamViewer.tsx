@@ -47,11 +47,11 @@ const NAME_SIZE_TIERS: Array<{
   reference: string;
   extraPx?: number;
 }> = [
-  { maxLength: 4, reference: "W".repeat(4), extraPx: 10 },
-  { maxLength: 7, reference: "W".repeat(7), extraPx: 10 },
-  { maxLength: 10, reference: "W".repeat(10), extraPx: 10 },
-  { maxLength: Infinity, reference: "cherry.cheesecake", extraPx: 10 },
-];
+    { maxLength: 4, reference: "W".repeat(4), extraPx: 10 },
+    { maxLength: 7, reference: "W".repeat(7), extraPx: 10 },
+    { maxLength: 10, reference: "W".repeat(10), extraPx: 10 },
+    { maxLength: Infinity, reference: "cherry.cheesecake", extraPx: 10 },
+  ];
 
 function getNameSizeTierIndex(nameLength: number): number {
   return NAME_SIZE_TIERS.findIndex((tier) => nameLength <= tier.maxLength);
@@ -96,7 +96,7 @@ function useNameSizeTierFontSizesPx(maxWidthPx: number): number[] {
         if (cancelled) return;
         setFontSizesPx(computeTierFontSizesPx(maxWidthPx));
       })
-      .catch(() => {});
+      .catch(() => { });
 
     return () => {
       cancelled = true;
@@ -226,11 +226,9 @@ function PlayerModule({ pr, centerX, tierFontSizesPx }: PlayerModuleProps) {
 function StreamViewer() {
   const { tourneyId } = useParams();
   const [searchParams] = useSearchParams();
+
   const roundIdOverride = searchParams.get("roundId");
-  
-  // URL Layout modes:
-  // - "active" (default): Renders ONLY players in active_stream_state.lanes
-  // - "full": Renders ALL players assigned to active_stream_state.heat
+  const heatOverride = searchParams.get("heat");
   const layoutMode = searchParams.get("layout") ?? "active";
 
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
@@ -245,33 +243,74 @@ function StreamViewer() {
     "stream-viewer",
   );
 
-  // Extract active broadcast values from currentRound active_stream_state
+  // 1. Resolve Active Broadcast State with Fallbacks
   const activeStreamState = currentRound?.active_stream_state;
-  const activeHeat = activeStreamState?.heat;
-  const activeLanes = activeStreamState?.lanes ?? [];
+
+  // Resolve Heat Number:
+  // Stream state -> URL query param -> Default to Heat 1
+  const activeHeat = useMemo(() => {
+    if (activeStreamState?.heat) return Number(activeStreamState.heat);
+    if (heatOverride) return Number(heatOverride);
+    return 1; // Fallback to Heat 1 for completed/archived tourneys
+  }, [activeStreamState, heatOverride]);
+
+  // Resolve Active Lanes:
+  // Stream state -> Fallback to all assigned lanes (1..4)
+  const activeLanes = useMemo(() => {
+    if (activeStreamState?.lanes && activeStreamState.lanes.length > 0) {
+      return activeStreamState.lanes.map(Number);
+    }
+    return [1, 2, 3, 4]; // Fallback to all lanes
+  }, [activeStreamState]);
+
   const isFlipped = activeStreamState?.reverse_order ?? false;
 
+  // 2. Filter & Sort Players
   const displayedPlayers = useMemo(() => {
-    if (!activeHeat) return [];
+    if (!currentRound || !playerRounds.length) {
+      return [];
+    }
 
-    // Filter players belonging to the currently live heat
-    const heatPlayers = playerRounds.filter(
-      (pr) => Number(pr.heat) === Number(activeHeat),
+    const roundPlayers = playerRounds.filter(
+      (pr) => Number(pr.round_id) === Number(currentRound.id),
     );
 
-    // Filter based on URL layout mode
-    const selectedPlayers =
-      layoutMode === "full"
-        ? heatPlayers
-        : heatPlayers.filter((pr) => activeLanes.includes(Number(pr.lane)));
+    const heatPlayers = roundPlayers.filter(
+      (pr) => Number(pr.heat) === activeHeat,
+    );
 
-    // Sort by lane index (ascending or flipped/descending)
-    return selectedPlayers.sort((a, b) => {
+    // If layout is "full" OR there's no explicit live stream state,
+    // show all players in this round/heat.
+    const isExplicitPairing =
+      activeStreamState?.lanes &&
+      activeStreamState.lanes.length > 0;
+
+    const shouldFilterLanes =
+      layoutMode === "active" && isExplicitPairing;
+
+    const selectedPlayers = shouldFilterLanes
+      ? heatPlayers.filter((pr) =>
+        activeLanes.includes(Number(pr.lane)),
+      )
+      : heatPlayers;
+
+    return [...selectedPlayers].sort((a, b) => {
       const laneA = Number(a.lane ?? 0);
       const laneB = Number(b.lane ?? 0);
-      return isFlipped ? laneB - laneA : laneA - laneB;
+
+      return isFlipped
+        ? laneB - laneA
+        : laneA - laneB;
     });
-  }, [playerRounds, activeHeat, activeLanes, isFlipped, layoutMode]);
+  }, [
+    playerRounds,
+    currentRound,
+    activeHeat,
+    activeLanes,
+    isFlipped,
+    layoutMode,
+    activeStreamState,
+  ]);
 
   // Center slots evenly based on displayed player count
   const slots = useMemo(() => {
@@ -283,7 +322,7 @@ function StreamViewer() {
     }));
   }, [displayedPlayers]);
 
-  if (!currentRound || !activeHeat) return null;
+  if (!currentRound) return null;
 
   return (
     <Box position="fixed" inset={0} overflow="hidden" bg="transparent">

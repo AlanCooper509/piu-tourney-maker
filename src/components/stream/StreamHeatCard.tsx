@@ -28,6 +28,7 @@ interface StreamHeatCardProps {
   allPlayers: PlayerRound[];
   canDelete: boolean;
   activeStreamState?: StreamState | null;
+  isActiveStreamRound: boolean;
   setTargetHeatCount: React.Dispatch<React.SetStateAction<number>>;
   onRemoveHeat: (
     heatNumToRemove: number,
@@ -79,6 +80,7 @@ export function StreamHeatCard({
   allPlayers,
   canDelete,
   activeStreamState,
+  isActiveStreamRound,
   setTargetHeatCount,
   onRemoveHeat,
   onUpdateHeatLane,
@@ -102,7 +104,7 @@ export function StreamHeatCard({
   });
 
   // Broadcast status helpers
-  const isLiveHeat = activeStreamState?.heat === heatNum;
+  const isLiveHeat = isActiveStreamRound && Number(activeStreamState?.heat) === Number(heatNum);
   const currentActiveLanes = activeStreamState?.lanes ?? [];
   const isFlipped = activeStreamState?.reverse_order ?? false;
 

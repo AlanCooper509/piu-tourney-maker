@@ -28,6 +28,7 @@ interface StreamHelperContainerProps {
 }
 
 export function StreamHelperContainer({
+  tourney,
   sortedRounds,
   roundPools,
   setRounds,
@@ -39,23 +40,30 @@ export function StreamHelperContainer({
     roundIdOverride ? `?roundId=${roundIdOverride}` : ""
   }`;
 
-  // Group and sort player_rounds by round_id alphabetically by player_name
   const playersByRound = useMemo(() => {
-    // 1. Sort all player rounds alphabetically by name first
     const sorted = [...playerRounds].sort((a, b) => {
       const nameA = a.player_tourneys?.player_name ?? `Player ${a.id}`;
       const nameB = b.player_tourneys?.player_name ?? `Player ${b.id}`;
-      return nameA.localeCompare(nameB, undefined, { sensitivity: "base" });
+
+      return nameA.localeCompare(nameB, undefined, {
+        sensitivity: "base",
+      });
     });
 
-    // 2. Reduce into grouped round map
     return sorted.reduce<Record<string, PlayerRound[]>>((acc, pr) => {
       const rId = String(pr.round_id);
-      if (!acc[rId]) acc[rId] = [];
+
+      if (!acc[rId]) {
+        acc[rId] = [];
+      }
+
       acc[rId].push(pr);
+
       return acc;
     }, {});
   }, [playerRounds]);
+
+  const streamRoundId = tourney?.stream_round_id ?? null;
 
   return (
     <Container maxW="container.md" pt={8} pb={10}>
@@ -65,9 +73,16 @@ export function StreamHelperContainer({
         currentRoundId={NaN}
         roundPools={roundPools}
       />
+
       <Separator mt={2} mb={4} />
 
-      <Flex justify="space-between" align="center" mb={4} wrap="wrap" gap={2}>
+      <Flex
+        justify="space-between"
+        align="center"
+        mb={4}
+        wrap="wrap"
+        gap={2}
+      >
         <Button
           asChild
           colorPalette="purple"
@@ -92,6 +107,7 @@ export function StreamHelperContainer({
               key={round.id}
               round={round}
               players={playersByRound[String(round.id)] ?? []}
+              streamRoundId={streamRoundId}
             />
           ))
         )}
