@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabaseClient } from "../lib/supabaseClient";
+import getStagesInRound from "../helpers/getstagesInRound";
 
 import type { Tourney } from "../types/Tourney";
 import type { Round } from "../types/Round";
 import type { RoundPool } from "../types/RoundPool";
 import type { PlayerRound } from "../types/PlayerRound";
+import type { Stage } from "../types/Stage";
 
 export function useRoundStreamData(
   tourneyId: string,
@@ -15,6 +17,7 @@ export function useRoundStreamData(
   const [rounds, setRounds] = useState<Round[]>([]);
   const [roundPools, setRoundPools] = useState<RoundPool[]>([]);
   const [playerRounds, setPlayerRounds] = useState<PlayerRound[]>([]);
+  const [stages, setStages] = useState<Stage[]>([]);
 
   async function fetchPlayerRounds() {
     const { data: playerTourneys, error: playerTourneysError } =
@@ -342,6 +345,47 @@ export function useRoundStreamData(
     );
   }, [rounds]);
 
+  useEffect(() => {
+    const currentRoundId = currentRound?.id;
+
+    if (!currentRoundId) {
+      setStages([]);
+      return;
+    }
+
+    async function fetchStages() {
+      try {
+        const data = await getStagesInRound(currentRoundId!);
+        setStages(data as Stage[]);
+      } catch (error) {
+        console.error("Error fetching stages:", error);
+      }
+    }
+
+    fetchStages();
+
+    const scoresChannel = supabaseClient
+      .channel(
+        `${channelIdPrefix}-scores-${currentRoundId}`,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "scores",
+        },
+        () => {
+          fetchStages();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabaseClient.removeChannel(scoresChannel);
+    };
+  }, [currentRound?.id, channelIdPrefix]);
+
   return {
     tourney,
     rounds,
@@ -349,6 +393,7 @@ export function useRoundStreamData(
     roundPools,
     currentRound,
     playerRounds,
+    stages,
     setRounds,
   };
 }

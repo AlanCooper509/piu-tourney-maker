@@ -5,6 +5,7 @@ import "@fontsource/fredoka/700.css";
 
 import { useRoundStreamData } from "../hooks/useRoundStreamData";
 import { useTransparentBackground } from "../hooks/useTransparentBackground";
+import { calculateH2HScoring } from "../helpers/calculateH2HScoring";
 import { PlayerAvatar } from "../components/PlayerAvatar";
 
 import type { PlayerRound } from "../types/PlayerRound";
@@ -12,7 +13,7 @@ import type { PlayerRound } from "../types/PlayerRound";
 const CANVAS_WIDTH = 1920;
 const CANVAS_HEIGHT = 1080;
 const ROUND_TITLE_Y = 115;
-const ROW_Y = 630;
+const ROW_Y = 663;
 const PICTURE_SIZE = 100;
 const PICTURE_BORDER_RADIUS = "8px";
 const ELEMENT_GAP = 56;
@@ -21,6 +22,13 @@ const MIN_SLOTS = 4;
 const SLOT_WIDTH = CANVAS_WIDTH / MIN_SLOTS;
 const MODULE_MAX_WIDTH = SLOT_WIDTH - 2 * MODULE_EDGE_PADDING;
 const NAME_MAX_WIDTH = MODULE_MAX_WIDTH - PICTURE_SIZE - ELEMENT_GAP;
+
+const SINGLE_CAB_ROW_OFFSET_X = -345;
+const SINGLE_CAB_ROW_OFFSET_Y = 34;
+const SINGLE_CAB_PICTURE_SIZE = 64;
+const SINGLE_CAB_NAME_WIDTH = 170;
+const SINGLE_CAB_AVATAR_NAME_GAP = 12;
+const SINGLE_CAB_NAME_SCORE_GAP = 20;
 
 const STROKE_INNERMOST_COLOR = "#0C2DE8";
 const STROKE_INNER_COLOR = "#F18DD8";
@@ -40,6 +48,8 @@ const NAME_FONT_FAMILY = "Fredoka, sans-serif";
 const NAME_SIZE_MULTIPLIER = 1.25;
 
 const ROUND_TITLE_FONT_PX = 45;
+
+const SCORE_FONT_REFERENCE_NAME_LENGTH = 4;
 
 const NAME_SIZE_TIERS: Array<{
   maxLength: number;
@@ -143,7 +153,11 @@ function StrokedName({
   const innerStrokeWidth = innerRadiusPx * 2;
   const outerStrokeWidth = outerRadiusPx * 2;
 
-  const sidePadding = Math.ceil(outerStrokeWidth / 2) + 4;
+  // Generous on purpose: a canvas text measurement that runs even slightly
+  // narrow leaves harmless empty space wherever the text ISN'T anchored,
+  // but bleeds toward whichever side it IS measuring for. Extra padding
+  // here is just a safety margin on top of that.
+  const sidePadding = outerStrokeWidth + 12;
   const measuredWidth = measureTextWidthPx(name, fontSizePx);
   const svgWidth =
     (measuredWidth > 0 ? measuredWidth : fontSizePx * name.length * 0.6) +
@@ -221,9 +235,10 @@ interface PlayerModuleProps {
   pr: PlayerRound;
   centerX: number;
   tierFontSizesPx: number[];
+  alignRight?: boolean;
 }
 
-function PlayerModule({ pr, centerX, tierFontSizesPx }: PlayerModuleProps) {
+function PlayerModule({ pr, centerX, tierFontSizesPx, alignRight = false }: PlayerModuleProps) {
   const name = pr.player_tourneys?.player_name ?? "TBD";
   const fontSizePx = tierFontSizesPx[getNameSizeTierIndex(name.length)];
 
@@ -235,7 +250,12 @@ function PlayerModule({ pr, centerX, tierFontSizesPx }: PlayerModuleProps) {
       maxW={`${MODULE_MAX_WIDTH}px`}
       style={{ transform: "translate(-50%, -50%)" }}
       display="flex"
-      flexDirection="row"
+      // Mirrors the 1-cab (SingleCabPairRow) right player: picture on the
+      // right, name immediately to its left. Same maxW/gap/sizes as the
+      // normal (left) orientation — just the element order is reversed, so
+      // flexbox's own non-overlap guarantee (which already keeps the left
+      // side safe) applies here too.
+      flexDirection={alignRight ? "row-reverse" : "row"}
       alignItems="center"
       gap={`${ELEMENT_GAP}px`}
     >
@@ -251,6 +271,75 @@ function PlayerModule({ pr, centerX, tierFontSizesPx }: PlayerModuleProps) {
   );
 }
 
+interface SingleCabPairRowProps {
+  player1: PlayerRound;
+  player2: PlayerRound;
+  tierFontSizesPx: number[];
+  scoreText: string | null;
+  scoreFontSizePx: number;
+}
+
+function SingleCabPairRow({
+  player1,
+  player2,
+  tierFontSizesPx,
+  scoreText,
+  scoreFontSizePx,
+}: SingleCabPairRowProps) {
+  const name1 = player1.player_tourneys?.player_name ?? "TBD";
+  const name2 = player2.player_tourneys?.player_name ?? "TBD";
+  const fontSizePx1 = tierFontSizesPx[getNameSizeTierIndex(name1.length)];
+  const fontSizePx2 = tierFontSizesPx[getNameSizeTierIndex(name2.length)];
+
+  return (
+    <Box
+      position="absolute"
+      left={`calc(50% + ${SINGLE_CAB_ROW_OFFSET_X}px)`}
+      top={`${ROW_Y + SINGLE_CAB_ROW_OFFSET_Y}px`}
+      style={{ transform: "translate(-50%, -50%)" }}
+      display="flex"
+      flexDirection="row"
+      alignItems="center"
+      // Per-pair spacing via margins instead of a shared flex `gap`, since
+      // the avatar<->name gap and the name<->score gap need to differ.
+    >
+      <PlayerAvatar
+        src={player1.player_tourneys?.player_img}
+        alt={name1}
+        size={`${SINGLE_CAB_PICTURE_SIZE}px`}
+        borderRadius={PICTURE_BORDER_RADIUS}
+        boxShadow={PICTURE_STROKE_SHADOW}
+      />
+      <Box
+        ml={`${SINGLE_CAB_AVATAR_NAME_GAP}px`}
+        mr={`${SINGLE_CAB_NAME_SCORE_GAP}px`}
+        flexShrink={0}
+      >
+        <StrokedName name={name1.toUpperCase()} fontSizePx={fontSizePx1} />
+      </Box>
+      {scoreText && (
+        <Box flexShrink={0}>
+          <StrokedName name={scoreText} fontSizePx={scoreFontSizePx} />
+        </Box>
+      )}
+      <Box
+        ml={`${SINGLE_CAB_NAME_SCORE_GAP}px`}
+        mr={`${SINGLE_CAB_AVATAR_NAME_GAP}px`}
+        flexShrink={0}
+      >
+        <StrokedName name={name2.toUpperCase()} fontSizePx={fontSizePx2} />
+      </Box>
+      <PlayerAvatar
+        src={player2.player_tourneys?.player_img}
+        alt={name2}
+        size={`${SINGLE_CAB_PICTURE_SIZE}px`}
+        borderRadius={PICTURE_BORDER_RADIUS}
+        boxShadow={PICTURE_STROKE_SHADOW}
+      />
+    </Box>
+  );
+}
+
 function StreamViewer() {
   const { tourneyId } = useParams();
   const [searchParams] = useSearchParams();
@@ -258,18 +347,22 @@ function StreamViewer() {
   const roundIdOverride = searchParams.get("roundId");
   const heatOverride = searchParams.get("heat");
   const layoutMode = searchParams.get("layout") ?? "active";
+  const isSingleCab = (searchParams.get("cabs") ?? "2") === "1";
 
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
 
   useTransparentBackground();
   const scale = useFitScale(CANVAS_WIDTH, CANVAS_HEIGHT);
   const tierFontSizesPx = useNameSizeTierFontSizesPx(NAME_MAX_WIDTH);
+  const singleCabTierFontSizesPx = useNameSizeTierFontSizesPx(SINGLE_CAB_NAME_WIDTH);
 
-  const { currentRound, playerRounds } = useRoundStreamData(
+  const { tourney, currentRound, playerRounds, stages } = useRoundStreamData(
     tourneyId,
     roundIdOverride,
     "stream-viewer",
   );
+
+  const isDoubleElimination = tourney?.type === "Double Elimination";
 
   // 1. Resolve Active Broadcast State with Fallbacks
   const activeStreamState = currentRound?.active_stream_state;
@@ -340,15 +433,56 @@ function StreamViewer() {
     activeStreamState,
   ]);
 
-  // Center slots evenly based on displayed player count
+  const isPairedTwo = displayedPlayers.length === 2;
+
+  // Center slots evenly based on displayed player count. A 1v1 pairing on a
+  // 2-cab (dual-system) view gets its players centered under each half of
+  // the canvas (quarter marks). A 1-cab (single machine) pairing is instead
+  // rendered as one combined, self-centering row (see SingleCabPairRow) so
+  // its avatar/name/score widths never collide.
   const slots = useMemo(() => {
+    if (isPairedTwo) {
+      if (isSingleCab) return [];
+
+      return [
+        { pr: displayedPlayers[0], centerX: CANVAS_WIDTH / 4 },
+        { pr: displayedPlayers[1], centerX: (CANVAS_WIDTH * 3) / 4 },
+      ];
+    }
+
     const startSlot = Math.floor((MIN_SLOTS - displayedPlayers.length) / 2);
 
     return displayedPlayers.map((pr, idx) => ({
       pr,
       centerX: SLOT_WIDTH * (startSlot + idx + 0.5),
     }));
-  }, [displayedPlayers]);
+  }, [displayedPlayers, isPairedTwo, isSingleCab]);
+
+  // Head-to-head match score: only shown for a 1v1 pairing in a Double
+  // Elimination tourney. A 4-player free-for-all never shows a score.
+  const showScore = isPairedTwo && isDoubleElimination;
+
+  const scoring = useMemo(
+    () => calculateH2HScoring({ players: displayedPlayers, stages, round: currentRound }),
+    [displayedPlayers, stages, currentRound],
+  );
+
+  const scoreText = useMemo(() => {
+    if (!showScore) return null;
+
+    const [p1, p2] = displayedPlayers;
+    const display = (pr: PlayerRound) =>
+      scoring.hasScoresMap[pr.id] ? String(scoring.totalsMap[pr.id]) : "-";
+
+    return `${display(p1)} - ${display(p2)}`;
+  }, [showScore, displayedPlayers, scoring]);
+
+  const scoreCenterX =
+    showScore && slots.length === 2 ? (slots[0].centerX + slots[1].centerX) / 2 : 0;
+  const scoreFontSizePx =
+    tierFontSizesPx[getNameSizeTierIndex(SCORE_FONT_REFERENCE_NAME_LENGTH)];
+  const singleCabScoreFontSizePx =
+    singleCabTierFontSizesPx[getNameSizeTierIndex(SCORE_FONT_REFERENCE_NAME_LENGTH)];
 
   if (!currentRound) return null;
 
@@ -378,14 +512,38 @@ function StreamViewer() {
           />
         </Box>
 
-        {slots.map(({ pr, centerX }) => (
-          <PlayerModule
-            key={pr.id}
-            pr={pr}
-            centerX={centerX}
-            tierFontSizesPx={tierFontSizesPx}
+        {isPairedTwo && isSingleCab ? (
+          <SingleCabPairRow
+            player1={displayedPlayers[0]}
+            player2={displayedPlayers[1]}
+            tierFontSizesPx={singleCabTierFontSizesPx}
+            scoreText={scoreText}
+            scoreFontSizePx={singleCabScoreFontSizePx}
           />
-        ))}
+        ) : (
+          <>
+            {slots.map(({ pr, centerX }, idx) => (
+              <PlayerModule
+                key={pr.id}
+                pr={pr}
+                centerX={centerX}
+                tierFontSizesPx={tierFontSizesPx}
+                alignRight={isPairedTwo && idx === 1}
+              />
+            ))}
+
+            {scoreText && (
+              <Box
+                position="absolute"
+                left={`${scoreCenterX}px`}
+                top={`${ROW_Y}px`}
+                style={{ transform: "translate(-50%, -50%)" }}
+              >
+                <StrokedName name={scoreText} fontSizePx={scoreFontSizePx} />
+              </Box>
+            )}
+          </>
+        )}
       </Box>
     </Box>
   );
