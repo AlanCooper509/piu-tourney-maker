@@ -1,30 +1,46 @@
-import { useState } from 'react'
-import { Box, Heading, VStack, Text, IconButton, HStack } from '@chakra-ui/react'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Heading,
+  VStack,
+  Text,
+  IconButton,
+  Button,
+  HStack,
+} from "@chakra-ui/react";
 
-
-import { useCurrentTourney } from '../../context/CurrentTourneyContext'
+import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
-import EditableTourneyName from './EditableTourneyName'
-import GenerateBracketButton from './GenerateBracketButton/GenerateBracketButton';
-import SeedPlayersButton from './SeedPlayersButton/SeedPlayersButton'
-import { handleUpdateTourneyName } from '../../handlers/handleUpdateTourneyName'
-import { StatusElement } from '../StatusElement'
-import { toaster } from '../ui/toaster'
-import { handleStartTourney } from '../../handlers/handleStartTourney'
+import EditableTourneyName from "./EditableTourneyName";
+import GenerateBracketButton from "./GenerateBracketButton/GenerateBracketButton";
+import SeedPlayersButton from "./SeedPlayersButton/SeedPlayersButton";
+import { handleUpdateTourneyName } from "../../handlers/handleUpdateTourneyName";
+import { StatusElement } from "../StatusElement";
+import { toaster } from "../ui/toaster";
+import { handleStartTourney } from "../../handlers/handleStartTourney";
 
-import type { Round } from '../../types/Round'
-import type { PlayerTourney } from '../../types/PlayerTourney'
+import type { Round } from "../../types/Round";
+import type { PlayerTourney } from "../../types/PlayerTourney";
 
 interface TourneyDetailsProps {
-  players: PlayerTourney[] | null
-  rounds: Round[] | null
-  loading: boolean
-  error: Error | null
+  players: PlayerTourney[] | null;
+  rounds: Round[] | null;
+  loading: boolean;
+  error: Error | null;
 }
 
-export function TourneyDetails({ players, rounds, loading, error}: TourneyDetailsProps) {
+export function TourneyDetails({
+  players,
+  rounds,
+  loading,
+  error,
+}: TourneyDetailsProps) {
   const { tourney, setTourney } = useCurrentTourney();
-  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(
+    tourney?.id ?? undefined,
+  );
+  const navigate = useNavigate();
   const [updatingName, setUpdatingName] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
 
@@ -45,17 +61,27 @@ export function TourneyDetails({ players, rounds, loading, error}: TourneyDetail
   const handleStartTourneyClick = async () => {
     if (!tourney) return;
     if (!players || players.length < 2) {
-      toaster.create({ title: 'Error', description: 'Need at least 2 players', type: 'error', closable: true });
+      toaster.create({
+        title: "Error",
+        description: "Need at least 2 players",
+        type: "error",
+        closable: true,
+      });
       return;
     }
 
     if (!rounds || rounds.length < 1) {
-      toaster.create({ title: 'Error', description: 'Need at least 1 round', type: 'error', closable: true });
+      toaster.create({
+        title: "Error",
+        description: "Need at least 1 round",
+        type: "error",
+        closable: true,
+      });
       return;
     }
     try {
       setIsStarting(true);
-      const {updatedTourney} = await handleStartTourney({
+      const { updatedTourney } = await handleStartTourney({
         tourneyId: tourney.id,
         seedPlayersIntoEarliestRound: tourney.type === "Gauntlet",
       });
@@ -80,64 +106,84 @@ export function TourneyDetails({ players, rounds, loading, error}: TourneyDetail
 
   const tourneyNameText = (
     <>
-      {!loadingTourneyAdminStatus && isTourneyAdmin ?
+      {!loadingTourneyAdminStatus && isTourneyAdmin ? (
         <EditableTourneyName
-          tourneyName={tourney?.name ?? ''}
+          tourneyName={tourney?.name ?? ""}
           onRename={onRenameTourney}
           isLoading={updatingName}
-        /> :
+        />
+      ) : (
         <Text></Text>
-      }
+      )}
     </>
   );
   return (
     <>
-      <title>{tourney && tourney.name ? tourney.name : 'Tournament Details'}</title>
+      <title>
+        {tourney && tourney.name ? tourney.name : "Tournament Details"}
+      </title>
       <Heading mb={-2}>{tourneyNameText}</Heading>
       <Box>
-        <VStack style={{gap: '0px'}}>
+        <VStack style={{ gap: "0px" }}>
           {loading && <Text>Loading tournament...</Text>}
           {error && <Text color="red">Error: {error.message}</Text>}
           {!loading && !error && tourney && (
-          <>
-            {!loadingTourneyAdminStatus && isTourneyAdmin && tourney?.status === "Not Started" && (
-              <HStack mb={4}>
-                {tourney.type === "Double Elimination" && (
-                  <>
-                    <GenerateBracketButton 
-                      players={players}
-                      buttonText={rounds && rounds.length > 0 ? "Regenerate Bracket" : "Generate Bracket"}
-                    />
-                  </>
+            <>
+              {!loadingTourneyAdminStatus &&
+                isTourneyAdmin &&
+                tourney?.status === "Not Started" && (
+                  <HStack mb={4}>
+                    {tourney.type === "Double Elimination" && (
+                      <>
+                        <GenerateBracketButton
+                          players={players}
+                          buttonText={
+                            rounds && rounds.length > 0
+                              ? "Regenerate Bracket"
+                              : "Generate Bracket"
+                          }
+                        />
+                      </>
+                    )}
+                    {/* TODO: Archive this Seed Players button after migrating existing Gauntlet/Waterfall functionality to GenerateBracketButton */}
+                    {tourney.type !== "Double Elimination" && (
+                      <>
+                        <SeedPlayersButton players={players} rounds={rounds} />
+                      </>
+                    )}
+                    <IconButton
+                      colorPalette="green"
+                      variant="outline"
+                      borderWidth={2}
+                      size="sm"
+                      onClick={handleStartTourneyClick}
+                      px={2}
+                      loading={isStarting}
+                    >
+                      Start Tourney
+                    </IconButton>
+                  </HStack>
                 )}
-                {/* TODO: Archive this Seed Players button after migrating existing Gauntlet/Waterfall functionality to GenerateBracketButton */}
-                {tourney.type !== "Double Elimination" && (
-                  <>
-                    <SeedPlayersButton 
-                      players={players}
-                      rounds={rounds}
-                    />
-                  </>
-                )}
-                <IconButton 
-                  colorPalette="green"
+              {!loadingTourneyAdminStatus && isTourneyAdmin && (
+                <Button
+                  colorPalette="purple"
                   variant="outline"
                   borderWidth={2}
                   size="sm"
-                  onClick={handleStartTourneyClick}
-                  px={2}
-                  loading={isStarting}
+                  mb={4}
+                  onClick={() =>
+                    navigate(`/tourney/${tourney.id}/StreamHelper`)
+                  }
                 >
-                  Start Tourney
-                </IconButton>
-              </HStack>
-            )}
-            <Text>Type: {tourney.type}</Text>
-            <StatusElement element={tourney} />
-          </>
-        )}
+                  Stream Helper
+                </Button>
+              )}
+              <Text>Type: {tourney.type}</Text>
+              <StatusElement element={tourney} />
+            </>
+          )}
         </VStack>
       </Box>
     </>
-  )
+  );
 }

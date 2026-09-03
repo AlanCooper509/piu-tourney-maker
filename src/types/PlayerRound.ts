@@ -3,9 +3,12 @@ export interface PlayerRound {
   round_id: number;          // bigint -> number
   player_tourney_id: number; // bigint -> number
   sort_order: number;        // bigint -> number
+  heat: number | null;       // bigint -> number | null
+  lane: number | null;       // bigint -> number | null
   created_at: string;        // ISO timestamp string
-  player_tourneys: {         // NOTE: MUST be using SELECT clause of *, player_tourneys(player_name, seed) when fetching
-    player_name: string;     // text; 
+  player_tourneys: {         // NOTE: MUST be using SELECT clause of *, player_tourneys(player_name, seed, player_img) when fetching
+    player_name: string;     // text;
     seed: number | null;     // bigint -> number | null
+    player_img: string | null; // text
   };
 }
