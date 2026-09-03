@@ -24,23 +24,22 @@ const NAME_MAX_WIDTH = MODULE_MAX_WIDTH - PICTURE_SIZE - ELEMENT_GAP;
 
 const STROKE_INNERMOST_COLOR = "#0C2DE8";
 const STROKE_INNER_COLOR = "#F18DD8";
+const STROKE_WHITE_COLOR = "#FFFFFF";
 const STROKE_OUTER_COLOR = "#0C2DE8";
 const STROKE_INNERMOST_WIDTH = 1;
 const STROKE_INNER_WIDTH = 4;
+const STROKE_WHITE_WIDTH = 3;
 const STROKE_OUTER_WIDTH = 6;
 
 const PICTURE_STROKE_SHADOW = `0 0 0 ${STROKE_INNERMOST_WIDTH}px ${STROKE_INNERMOST_COLOR}, 0 0 0 ${STROKE_INNERMOST_WIDTH + STROKE_INNER_WIDTH}px ${STROKE_INNER_COLOR}, 0 0 0 ${STROKE_INNERMOST_WIDTH + STROKE_INNER_WIDTH + STROKE_OUTER_WIDTH}px ${STROKE_OUTER_COLOR}`;
-
-const NAME_INNERMOST_STROKE_PX = STROKE_INNERMOST_WIDTH * 2;
-const NAME_INNER_STROKE_PX = (STROKE_INNERMOST_WIDTH + STROKE_INNER_WIDTH) * 2;
-const NAME_OUTER_STROKE_PX =
-  (STROKE_INNERMOST_WIDTH + STROKE_INNER_WIDTH + STROKE_OUTER_WIDTH) * 2;
 
 const NAME_BASE_FONT_PX = 85;
 const NAME_MIN_FONT_PX = 24;
 const NAME_FONT_WEIGHT = "700";
 const NAME_FONT_FAMILY = "Fredoka, sans-serif";
 const NAME_SIZE_MULTIPLIER = 1.25;
+
+const ROUND_TITLE_FONT_PX = 45;
 
 const NAME_SIZE_TIERS: Array<{
   maxLength: number;
@@ -126,13 +125,30 @@ function useFitScale(canvasWidth: number, canvasHeight: number) {
   return scale;
 }
 
-function StrokedName({ name, fontSizePx }: { name: string; fontSizePx: number }) {
-  const sidePadding = Math.ceil(NAME_OUTER_STROKE_PX / 2) + 4;
+function StrokedName({
+  name,
+  fontSizePx,
+  withWhiteRing = false,
+}: {
+  name: string;
+  fontSizePx: number;
+  withWhiteRing?: boolean;
+}) {
+  const innerRadiusPx = STROKE_INNERMOST_WIDTH + STROKE_INNER_WIDTH;
+  const whiteRadiusPx = innerRadiusPx + (withWhiteRing ? STROKE_WHITE_WIDTH : 0);
+  const outerRadiusPx = whiteRadiusPx + STROKE_OUTER_WIDTH;
+
+  const innermostStrokeWidth = STROKE_INNERMOST_WIDTH * 2;
+  const whiteStrokeWidth = whiteRadiusPx * 2;
+  const innerStrokeWidth = innerRadiusPx * 2;
+  const outerStrokeWidth = outerRadiusPx * 2;
+
+  const sidePadding = Math.ceil(outerStrokeWidth / 2) + 4;
   const measuredWidth = measureTextWidthPx(name, fontSizePx);
   const svgWidth =
     (measuredWidth > 0 ? measuredWidth : fontSizePx * name.length * 0.6) +
     sidePadding * 2;
-  const svgHeight = fontSizePx * 1.3 + NAME_OUTER_STROKE_PX;
+  const svgHeight = fontSizePx * 1.3 + outerStrokeWidth;
 
   const textProps = {
     x: svgWidth / 2,
@@ -156,17 +172,29 @@ function StrokedName({ name, fontSizePx }: { name: string; fontSizePx: number })
         {...textProps}
         fill="none"
         stroke={STROKE_OUTER_COLOR}
-        strokeWidth={NAME_OUTER_STROKE_PX}
+        strokeWidth={outerStrokeWidth}
         strokeLinejoin="round"
         strokeLinecap="round"
       >
         {name}
       </text>
+      {withWhiteRing && (
+        <text
+          {...textProps}
+          fill="none"
+          stroke={STROKE_WHITE_COLOR}
+          strokeWidth={whiteStrokeWidth}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        >
+          {name}
+        </text>
+      )}
       <text
         {...textProps}
         fill="none"
         stroke={STROKE_INNER_COLOR}
-        strokeWidth={NAME_INNER_STROKE_PX}
+        strokeWidth={innerStrokeWidth}
         strokeLinejoin="round"
         strokeLinecap="round"
       >
@@ -176,7 +204,7 @@ function StrokedName({ name, fontSizePx }: { name: string; fontSizePx: number })
         {...textProps}
         fill="none"
         stroke={STROKE_INNERMOST_COLOR}
-        strokeWidth={NAME_INNERMOST_STROKE_PX}
+        strokeWidth={innermostStrokeWidth}
         strokeLinejoin="round"
         strokeLinecap="round"
       >
@@ -345,7 +373,8 @@ function StreamViewer() {
         >
           <StrokedName
             name={currentRound.name.toUpperCase()}
-            fontSizePx={NAME_BASE_FONT_PX}
+            fontSizePx={ROUND_TITLE_FONT_PX}
+            withWhiteRing
           />
         </Box>
 
