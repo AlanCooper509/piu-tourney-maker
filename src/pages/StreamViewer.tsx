@@ -9,11 +9,14 @@ import { calculateH2HScoring } from "../helpers/calculateH2HScoring";
 import { PlayerAvatar } from "../components/PlayerAvatar";
 
 import type { PlayerRound } from "../types/PlayerRound";
+import type { Chart } from "../types/Chart";
+import { ChartCard } from "../components/charts/ChartCard";
+import type { Stage } from "../types/Stage";
 
 const CANVAS_WIDTH = 1920;
 const CANVAS_HEIGHT = 1080;
-const ROUND_TITLE_Y = 115;
-const ROW_Y = 663;
+const ROUND_TITLE_Y = 159;
+const ROW_Y = 707;
 const PICTURE_SIZE = 100;
 const PICTURE_BORDER_RADIUS = "8px";
 const ELEMENT_GAP = 56;
@@ -22,6 +25,14 @@ const MIN_SLOTS = 4;
 const SLOT_WIDTH = CANVAS_WIDTH / MIN_SLOTS;
 const MODULE_MAX_WIDTH = SLOT_WIDTH - 2 * MODULE_EDGE_PADDING;
 const NAME_MAX_WIDTH = MODULE_MAX_WIDTH - PICTURE_SIZE - ELEMENT_GAP;
+
+const VS_AVATAR_SIZE = 320;
+const VS_AVATAR_Y = 434;
+const VS_NAME_Y = 674;
+const VS_TEXT_Y = 434;
+const VS_NAME_MAX_WIDTH = 500;
+const VS_STAGES_ROW_Y = 920;
+const VS_STAGE_CARD_WIDTH = 340;
 
 const SINGLE_CAB_ROW_OFFSET_X = -345;
 const SINGLE_CAB_ROW_OFFSET_Y = 34;
@@ -300,8 +311,6 @@ function SingleCabPairRow({
       display="flex"
       flexDirection="row"
       alignItems="center"
-      // Per-pair spacing via margins instead of a shared flex `gap`, since
-      // the avatar<->name gap and the name<->score gap need to differ.
     >
       <PlayerAvatar
         src={player1.player_tourneys?.player_img}
@@ -340,6 +349,141 @@ function SingleCabPairRow({
   );
 }
 
+function getChartFromStage(stage: Stage): Chart | null {
+  if (stage.charts) return stage.charts;
+  return null;
+}
+
+interface VersusLayoutProps {
+  player1?: PlayerRound;
+  player2?: PlayerRound;
+  tierFontSizesPx: number[];
+  stages?: Stage[];
+}
+
+function VersusLayout({
+  player1,
+  player2,
+  tierFontSizesPx,
+  stages = [],
+}: VersusLayoutProps) {
+  const name1 = player1?.player_tourneys?.player_name ?? "TBD";
+  const name2 = player2?.player_tourneys?.player_name ?? "TBD";
+
+  const fontSizePx1 = tierFontSizesPx[getNameSizeTierIndex(name1.length)];
+  const fontSizePx2 = tierFontSizesPx[getNameSizeTierIndex(name2.length)];
+
+  const p1CenterX = CANVAS_WIDTH * 0.27;
+  const p2CenterX = CANVAS_WIDTH * 0.73;
+
+  const roundStages = useMemo(() => {
+    return [...stages]
+      .filter((s) => getChartFromStage(s) !== null)
+      .sort((a, b) => Number(a.play_order ?? a.id) - Number(b.play_order ?? b.id));
+  }, [stages]);
+
+  // Scale up cards to 270px if there are 3 or fewer charts (default is 210px)
+  const cardWidth = useMemo(() => {
+    return VS_STAGE_CARD_WIDTH;
+  }, [roundStages.length]);
+
+  return (
+    <>
+      {/* Player 1 Column */}
+      <Box
+        position="absolute"
+        left={`${p1CenterX}px`}
+        top={`${VS_AVATAR_Y}px`}
+        style={{ transform: "translate(-50%, -50%)" }}
+      >
+        <PlayerAvatar
+          src={player1?.player_tourneys?.player_img}
+          alt={name1}
+          size={`${VS_AVATAR_SIZE}px`}
+          borderRadius={PICTURE_BORDER_RADIUS}
+          boxShadow={PICTURE_STROKE_SHADOW}
+        />
+      </Box>
+      <Box
+        position="absolute"
+        left={`${p1CenterX}px`}
+        top={`${VS_NAME_Y}px`}
+        style={{ transform: "translate(-50%, -50%)" }}
+      >
+        <StrokedName name={name1.toLowerCase()} fontSizePx={fontSizePx1} />
+      </Box>
+
+      {/* VS Indicator */}
+      <Box
+        position="absolute"
+        left="50%"
+        top={`${VS_TEXT_Y}px`}
+        style={{ transform: "translate(-50%, -50%)" }}
+      >
+        <StrokedName name="VS." fontSizePx={100} withWhiteRing />
+      </Box>
+
+      {/* Player 2 Column */}
+      <Box
+        position="absolute"
+        left={`${p2CenterX}px`}
+        top={`${VS_AVATAR_Y}px`}
+        style={{ transform: "translate(-50%, -50%)" }}
+      >
+        <PlayerAvatar
+          src={player2?.player_tourneys?.player_img}
+          alt={name2}
+          size={`${VS_AVATAR_SIZE}px`}
+          borderRadius={PICTURE_BORDER_RADIUS}
+          boxShadow={PICTURE_STROKE_SHADOW}
+        />
+      </Box>
+      <Box
+        position="absolute"
+        left={`${p2CenterX}px`}
+        top={`${VS_NAME_Y}px`}
+        style={{ transform: "translate(-50%, -50%)" }}
+      >
+        <StrokedName name={name2.toLowerCase()} fontSizePx={fontSizePx2} />
+      </Box>
+
+      {/* Bottom Stages/Charts Row Frame */}
+      {roundStages.length > 0 && (
+        <Box
+          position="absolute"
+          left="50%"
+          top={`${VS_STAGES_ROW_Y}px`}
+          style={{ transform: "translate(-50%, -50%)" }}
+          width="max-content"
+          maxW={`${CANVAS_WIDTH - 100}px`}
+          p="12px"
+          borderRadius="16px"
+          border={`4px solid ${STROKE_OUTER_COLOR}`}
+          boxShadow={`0 0 0 ${STROKE_WHITE_WIDTH}px ${STROKE_WHITE_COLOR}, 0 0 0 ${
+            STROKE_WHITE_WIDTH + STROKE_INNER_WIDTH
+          }px ${STROKE_INNER_COLOR}`}
+          bg="rgba(12, 45, 232, 0.2)"
+          backdropFilter="blur(8px)"
+          display="flex"
+          flexDirection="row"
+          justifyContent="center"
+          alignItems="center"
+          gap="16px"
+        >
+          {roundStages.map((stage) => {
+            const chart = getChartFromStage(stage)!;
+            return (
+              <Box key={stage.id} width={`${cardWidth}px`} flexShrink={0}>
+                <ChartCard chart={chart} shorten />
+              </Box>
+            );
+          })}
+        </Box>
+      )}
+    </>
+  );
+}
+
 function StreamViewer() {
   const { tourneyId } = useParams();
   const [searchParams] = useSearchParams();
@@ -349,44 +493,52 @@ function StreamViewer() {
   const layoutMode = searchParams.get("layout") ?? "active";
   const isSingleCab = (searchParams.get("cabs") ?? "2") === "1";
 
-  if (!tourneyId) return <div>Invalid Tourney ID</div>;
-
   useTransparentBackground();
   const scale = useFitScale(CANVAS_WIDTH, CANVAS_HEIGHT);
   const tierFontSizesPx = useNameSizeTierFontSizesPx(NAME_MAX_WIDTH);
   const singleCabTierFontSizesPx = useNameSizeTierFontSizesPx(SINGLE_CAB_NAME_WIDTH);
+  const versusTierFontSizesPx = useNameSizeTierFontSizesPx(VS_NAME_MAX_WIDTH);
 
-  const { tourney, currentRound, playerRounds, stages } = useRoundStreamData(
-    tourneyId,
+  const { tourney, roundPools, currentRound, playerRounds, stages } = useRoundStreamData(
+    tourneyId ?? "",
     roundIdOverride,
     "stream-viewer",
   );
 
   const isDoubleElimination = tourney?.type === "Double Elimination";
-
-  // 1. Resolve Active Broadcast State with Fallbacks
   const activeStreamState = currentRound?.active_stream_state;
 
-  // Resolve Heat Number:
-  // Stream state -> URL query param -> Default to Heat 1
   const activeHeat = useMemo(() => {
     if (activeStreamState?.heat) return Number(activeStreamState.heat);
     if (heatOverride) return Number(heatOverride);
-    return 1; // Fallback to Heat 1 for completed/archived tourneys
+    return 1;
   }, [activeStreamState, heatOverride]);
 
-  // Resolve Active Lanes:
-  // Stream state -> Fallback to all assigned lanes (1..4)
   const activeLanes = useMemo(() => {
     if (activeStreamState?.lanes && activeStreamState.lanes.length > 0) {
       return activeStreamState.lanes.map(Number);
     }
-    return [1, 2, 3, 4]; // Fallback to all lanes
+    return [1, 2, 3, 4];
   }, [activeStreamState]);
+
+  const roundDisplayName = useMemo(() => {
+    if (!currentRound) return "";
+
+    if (isDoubleElimination && roundPools?.length) {
+      const matchedPool = roundPools.find(
+        (pool) => Number(pool.id) === Number(currentRound.round_pool_id)
+      );
+
+      if (matchedPool?.name) {
+        return matchedPool.name;
+      }
+    }
+
+    return currentRound.name;
+  }, [currentRound, isDoubleElimination, roundPools]);
 
   const isFlipped = activeStreamState?.reverse_order ?? false;
 
-  // 2. Filter & Sort Players
   const displayedPlayers = useMemo(() => {
     if (!currentRound || !playerRounds.length) {
       return [];
@@ -403,25 +555,19 @@ function StreamViewer() {
     // If layout is "full" OR there's no explicit live stream state,
     // show all players in this round/heat.
     const isExplicitPairing =
-      activeStreamState?.lanes &&
-      activeStreamState.lanes.length > 0;
+      activeStreamState?.lanes && activeStreamState.lanes.length > 0;
 
-    const shouldFilterLanes =
-      layoutMode === "active" && isExplicitPairing;
+    const shouldFilterLanes = layoutMode === "active" && isExplicitPairing;
 
     const selectedPlayers = shouldFilterLanes
-      ? heatPlayers.filter((pr) =>
-        activeLanes.includes(Number(pr.lane)),
-      )
+      ? heatPlayers.filter((pr) => activeLanes.includes(Number(pr.lane)))
       : heatPlayers;
 
     return [...selectedPlayers].sort((a, b) => {
       const laneA = Number(a.lane ?? 0);
       const laneB = Number(b.lane ?? 0);
 
-      return isFlipped
-        ? laneB - laneA
-        : laneA - laneB;
+      return isFlipped ? laneB - laneA : laneA - laneB;
     });
   }, [
     playerRounds,
@@ -484,6 +630,9 @@ function StreamViewer() {
   const singleCabScoreFontSizePx =
     singleCabTierFontSizesPx[getNameSizeTierIndex(SCORE_FONT_REFERENCE_NAME_LENGTH)];
 
+  const isVersusLayout = layoutMode === "versus" || layoutMode === "vs";
+
+  if (!tourneyId) return <div>Invalid Tourney ID</div>;
   if (!currentRound) return null;
 
   return (
@@ -506,13 +655,20 @@ function StreamViewer() {
           style={{ transform: "translate(-50%, -50%)" }}
         >
           <StrokedName
-            name={currentRound.name.toUpperCase()}
+            name={roundDisplayName.toUpperCase()}
             fontSizePx={ROUND_TITLE_FONT_PX}
             withWhiteRing
           />
         </Box>
 
-        {isPairedTwo && isSingleCab ? (
+        {isVersusLayout ? (
+          <VersusLayout
+            player1={displayedPlayers[0]}
+            player2={displayedPlayers[1]}
+            tierFontSizesPx={versusTierFontSizesPx}
+            stages={stages}
+          />
+        ) : isPairedTwo && isSingleCab ? (
           <SingleCabPairRow
             player1={displayedPlayers[0]}
             player2={displayedPlayers[1]}

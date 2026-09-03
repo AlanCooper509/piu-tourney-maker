@@ -381,8 +381,25 @@ export function useRoundStreamData(
       )
       .subscribe();
 
+    const stagesChannel = supabaseClient
+      .channel(`${channelIdPrefix}-stages-${currentRoundId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "stages",
+          filter: `round_id=eq.${currentRoundId}`,
+        },
+        () => {
+          fetchStages();
+        },
+      )
+      .subscribe();
+
     return () => {
       supabaseClient.removeChannel(scoresChannel);
+      supabaseClient.removeChannel(stagesChannel);
     };
   }, [currentRound?.id, channelIdPrefix]);
 
