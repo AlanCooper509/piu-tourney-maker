@@ -618,7 +618,7 @@ function StreamViewer() {
 
     const [p1, p2] = displayedPlayers;
     const display = (pr: PlayerRound) =>
-      scoring.hasScoresMap[pr.id] ? String(scoring.totalsMap[pr.id]) : "-";
+      scoring.hasScoresMap[pr.id] ? String(scoring.totalsMap[pr.id]) : "0";
 
     return `${display(p1)} - ${display(p2)}`;
   }, [showScore, displayedPlayers, scoring]);
