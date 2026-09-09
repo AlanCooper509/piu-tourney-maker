@@ -6,10 +6,10 @@ import "@fontsource/fredoka/700.css";
 import { useRoundStreamData } from "../hooks/useRoundStreamData";
 import { useTransparentBackground } from "../hooks/useTransparentBackground";
 import { calculateH2HScoring } from "../helpers/calculateH2HScoring";
+import { getStageChart } from "../helpers/getStageChart";
 import { PlayerAvatar } from "../components/PlayerAvatar";
 
 import type { PlayerRound } from "../types/PlayerRound";
-import type { Chart } from "../types/Chart";
 import { ChartCard } from "../components/charts/ChartCard";
 import type { Stage } from "../types/Stage";
 
@@ -349,11 +349,6 @@ function SingleCabPairRow({
   );
 }
 
-function getChartFromStage(stage: Stage): Chart | null {
-  if (stage.charts) return stage.charts;
-  return null;
-}
-
 interface VersusLayoutProps {
   player1?: PlayerRound;
   player2?: PlayerRound;
@@ -378,7 +373,7 @@ function VersusLayout({
 
   const roundStages = useMemo(() => {
     return [...stages]
-      .filter((s) => getChartFromStage(s) !== null)
+      .filter((s) => getStageChart(s) !== null)
       .sort((a, b) => Number(a.play_order ?? a.id) - Number(b.play_order ?? b.id));
   }, [stages]);
 
@@ -471,7 +466,7 @@ function VersusLayout({
           gap="16px"
         >
           {roundStages.map((stage) => {
-            const chart = getChartFromStage(stage)!;
+            const chart = getStageChart(stage)!;
             return (
               <Box key={stage.id} width={`${cardWidth}px`} flexShrink={0}>
                 <ChartCard chart={chart} shorten />

@@ -14,6 +14,7 @@ import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import EditableTourneyName from "./EditableTourneyName";
 import GenerateBracketButton from "./GenerateBracketButton/GenerateBracketButton";
 import GenerateSingleStreamBracketButton from "./GenerateSingleStreamBracket/GenerateSingleStreamBracketButton";
+import PullFromDdrToolsButton from "./PullFromDdrToolsButton/PullFromDdrToolsButton";
 import { handleUpdateTourneyName } from "../../handlers/handleUpdateTourneyName";
 import { StatusElement } from "../StatusElement";
 import { toaster } from "../ui/toaster";
@@ -168,6 +169,9 @@ export function TourneyDetails({
                     >
                       Start Tourney
                     </IconButton>
+                  )}
+                  {tourney.status === "In Progress" && (
+                    <PullFromDdrToolsButton rounds={rounds} />
                   )}
                 </HStack>
               )}

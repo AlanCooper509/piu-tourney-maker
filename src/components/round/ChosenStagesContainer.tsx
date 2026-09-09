@@ -20,6 +20,7 @@ import type { Round } from "../../types/Round";
 import type { Stage } from "../../types/Stage";
 import type { PlayerRound } from "../../types/PlayerRound";
 import type { ChartQuery } from "../../types/ChartQuery";
+import { getStageChart } from "../../helpers/getStageChart";
 
 interface ChosenStagesContainerProps {
   round: Round | null;
@@ -341,7 +342,7 @@ export default function ChosenStagesContainer({
               </Text>
             ) : (
               sortedStages.map((stage) => {
-                const currentChart = stage.charts;
+                const currentChart = getStageChart(stage);
                 const showAdminControls = !loadingTourneyAdminStatus && isTourneyAdmin;
                 const isRoundComplete = round?.status === "Complete";
                 const isDeleteDisabled = isRoundComplete && !overrideLock;

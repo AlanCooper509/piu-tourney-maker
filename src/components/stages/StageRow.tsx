@@ -13,6 +13,7 @@ import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 import type { ChartQuery } from "../../types/ChartQuery";
 import type { Round } from "../../types/Round";
 import type { Stage } from "../../types/Stage";
+import { getStageChart } from "../../helpers/getStageChart";
 
 interface StageRowProps {
   stage: Stage;
@@ -62,7 +63,7 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
                     }}
                   />
                   <Text>
-                    Chosen: {!stage.charts && <Span fontWeight="normal">???</Span>}
+                    Chosen: {!getStageChart(stage) && <Span fontWeight="normal">???</Span>}
                   </Text>
                 </HStack>
 
@@ -76,9 +77,9 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
               </HStack>
             </Box>
 
-            {stage.charts && (
+            {getStageChart(stage) && (
               <Box mt={1}>
-                <ChartRow chart={stage.charts} />
+                <ChartRow chart={getStageChart(stage)!} />
               </Box>
             )}
 
