@@ -13,11 +13,13 @@ import ChartRulesList from "../components/rulesets/ChartRulesList";
 import { SidebarTourneyPlayersList } from "../components/tourney/PlayersList/SidebarTourneyPlayersList";
 import RoundsList from "../components/round/RoundsList/RoundsList";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
+import { useCurrentEvent } from "../context/CurrentEventContext";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 import { deleteRound, upsertRound } from "../helpers/state/rounds";
 import { deletePlayerTourney, upsertPlayerTourney } from "../helpers/state/playerTourney";
 
 import type { Tourney } from '../types/Tourney';
+import type { Event } from '../types/Event';
 import type { PlayerTourney } from "../types/PlayerTourney";
 import type { Round } from "../types/Round";
 import type { RoundPool } from "../types/RoundPool";
@@ -31,6 +33,7 @@ function TourneyPage() {
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
 
   const { tourney, setTourney } = useCurrentTourney();
+  const { setEvent } = useCurrentEvent();
   const [players, setPlayers] = useState<PlayerTourney[]>([]);
   const tourneyPlayersRef = useRef<PlayerTourney[]>([]);
   const [roundPlayers, setRoundPlayers] = useState<PlayerRound[]>([]);
@@ -72,6 +75,12 @@ function TourneyPage() {
     { column: "tourney_id", value: tourneyId },
     "*, pickban_ruleset_steps(*)"
   );
+  // event_id defaults to -1 (never a real id) so the query stays scoped to
+  // nothing until the tourney has loaded, instead of fetching every event
+  const { data: queriedEvent } = getSupabaseTable<Event>(
+    'events',
+    { column: 'id', value: tourney?.event_id ?? -1 }
+  );
 
   // Seed Initial Data From Database Fetches
   useEffect(() => {
@@ -79,6 +88,12 @@ function TourneyPage() {
       setTourney(tourneys[0]);
     }
   }, [tourneys, tourney?.id, setTourney]);
+
+  useEffect(() => {
+    if (queriedEvent?.length) {
+      setEvent(queriedEvent[0]);
+    }
+  }, [queriedEvent, setEvent]);
 
   useEffect(() => {
     if (queriedTourneyPlayers) {

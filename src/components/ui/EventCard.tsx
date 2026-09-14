@@ -149,6 +149,7 @@ const EventCard: React.FC<EventCardProps> = ({
                 <TourneyCard
                   key={`nested-${tourney.id}`}
                   row={tourney}
+                  event={event}
                   keyPrefix="nested"
                   isNested
                   adminTourneyIds={adminTourneyIds}

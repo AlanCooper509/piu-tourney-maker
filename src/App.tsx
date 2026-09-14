@@ -13,6 +13,7 @@ import StreamHelper from "./pages/StreamHelper.tsx";
 import StreamViewer from "./pages/StreamViewer.tsx";
 import { HeroTitle } from "./components/ui/HeroTitle";
 import { CurrentTourneyProvider } from "./context/CurrentTourneyContext.tsx";
+import { CurrentEventProvider } from "./context/CurrentEventContext.tsx";
 import { AdminTourneyProvider } from "./context/admin/AdminTourneyContext.tsx";
 import { AdminEventProvider } from "./context/admin/AdminEventContext.tsx";
 
@@ -89,11 +90,13 @@ function App() {
   return (
     <AdminEventProvider>
       <AdminTourneyProvider>
-        <CurrentTourneyProvider>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </CurrentTourneyProvider>
+        <CurrentEventProvider>
+          <CurrentTourneyProvider>
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </CurrentTourneyProvider>
+        </CurrentEventProvider>
       </AdminTourneyProvider>
     </AdminEventProvider>
   );

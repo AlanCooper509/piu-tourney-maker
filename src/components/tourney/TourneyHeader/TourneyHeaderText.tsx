@@ -115,9 +115,10 @@ export default function TourneyHeaderText({
     <Stack align="center" justify="center" direction="column" gap={6}>
       <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]}>
         <Link
-          href={`/tourney/${tourney?.id}`}
+          onClick={() => navigate(`/tourney/${tourney?.id}`)}
           color="cyan.solid"
           variant="underline"
+          cursor="pointer"
           _hover={{ color: "cyan.focusRing" }}
           _focus={{ color: "cyan.solid", boxShadow: "none" }}
         >

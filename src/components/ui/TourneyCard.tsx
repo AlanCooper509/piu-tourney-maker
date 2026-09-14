@@ -11,10 +11,13 @@ import {
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import type { Tourney } from "../../types/Tourney";
-import { StatusElement } from "../StatusElement"; // Import StatusElement
+import type { Event } from "../../types/Event";
+import { StatusElement } from "../StatusElement";
+import { getTourneyThumbnail } from "../../helpers/getTourneyThumbnail";
 
 interface TourneyCardProps {
   row: Tourney;
+  event?: Event | null;
   keyPrefix: string;
   isNested?: boolean;
   adminTourneyIds: number[];
@@ -22,6 +25,7 @@ interface TourneyCardProps {
 
 const TourneyCard: React.FC<TourneyCardProps> = ({
   row,
+  event,
   keyPrefix,
   isNested = false,
   adminTourneyIds,
@@ -67,7 +71,7 @@ const TourneyCard: React.FC<TourneyCardProps> = ({
               minH={{ base: "50px", sm: "70px" }}
             >
               <Image
-                src={row.thumbnail_img ?? "/trophy.png"}
+                src={getTourneyThumbnail(row, event)}
                 alt={row.name}
                 boxSize={{ base: "50px", sm: "70px" }}
                 objectFit="cover"
@@ -86,7 +90,7 @@ const TourneyCard: React.FC<TourneyCardProps> = ({
                     base: "md",
                     sm: "lg",
                     md: isNested ? "xl" : "xl",
-                    xl: isNested ? "xl" : "2xl"
+                    xl: isNested ? "xl" : "2xl",
                   }}
                   color="white"
                   textAlign="left"
