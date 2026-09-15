@@ -644,7 +644,6 @@ function RoundPage() {
         setChartdrawEntries={setChartdrawEntries}
       />
 
-      <Separator mt={"24px"} mb={"24px"} />
       <RoundAdvancementsSection
         round={round}
         rounds={tourneyRounds}

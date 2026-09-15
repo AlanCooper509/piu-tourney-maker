@@ -1,4 +1,4 @@
-import { Box, Button, Heading, HStack } from "@chakra-ui/react";
+import { Box, Button, Center, Heading, HStack, Separator, Text } from "@chakra-ui/react";
 import { IoAddCircleSharp } from "react-icons/io5";
 
 import AdvancementRulesList from "./AdvancementRulesList";
@@ -27,7 +27,11 @@ export default function RoundAdvancementsSection({
 
   if (!round) return null;
 
+  const isAdmin = !loadingTourneyAdminStatus && isTourneyAdmin;
   const advancementsForRound = roundAdvancements.filter(a => a.round_id === round.id);
+
+  // Nothing to show a spectator and nothing for an admin to manage yet
+  if (!isAdmin && advancementsForRound.length === 0) return null;
 
   const onSaved = (saved: RoundAdvancement) => {
     setRoundAdvancements(prev =>
@@ -38,32 +42,41 @@ export default function RoundAdvancementsSection({
   };
 
   return (
-    <Box>
-      <HStack mb={2} justifyContent="center">
-        <Heading mb={2}>Advancements</Heading>
-        {!loadingTourneyAdminStatus && isTourneyAdmin && (
-          <AdvancementRuleModal
+    <>
+      <Separator mt={"24px"} mb={"24px"} />
+      <Box>
+        <HStack mb={2} justifyContent="center">
+          <Heading mb={2}>Advancements</Heading>
+          {isAdmin && (
+            <AdvancementRuleModal
+              round={round}
+              rounds={rounds}
+              existingRules={advancementsForRound}
+              onSaved={onSaved}
+              trigger={
+                <Button size="sm" variant="outline" borderWidth={2} colorPalette="green" px={2}>
+                  Add Rule <IoAddCircleSharp />
+                </Button>
+              }
+            />
+          )}
+        </HStack>
+        {advancementsForRound.length === 0 ? (
+          <Center w="100%" mt={2}>
+            <Text>No advancement rules yet.</Text>
+          </Center>
+        ) : (
+          <AdvancementRulesList
             round={round}
             rounds={rounds}
-            existingRules={advancementsForRound}
+            roundAdvancements={advancementsForRound}
+            setRoundAdvancements={setRoundAdvancements}
             onSaved={onSaved}
-            trigger={
-              <Button size="sm" variant="outline" borderWidth={2} colorPalette="green" px={2}>
-                Add Rule <IoAddCircleSharp />
-              </Button>
-            }
+            tourneyId={tourneyId}
+            isTourneyAdmin={isAdmin}
           />
         )}
-      </HStack>
-      <AdvancementRulesList
-        round={round}
-        rounds={rounds}
-        roundAdvancements={advancementsForRound}
-        setRoundAdvancements={setRoundAdvancements}
-        onSaved={onSaved}
-        tourneyId={tourneyId}
-        isTourneyAdmin={!loadingTourneyAdminStatus && isTourneyAdmin}
-      />
-    </Box>
+      </Box>
+    </>
   );
 }
