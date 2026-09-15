@@ -5,12 +5,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabaseClient } from "../lib/supabaseClient";
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import { RoundDetails } from "../components/round/details/RoundDetails";
+import RoundAdvancementsSection from "../components/round/advancements/RoundAdvancementsSection";
 import { PlayersH2H } from "../components/round/PlayersH2H";
 import { PlayersList } from "../components/round/PlayersList";
 import { StagesList } from "../components/stages/StagesList";
 import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeaderText";
 import { Toaster } from "../components/ui/toaster";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
+import { useSyncEventForTourney } from "../hooks/useSyncEventForTourney";
 import { deleteChartPoolFromStages, deleteScoreFromStages, deleteStage, upsertChartPoolInStages, upsertScoreInStages, upsertStage } from "../helpers/state/stages";
 import { deletePlayerFromRound, upsertPlayerInRound } from "../helpers/state/playerRounds";
 import { deletePlayerTourney, upsertPlayerTourney } from "../helpers/state/playerTourney";
@@ -44,6 +46,7 @@ function RoundPage() {
   if (!roundId) return <div>Invalid Round ID</div>;
 
   const { tourney, setTourney } = useCurrentTourney();
+  useSyncEventForTourney(tourney?.event_id);
 
   const [tourneyRounds, setTourneyRounds] = useState<Round[]>([]);
   const [roundAdvancements, setRoundAdvancements] = useState<RoundAdvancement[]>([]);
@@ -156,6 +159,11 @@ function RoundPage() {
       .catch(console.error);
   }, [tourneyId, tourneyRounds]);
 
+  const tourneyRoundsRef = useRef(tourneyRounds);
+  useEffect(() => {
+    tourneyRoundsRef.current = tourneyRounds;
+  }, [tourneyRounds]);
+
   useEffect(() => {
     if (queriedRoundPools) {
       const sorted = [...queriedRoundPools].sort((a, b) =>
@@ -256,6 +264,28 @@ function RoundPage() {
           setRoundPools(prev => {
             const exists = prev.find(p => p.id === incoming.id);
             if (exists) return prev.map(p => p.id === incoming.id ? incoming : p);
+            return [...prev, incoming];
+          });
+        }
+      )
+      .subscribe();
+
+    const roundAdvancementsChannel = supabaseClient
+      .channel('round-advancements-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'round_advancements' },
+        (payload) => {
+          if (payload.eventType === 'DELETE') {
+            setRoundAdvancements(prev => prev.filter(a => a.id !== payload.old.id));
+            return;
+          }
+
+          const incoming = payload.new as RoundAdvancement;
+          if (!tourneyRoundsRef.current.some(r => r.id === incoming.round_id)) return;
+          setRoundAdvancements(prev => {
+            const exists = prev.find(a => a.id === incoming.id);
+            if (exists) return prev.map(a => a.id === incoming.id ? incoming : a);
             return [...prev, incoming];
           });
         }
@@ -571,6 +601,7 @@ function RoundPage() {
     return () => {
       supabaseClient.removeChannel(roundsChannel);
       supabaseClient.removeChannel(roundPoolsChannel);
+      supabaseClient.removeChannel(roundAdvancementsChannel);
       supabaseClient.removeChannel(playerRoundsChannel);
       supabaseClient.removeChannel(stagesChannel);
       supabaseClient.removeChannel(scoresChannel);
@@ -612,6 +643,16 @@ function RoundPage() {
         chartdrawEntries={chartdrawEntries}
         setChartdrawEntries={setChartdrawEntries}
       />
+
+      <Separator mt={"24px"} mb={"24px"} />
+      <RoundAdvancementsSection
+        round={round}
+        rounds={tourneyRounds}
+        roundAdvancements={roundAdvancements}
+        setRoundAdvancements={setRoundAdvancements}
+        tourneyId={Number(tourneyId)}
+      />
+
       {tourney?.type === 'Double Elimination' ? (
         <VStack gap={4}>
           <PlayersH2H

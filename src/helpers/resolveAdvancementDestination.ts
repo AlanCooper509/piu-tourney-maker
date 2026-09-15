@@ -26,3 +26,13 @@ export function formatRankRangeLabel(rule: RoundAdvancement): string {
   if (rule.rank_end === rule.rank_start) return `Rank ${rule.rank_start}`;
   return `Rank ${rule.rank_start}-${rule.rank_end}`;
 }
+
+/** True if two rank ranges (open-ended when rank_end is null) cover any rank in common. */
+export function rangesOverlap(
+  a: { rank_start: number; rank_end?: number | null },
+  b: { rank_start: number; rank_end?: number | null }
+): boolean {
+  const aEnd = a.rank_end ?? Infinity;
+  const bEnd = b.rank_end ?? Infinity;
+  return a.rank_start <= bEnd && b.rank_start <= aEnd;
+}

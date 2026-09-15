@@ -4,8 +4,6 @@ import StartRoundButton from "../StartRoundButton";
 import SkipRoundButton from "../SkipRoundButton/SkipRoundButton";
 import EndRoundButton from "../EndRoundButton/EndRoundButton";
 import { StatusElement } from "../../StatusElement";
-import { NextRoundIndicator } from "./NextRoundIndicator";
-import { formatRankRangeLabel } from "../../../helpers/resolveAdvancementDestination";
 import LeaderboardLinkButton from "../LeaderboardLinkButton";
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 import DeleteRoundButton from "./DeleteRoundButton";
@@ -66,6 +64,12 @@ export function RoundDetails({
     ? roundAdvancements.filter(a => a.round_id === round.id)
     : [];
 
+  const hasScores = !!stages?.some(stage => (stage.scores?.length ?? 0) > 0);
+  const showLeaderboardLink =
+    round?.status !== "Not Started" &&
+    !!players?.length &&
+    hasScores;
+
   const linkedPickbanRuleset = pickbanRulesets.find(
     (ruleset) => ruleset.id === activeConfig?.pickban_ruleset_id
   );
@@ -77,11 +81,29 @@ export function RoundDetails({
     linkedPickbanRuleset &&
     linkedPickbanRuleset.pickban_ruleset_steps.length > 0;
 
+  const showStartRoundButton =
+    !loadingTourneyAdminStatus && isTourneyAdmin && tourneyType !== "Double Elimination" && round?.status === "Not Started";
+  const showDrawChartsButton =
+    !loadingTourneyAdminStatus && isTourneyAdmin && tourneyType === "Double Elimination" && round?.status === "Not Started" &&
+    !!activeConfig && chartdrawEntries.length === 0;
+  const showStartPickBanDialog =
+    !loadingTourneyAdminStatus && isTourneyAdmin && tourneyType === "Double Elimination" && round?.status !== "Not Started" &&
+    !!readyToStartPickBan && !!setChartdrawEntries;
+  const showEndRoundButton =
+    !loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "In Progress";
+
+  const hasRoundActionButtons =
+    (tourneyType !== "Double Elimination" && showLeaderboardLink) ||
+    showStartRoundButton ||
+    showDrawChartsButton ||
+    showStartPickBanDialog ||
+    showEndRoundButton;
+
   return (
     <>
       <title>{roundName}</title>
       <Box>
-        <VStack style={{ gap: "0px" }}>
+        <VStack gap={0}>
           {loading && <Text>Loading round...</Text>}
           {error && <Text color="red">Error: {error.message}</Text>}
           {!loading && !error && !round && <Text>Round ID not found.</Text>}
@@ -124,45 +146,29 @@ export function RoundDetails({
                 />
               )}
 
-              <Separator mt={2}></Separator>
-              {advancementsForRound.map(advancement => {
-                const destinationRound = rounds.find(r => r.id === advancement.destination_round_id);
-                if (!destinationRound) return null;
-                return (
-                  <NextRoundIndicator
-                    key={advancement.id}
-                    label={advancement.label ?? formatRankRangeLabel(advancement)}
-                    tourneyId={tourneyId}
-                    nextRound={destinationRound}
-                  />
-                );
-              })}
+              {hasRoundActionButtons && (
+                <>
+                  <Separator></Separator>
 
-              <HStack mt={2}>
-                {tourneyType !== "Double Elimination" && (
-                  <LeaderboardLinkButton
-                    tourneyId={tourneyId}
-                    roundId={round?.id ?? 0}
-                  />
-                )}
-                {!loadingTourneyAdminStatus && isTourneyAdmin && tourneyType !== "Double Elimination" && round?.status === "Not Started" && (
-                  <StartRoundButton
-                    round={round}
-                    setRound={setRound}
-                    players={players}
-                    stages={stages}
-                  />
-                )}
-                {!loadingTourneyAdminStatus && isTourneyAdmin && tourneyType == "Double Elimination" && round?.status === "Not Started" && (
-                  <>
-                    {activeConfig && chartdrawEntries.length === 0 && (
+                  <HStack mt={4}>
+                    {tourneyType !== "Double Elimination" && showLeaderboardLink && (
+                      <LeaderboardLinkButton
+                        tourneyId={tourneyId}
+                        roundId={round?.id ?? 0}
+                      />
+                    )}
+                    {showStartRoundButton && (
+                      <StartRoundButton
+                        round={round}
+                        setRound={setRound}
+                        players={players}
+                        stages={stages}
+                      />
+                    )}
+                    {showDrawChartsButton && activeConfig && (
                       <DrawChartsButton round={round} activeConfig={activeConfig} />
                     )}
-                  </>
-                )}
-                {!loadingTourneyAdminStatus && isTourneyAdmin && tourneyType == "Double Elimination" && round?.status !== "Not Started" && (
-                  <>
-                    {readyToStartPickBan && setChartdrawEntries && (
+                    {showStartPickBanDialog && setChartdrawEntries && (
                       <StartPickBanDialog
                         pickbanRuleset={linkedPickbanRuleset}
                         chartdrawEntries={chartdrawEntries}
@@ -172,15 +178,15 @@ export function RoundDetails({
                         stages={stages ?? []}
                       />
                     )}
-                  </>
-                )}
-                {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "In Progress" && (
-                  <EndRoundButton
-                    round={round}
-                    setRound={setRound}
-                  />
-                )}
-              </HStack>
+                    {showEndRoundButton && (
+                      <EndRoundButton
+                        round={round}
+                        setRound={setRound}
+                      />
+                    )}
+                  </HStack>
+                </>
+              )}
             </>
           )}
         </VStack>
