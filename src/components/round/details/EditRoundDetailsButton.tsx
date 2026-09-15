@@ -17,19 +17,11 @@ interface EditRoundDetailsButtonProps {
 export default function EditRoundDetailsButton({ round, setRound, rounds, setRounds }: EditRoundDetailsButtonProps) {
   async function onAdminClick(
     name: string,
-    advancing: number,
-    nextRoundId: number | undefined,
-    parentRoundId: number | undefined,
-    lostNextRoundId: number | undefined,
     pointsPerStage: string | undefined,
   ) {
     const updatedRound = await handleUpdateRoundDetails(
       round.id,
       name,
-      advancing,
-      nextRoundId,
-      parentRoundId,
-      lostNextRoundId,
       pointsPerStage
     );
 

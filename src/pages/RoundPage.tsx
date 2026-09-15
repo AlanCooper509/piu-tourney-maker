@@ -16,6 +16,7 @@ import { deletePlayerFromRound, upsertPlayerInRound } from "../helpers/state/pla
 import { deletePlayerTourney, upsertPlayerTourney } from "../helpers/state/playerTourney";
 import { deleteRound, upsertRound } from "../helpers/state/rounds";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
+import { getRoundAdvancementsInTourney } from "../helpers/getRoundAdvancementsInTourney";
 import { sortChartdrawEntries } from "../helpers/sortChartdrawEntries";
 import RulesetContainer from "../components/round/Ruleset/RulesetContainer";
 import ChartDrawContainer from "../components/round/ChartDraw/ChartDrawContainer";
@@ -27,6 +28,7 @@ import type { PlayerRound } from "../types/PlayerRound";
 import type { PlayerTourney } from "../types/PlayerTourney";
 import type { Tourney } from "../types/Tourney";
 import type { Round } from "../types/Round";
+import type { RoundAdvancement } from "../types/RoundAdvancement";
 import type { Score } from "../types/Score";
 import type { Stage } from "../types/Stage";
 import type { ChartdrawConfig, ChartdrawConfigSpec, ChartdrawConfigWithSpecs } from "../types/ChartDrawConfig";
@@ -44,6 +46,7 @@ function RoundPage() {
   const { tourney, setTourney } = useCurrentTourney();
 
   const [tourneyRounds, setTourneyRounds] = useState<Round[]>([]);
+  const [roundAdvancements, setRoundAdvancements] = useState<RoundAdvancement[]>([]);
   const [round, setRound] = useState<Round | null>(null);
   const [roundPools, setRoundPools] = useState<RoundPool[]>([]);
   const [players, setPlayers] = useState<PlayerRound[]>([]);
@@ -142,6 +145,16 @@ function RoundPage() {
       });
     }
   }, [queriedRoundsInTourney, roundPools]);
+
+  useEffect(() => {
+    if (!tourneyRounds.length) {
+      setRoundAdvancements([]);
+      return;
+    }
+    getRoundAdvancementsInTourney(Number(tourneyId))
+      .then(setRoundAdvancements)
+      .catch(console.error);
+  }, [tourneyId, tourneyRounds]);
 
   useEffect(() => {
     if (queriedRoundPools) {
@@ -587,6 +600,7 @@ function RoundPage() {
         setRound={setRound}
         rounds={tourneyRounds}
         setRounds={setTourneyRounds}
+        roundAdvancements={roundAdvancements}
         players={players}
         stages={stages}
         loading={loadingRounds}

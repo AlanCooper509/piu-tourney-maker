@@ -5,8 +5,8 @@ import SkipRoundButton from "../SkipRoundButton/SkipRoundButton";
 import EndRoundButton from "../EndRoundButton/EndRoundButton";
 import { StatusElement } from "../../StatusElement";
 import { NextRoundIndicator } from "./NextRoundIndicator";
+import { formatRankRangeLabel } from "../../../helpers/resolveAdvancementDestination";
 import LeaderboardLinkButton from "../LeaderboardLinkButton";
-import PlayersAdvancingElement from "./PlayersAdvancingElement";
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 import DeleteRoundButton from "./DeleteRoundButton";
 import EditRoundDetailsButton from "./EditRoundDetailsButton";
@@ -15,6 +15,7 @@ import DrawChartsButton from "../ChartDraw/DrawChartsButton";
 import StartPickBanDialog from "../PickBan/StartPickBanDialog";
 
 import type { Round } from "../../../types/Round";
+import type { RoundAdvancement } from "../../../types/RoundAdvancement";
 import type { PlayerRound } from "../../../types/PlayerRound";
 import type { Stage } from "../../../types/Stage";
 import type { TourneyType } from "../../../types/Tourney";
@@ -27,6 +28,7 @@ interface RoundDetailsProps {
   setRound: (round: Round | null) => void;
   rounds: Round[];
   setRounds: React.Dispatch<React.SetStateAction<Round[]>>;
+  roundAdvancements: RoundAdvancement[];
   players: PlayerRound[] | null;
   stages: Stage[] | null;
   loading: boolean;
@@ -44,6 +46,7 @@ export function RoundDetails({
   setRound,
   rounds,
   setRounds,
+  roundAdvancements,
   players,
   stages,
   loading,
@@ -59,9 +62,9 @@ export function RoundDetails({
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourneyId);
 
   const roundName = round?.name ?? "";
-  const playersAdvancing = round?.players_advancing ?? -1;
-  const nextRound = rounds.find((r) => r.id === round?.next_round_id);
-  const nextLoserRound = rounds.find((r) => r.id === round?.lost_next_round_id);
+  const advancementsForRound = round
+    ? roundAdvancements.filter(a => a.round_id === round.id)
+    : [];
 
   const linkedPickbanRuleset = pickbanRulesets.find(
     (ruleset) => ruleset.id === activeConfig?.pickban_ruleset_id
@@ -94,6 +97,8 @@ export function RoundDetails({
                         round={round}
                         setRound={setRound}
                         players={players}
+                        rounds={rounds}
+                        roundAdvancements={advancementsForRound}
                       />
                     )}
 
@@ -113,13 +118,6 @@ export function RoundDetails({
 
               <StatusElement element={round} />
 
-              {tourneyType && tourneyType !== "Double Elimination" && (
-                <PlayersAdvancingElement
-                  playersAdvancing={playersAdvancing}
-                  roundStatus={round?.status}
-                />
-              )}
-
               {tourneyType !== "Double Elimination" && (
                 <ScoringDetailsText
                   pointsPerStage={round?.points_per_stage}
@@ -127,21 +125,18 @@ export function RoundDetails({
               )}
 
               <Separator mt={2}></Separator>
-              {round && round.next_round_id && nextRound && (
-                <NextRoundIndicator
-                  label={tourneyType === "Double Elimination" ? "Next Round (Winner)" : "Next Round"}
-                  tourneyId={tourneyId}
-                  nextRound={nextRound}
-                />
-              )}
-
-              {round && round.lost_next_round_id && nextLoserRound && (
-                <NextRoundIndicator
-                  label={tourneyType === "Double Elimination" ? "Next Round (Loser)" : "Next Round (Redemption)"}
-                  tourneyId={tourneyId}
-                  nextRound={nextLoserRound}
-                />
-              )}
+              {advancementsForRound.map(advancement => {
+                const destinationRound = rounds.find(r => r.id === advancement.destination_round_id);
+                if (!destinationRound) return null;
+                return (
+                  <NextRoundIndicator
+                    key={advancement.id}
+                    label={advancement.label ?? formatRankRangeLabel(advancement)}
+                    tourneyId={tourneyId}
+                    nextRound={destinationRound}
+                  />
+                );
+              })}
 
               <HStack mt={2}>
                 {tourneyType !== "Double Elimination" && (

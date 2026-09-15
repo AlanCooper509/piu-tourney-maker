@@ -51,7 +51,6 @@ export default function TourneyHeaderText({
       return {
         label: round.name,
         value: `/tourney/${tourney?.id}/round/${round.id}`,
-        parent: round.parent_round_id,
         poolName: pool?.name,
         status: round.status,
       };
@@ -77,20 +76,12 @@ export default function TourneyHeaderText({
 
   async function onAdminClick(
     name: string,
-    advancing: number,
-    nextRoundId: number | undefined,
-    parentRoundId: number | undefined,
-    lostNextRoundId: number | undefined,
     pointsPerStage: string | undefined
   ) {
     if (!tourney) return;
     const updatedRound = await handleAddRoundToTourney(
       tourney.id,
       name,
-      advancing,
-      nextRoundId,
-      parentRoundId,
-      lostNextRoundId,
       pointsPerStage
     );
 
@@ -204,8 +195,7 @@ export default function TourneyHeaderText({
                             : ""
                           }
                         >
-                          {item.parent && <Box w={4} />}
-                          {!item.parent && item.poolName   &&  <Box w={4} />}
+                          {item.poolName && <Box w={4} />}
                           {item.status === "Ready"         &&  <Span color="teal.400"><MdOutlinePlaylistAddCheck /></Span>}
                           {item.status === "Pick Ban"      &&  <Span color="gray.200"><MdOutlinePlaylistAddCheck /></Span>}
                           {item.status === "In Progress"   &&  <Span color="green.600"><RiProgress5Fill /></Span>}

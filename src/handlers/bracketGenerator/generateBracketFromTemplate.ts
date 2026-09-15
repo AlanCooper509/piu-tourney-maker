@@ -16,7 +16,7 @@ export async function generateBracketFromTemplate(
     const idLookup = await createPoolsAndRounds(tourneyId, template);
     console.log("Pass 1 Complete. ID Map:", idLookup);
 
-    // PASS 2: Link advancement paths (rounds.next_round_id, rounds.lost_next_round_id)
+    // PASS 2: Link advancement paths (round_advancements rows)
     await linkAdvancementPaths(idLookup, template);
     console.log("Pass 2 Complete. Relationships linked.");
 
@@ -56,7 +56,6 @@ async function createPoolsAndRounds(tourneyId: number, template: any): Promise<R
       tourney_id: tourneyId,
       round_pool_id: pool.id,
       name: m.id, // Using the Logical ID as the initial name for mapping
-      players_advancing: 1,
       status: 'Not Started',
       points_per_stage: template.format === "Double Elimination" ? 1 : undefined
     }));
@@ -79,38 +78,52 @@ async function createPoolsAndRounds(tourneyId: number, template: any): Promise<R
 }
 
 /**
- * PASS 2: Updates the rounds with their next_round_id and lost_next_round_id links.
+ * PASS 2: Inserts round_advancements rows linking each match's winner (rank 1) and,
+ * where applicable, loser (rank 2) to their destination matches. Every match here is
+ * a fixed 1v1, so rank 1/rank 2 map directly to the template's .next/.loser pointers.
  */
 async function linkAdvancementPaths(idLookup: Record<string, number>, template: any) {
-  const updatePromises = [];
+  const rowsToInsert: {
+    round_id: number;
+    rank_start: number;
+    rank_end: number;
+    destination_round_id: number;
+    label: string;
+  }[] = [];
 
   for (const pool of template.pools) {
     for (const matchTemplate of pool.matches) {
       const currentDbId = idLookup[matchTemplate.id];
-      const updates: any = {};
 
-      if (matchTemplate.next) {
-        updates.next_round_id = idLookup[matchTemplate.next] || null;
+      if (matchTemplate.next && idLookup[matchTemplate.next]) {
+        rowsToInsert.push({
+          round_id: currentDbId,
+          rank_start: 1,
+          rank_end: 1,
+          destination_round_id: idLookup[matchTemplate.next],
+          label: 'Winner'
+        });
       }
 
-      if (matchTemplate.loser) {
-        updates.lost_next_round_id = idLookup[matchTemplate.loser] || null;
-      }
-
-      if (Object.keys(updates).length > 0) {
-        updatePromises.push(
-          supabaseClient
-            .from("rounds")
-            .update(updates)
-            .eq("id", currentDbId)
-        );
+      if (matchTemplate.loser && idLookup[matchTemplate.loser]) {
+        rowsToInsert.push({
+          round_id: currentDbId,
+          rank_start: 2,
+          rank_end: 2,
+          destination_round_id: idLookup[matchTemplate.loser],
+          label: 'Loser'
+        });
       }
     }
   }
 
-  const results = await Promise.all(updatePromises);
-  const firstError = results.find(r => r.error);
-  if (firstError) throw firstError.error;
+  if (rowsToInsert.length === 0) return;
+
+  const { error } = await supabaseClient
+    .from("round_advancements")
+    .insert(rowsToInsert);
+
+  if (error) throw error;
 }
 
 /**

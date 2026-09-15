@@ -21,11 +21,13 @@ import { toaster } from "../ui/toaster";
 import { handleStartTourney } from "../../handlers/handleStartTourney";
 
 import type { Round } from "../../types/Round";
+import type { RoundAdvancement } from "../../types/RoundAdvancement";
 import type { PlayerTourney } from "../../types/PlayerTourney";
 
 interface TourneyDetailsProps {
   players: PlayerTourney[] | null;
   rounds: Round[] | null;
+  roundAdvancements: RoundAdvancement[];
   loading: boolean;
   error: Error | null;
 }
@@ -33,6 +35,7 @@ interface TourneyDetailsProps {
 export function TourneyDetails({
   players,
   rounds,
+  roundAdvancements,
   loading,
   error,
 }: TourneyDetailsProps) {
@@ -148,7 +151,7 @@ export function TourneyDetails({
                     {/* TODO: Archive this Seed Players button after migrating existing Gauntlet/Waterfall functionality to GenerateBracketButton */}
                     {tourney.type !== "Double Elimination" && (
                       <>
-                        <SeedPlayersButton players={players} rounds={rounds} />
+                        <SeedPlayersButton players={players} rounds={rounds} roundAdvancements={roundAdvancements} />
                       </>
                     )}
                     <IconButton

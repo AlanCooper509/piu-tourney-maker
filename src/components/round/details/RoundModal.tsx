@@ -1,7 +1,6 @@
-import { Checkbox, Field, Input, NumberInput, Select, VStack, createListCollection } from "@chakra-ui/react";
+import { Checkbox, Field, Input, VStack } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 
-import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import DialogForm from "../../ui/DialogForm";
 import { toaster } from "../../ui/toaster";
 import type { Round } from "../../../types/Round";
@@ -12,44 +11,28 @@ interface RoundModalProps {
   trigger: React.ReactNode;
   onSubmitForm: (
     name: string,
-    advancing: number,
-    nextId: number | undefined,
-    parentId: number | undefined,
-    lostNextId: number | undefined,
     pointsPerStage: string | undefined
   ) => void;
 }
 
 export default function RoundModal({
   round,
-  rounds,
   trigger,
   onSubmitForm,
 }: RoundModalProps) {
-  const { tourney } = useCurrentTourney();
   const [open, setOpen] = useState(false);
 
   // Form state
   const [formRoundName, setFormRoundName] = useState(round?.name ?? "");
-  const [formPlayersAdvancing, setFormPlayersAdvancing] = useState(round?.players_advancing?.toString() ?? "");
-  const [formNextRound, setFormNextRound] = useState<string[]>(round?.next_round_id ? [round.next_round_id.toString()] : []);
-  const [formLostNextRound, setFormLostNextRound] = useState<string[]>(round?.lost_next_round_id ? [round.lost_next_round_id.toString()] : []);
-  const [formParentRoundId, setFormParentRound] = useState<string[]>(round?.parent_round_id ? [round.parent_round_id.toString()] : []);
   const [formPointsPerStage, setFormPointsPerStage] = useState<string>(round?.points_per_stage ?? "");
-  const [redemptionChecked, setRedemptionChecked] = useState(round?.parent_round_id != null);
   const [pointsScoringChecked, setPointsScoringChecked] = useState(round?.points_per_stage != null);
 
-  // Sync form state whenever the round or rounds changes
+  // Sync form state whenever the round changes
   useEffect(() => {
     setFormRoundName(round?.name ?? "");
-    setFormPlayersAdvancing(round?.players_advancing?.toString() ?? "1");
-    setFormNextRound(round?.next_round_id ? [round.next_round_id.toString()] : []);
-    setFormLostNextRound(round?.lost_next_round_id ? [round.lost_next_round_id.toString()] : []);
-    setFormParentRound(round?.parent_round_id ? [round.parent_round_id.toString()] : []);
     setFormPointsPerStage(round?.points_per_stage ?? "");
-    setRedemptionChecked(!!round?.parent_round_id);
     setPointsScoringChecked(!!round?.points_per_stage);
-  }, [round, rounds]);
+  }, [round]);
 
   const submitWithGuards = async () => {
     if (!formRoundName) {
@@ -62,170 +45,16 @@ export default function RoundModal({
       return false;
     }
 
-    const advancing = Number(formPlayersAdvancing);
-    if (isNaN(advancing) || advancing < 1) {
-      toaster.create({
-        title: "Invalid Players Advancing",
-        description: "Players advancing must be a number >= 1.",
-        type: "error",
-        closable: true,
-      });
-      return false;
-    }
-
-    const nextRoundId = formNextRound?.[0] ? Number(formNextRound[0]) : undefined;
-    const lostNextRoundId = formLostNextRound?.[0] ? Number(formLostNextRound[0]) : undefined;
-    const parentRoundId = formParentRoundId?.[0] ? Number(formParentRoundId[0]) : undefined;
-
-    onSubmitForm(formRoundName, advancing, nextRoundId, parentRoundId, lostNextRoundId, formPointsPerStage);
+    onSubmitForm(formRoundName, formPointsPerStage);
     return true;
   };
 
-  const otherRounds = createListCollection({
-    items: (rounds ?? [])
-      .filter(r => r.id !== round?.id)
-      .map(r => ({ label: r.name, value: r.id.toString() })),
-  });
-
-  const allParentRounds = createListCollection({
-    items: (rounds ?? [])
-      .filter(r => r.parent_round_id === null && r.id !== round?.id)
-      .map(r => ({ label: r.name, value: r.id.toString() })),
-  });
-  
   const formBody = (
     <VStack gap={4} align="stretch">
       <Field.Root>
         <Field.Label>Round Name</Field.Label>
         <Input value={formRoundName} onChange={(e) => setFormRoundName(e.target.value)} />
       </Field.Root>
-
-      {/* NUMBER OF PLAYERS ADVANCING */}
-      {(tourney?.type !== "Double Elimination") && (
-        <Field.Root>
-          <Field.Label>Players Advancing</Field.Label>
-          <NumberInput.Root
-            value={formPlayersAdvancing}
-            onValueChange={(e) => setFormPlayersAdvancing(e.value)}
-            min={1}
-          >
-            <NumberInput.Control />
-            <NumberInput.Input />
-          </NumberInput.Root>
-        </Field.Root>
-      )}
-
-      {/* WINNER NEXT ROUND */}
-      <Field.Root>
-        <Select.Root
-          collection={otherRounds}
-          value={formNextRound}
-          onValueChange={({ value }) => setFormNextRound(value)}
-          size="sm"
-        >
-          <Select.HiddenSelect />
-          <Select.Label>Next Round {tourney?.type === "Double Elimination" ? "(Winner)" : ""}</Select.Label>
-          <Select.Control>
-            <Select.Trigger>
-              <Select.ValueText placeholder="Choose next round name" />
-            </Select.Trigger>
-            <Select.IndicatorGroup>
-              <Select.ClearTrigger />
-              <Select.Indicator />
-            </Select.IndicatorGroup>
-          </Select.Control>
-          <Select.Positioner>
-            <Select.Content>
-              {otherRounds.items.map((otherRound) => (
-                <Select.Item key={otherRound.value} item={otherRound}>
-                  {otherRound.label}
-                  <Select.ItemIndicator />
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Positioner>
-        </Select.Root>
-      </Field.Root>
-
-      {/* LOSER NEXT ROUND */}
-      {(tourney?.type === "Double Elimination") && (
-        <Field.Root>
-          <Select.Root
-            collection={otherRounds}
-            value={formLostNextRound}
-            onValueChange={({ value }) => setFormLostNextRound(value)}
-            size="sm"
-          >
-            <Select.HiddenSelect />
-            <Select.Label>Next Round (Loser)</Select.Label>
-            <Select.Control>
-              <Select.Trigger>
-                <Select.ValueText placeholder="Choose next round name" />
-              </Select.Trigger>
-              <Select.IndicatorGroup>
-                <Select.ClearTrigger />
-                <Select.Indicator />
-              </Select.IndicatorGroup>
-            </Select.Control>
-            <Select.Positioner>
-              <Select.Content>
-                {otherRounds.items.map((otherRound) => (
-                  <Select.Item key={otherRound.value} item={otherRound}>
-                    {otherRound.label}
-                    <Select.ItemIndicator />
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Positioner>
-          </Select.Root>
-        </Field.Root>
-      )}
-
-      {(tourney?.type === "Waterfall (Redemption)" || round?.parent_round_id != null) && (
-        <>
-          <Checkbox.Root
-            checked={redemptionChecked}
-            onCheckedChange={(e) => setRedemptionChecked(!!e.checked)}
-          >
-            <Checkbox.HiddenInput />
-            <Checkbox.Control />
-            <Checkbox.Label>Is this a Redemption round?</Checkbox.Label>
-          </Checkbox.Root>
-
-          {redemptionChecked && (
-            <Field.Root>
-              <Select.Root
-                collection={allParentRounds}
-                value={formParentRoundId}
-                onValueChange={({ value }) => setFormParentRound(value)}
-                size="sm"
-              >
-                <Select.HiddenSelect />
-                <Select.Label>Parent Round</Select.Label>
-                <Select.Control>
-                  <Select.Trigger>
-                    <Select.ValueText placeholder="Choose parent round name" />
-                  </Select.Trigger>
-                  <Select.IndicatorGroup>
-                    <Select.ClearTrigger />
-                    <Select.Indicator />
-                  </Select.IndicatorGroup>
-                </Select.Control>
-                <Select.Positioner>
-                  <Select.Content>
-                    {allParentRounds.items.map((otherRound) => (
-                      <Select.Item key={otherRound.value} item={otherRound}>
-                        {otherRound.label}
-                        <Select.ItemIndicator />
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Positioner>
-              </Select.Root>
-            </Field.Root>
-          )}
-        </>
-      )}
 
       {/* Points Based Scoring */}
       <>

@@ -4,19 +4,24 @@ import { IconButton } from "@chakra-ui/react"
 import onSubmitHandler from "./onSubmitHandler";
 import DialogForm from "../../ui/DialogForm"
 import SeedPlayersFormBody from "./SeedPlayersFormBody";
+import { getEntryRounds } from "../../../helpers/getEntryRounds";
 
 import type { PlayerTourney } from "../../../types/PlayerTourney";
 import type { Round } from "../../../types/Round";
+import type { RoundAdvancement } from "../../../types/RoundAdvancement";
 
 interface SeedPlayersButtonProps {
   players: PlayerTourney[] | null
   rounds: Round[] | null
+  roundAdvancements: RoundAdvancement[]
 }
-export default function SeedPlayersButton({ players, rounds }: SeedPlayersButtonProps) {
+export default function SeedPlayersButton({ players, rounds, roundAdvancements }: SeedPlayersButtonProps) {
   const [isSeeding, setIsSeeding] = useState(false);
   // preview logic for generating 2D matrix of round --> seeded players mapping
   const [previewSeeding, setPreviewSeeding] = useState<PlayerTourney[][]>([]);
-  const filteredRounds = rounds?.filter(round => round.parent_round_id === null).sort((a, b) => (a.id! - b.id!)) ?? [];
+  const filteredRounds = rounds
+    ? getEntryRounds(rounds, roundAdvancements).sort((a, b) => (a.id! - b.id!))
+    : [];
 
   return (
     <DialogForm

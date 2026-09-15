@@ -1,20 +1,16 @@
 import { Link } from '@chakra-ui/react';
+import { getEntryRounds } from "../../helpers/getEntryRounds";
 import type { Round } from "../../types/Round";
+import type { RoundAdvancement } from "../../types/RoundAdvancement";
 
 type RoundsNavbarProps = {
   tourneyId: number;
   rounds: Round[];
+  roundAdvancements: RoundAdvancement[];
 };
 
-export default function RoundsNavbar({ tourneyId, rounds }: RoundsNavbarProps) {
-  let filteredRounds = [];
-  if (rounds) {
-    for (const round of rounds) {
-      if (round.parent_round_id === null) {
-        filteredRounds.push(round);
-      }
-    }
-  }
+export default function RoundsNavbar({ tourneyId, rounds, roundAdvancements }: RoundsNavbarProps) {
+  const filteredRounds = rounds ? getEntryRounds(rounds, roundAdvancements) : [];
   return (
     <nav style={{ padding: "1rem" }}>
       {filteredRounds.map((round, index) => (

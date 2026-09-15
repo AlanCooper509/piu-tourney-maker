@@ -29,16 +29,10 @@ export default async function handleEndRound({ tourneyId, round, tourneyType }: 
     }
 
     const { rankings } = calculatePlayerRankingsInRound({ players, stages, round });
-    const cutoff = Math.min(round.players_advancing, rankings.length);
 
     const idMap = Object.fromEntries(players.map(p => [p.id, p.player_tourney_id]));
-    
-    const advancingRankings = rankings.slice(0, cutoff).map(([pRoundId], index) => ({
-      playerTourneyId: idMap[pRoundId] ?? pRoundId,
-      sortOrder: index + 1 // 1-based indexing (Rank 1 = sort_order 1)
-    }));
 
-    const nonAdvancingRankings = rankings.slice(cutoff).map(([pRoundId], index) => ({
+    const rankedPlayers = rankings.map(([pRoundId], index) => ({
       playerTourneyId: idMap[pRoundId] ?? pRoundId,
       sortOrder: index + 1 // 1-based indexing (Rank 1 = sort_order 1)
     }));
@@ -47,8 +41,7 @@ export default async function handleEndRound({ tourneyId, round, tourneyType }: 
       tourneyId,
       round,
       tourneyType,
-      advancingPlayers: advancingRankings,
-      nonAdvancingPlayers: nonAdvancingRankings
+      rankedPlayers
     });
   } catch (error) {
     console.error('Failed to end round:', error);

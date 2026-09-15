@@ -1,4 +1,4 @@
-import { Box, VStack, HStack, Link, Text, useBreakpointValue, Button, Spacer, Tag, IconButton, Heading, Container, Separator } from "@chakra-ui/react";
+import { Box, VStack, HStack, Link, Text, useBreakpointValue, Button, Spacer, Tag, IconButton, Container, Separator } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams } from "react-router-dom";
@@ -8,6 +8,7 @@ import { IoReturnDownBack } from "react-icons/io5";
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import calculatePlayerRankingsInRound from "../helpers/calculatePlayerRankingsInRound";
 import { getScoresForPlayer } from "../helpers/getScoresForPlayer";
+import { resolveAdvancementDestination } from "../helpers/resolveAdvancementDestination";
 import RoundLink from "../components/tourney/RoundLink";
 import { deleteScoreFromStages, upsertScoreInStages } from "../helpers/state/stages";
 import { deletePlayerFromRound, upsertPlayerInRound } from "../helpers/state/playerRounds";
@@ -16,6 +17,7 @@ import { deletePlayerTourney, upsertPlayerTourney } from "../helpers/state/playe
 import type { PlayerRound } from "../types/PlayerRound";
 import type { Stage } from "../types/Stage";
 import type { Round } from "../types/Round";
+import type { RoundAdvancement } from "../types/RoundAdvancement";
 import type { Score } from "../types/Score";
 import type { ChartPool } from "../types/ChartPool";
 import type { PlayerTourney } from "../types/PlayerTourney";
@@ -238,9 +240,9 @@ function Leaderboard() {
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set());
   const [p, setP] = useState<PlayerRound[]>([]);
   const [s, setS] = useState<Stage[]>([]);
-  const advancingThreshold = round?.players_advancing ?? null;
 
   const { data: rounds } = getSupabaseTable<Round>('rounds', { column: 'id', value: roundId });
+  const { data: roundAdvancements } = getSupabaseTable<RoundAdvancement>('round_advancements', { column: 'round_id', value: roundId });
   const { data: playersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: roundId }, "*, player_tourneys(player_name, seed)");
   const { data: stagesData, refetch: refetchStages } = getSupabaseTable<Stage>("stages", { column: "round_id", value: roundId }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
   const { data: tourneyPlayersData } = getSupabaseTable<PlayerTourney>("player_tourneys", { column: "tourney_id", value: tourneyId });
@@ -433,14 +435,18 @@ function Leaderboard() {
           </HStack>
         </Box>
 
-        <Heading size="2xl" mb={5}>Players Advancing: {advancingThreshold}</Heading>
-
         <Box w={cardWidth} borderRadius="2xl" shadow="xl" bgGradient="linear(to-b, gray.900, gray.800)">
           <LeaderboardHeader round={round} expandedPlayers={expandedPlayers} toggleAll={toggleAll} headerFontSize={headerFontSize} />
 
           <AnimatePresence mode="popLayout">
             {players.map((player, index) => {
-              const isEliminated = advancingThreshold !== null && index >= advancingThreshold;
+              const rank = index + 1;
+              const destination = resolveAdvancementDestination(rank, roundAdvancements ?? []);
+              const isEliminated = destination == null;
+              const prevDestination = index > 0
+                ? resolveAdvancementDestination(rank - 1, roundAdvancements ?? [])
+                : undefined;
+              const showSeparator = index > 0 && destination !== prevDestination;
               return (
                 <motion.div
                   key={player.name} // Essential for tracking movement
@@ -453,10 +459,10 @@ function Leaderboard() {
                     opacity: { duration: 0.2 }
                   }}
                 >
-                  {index === advancingThreshold && (
+                  {showSeparator && (
                     <Separator borderWidth="5px" my={2} borderColor="black" />
                   )}
-                  
+
                   <PlayerRow
                     round={round}
                     player={player}

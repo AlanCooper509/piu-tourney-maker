@@ -19,16 +19,9 @@ export default async function handleSkipRound({ tourneyId, round, tourneyType }:
 
   try {
     const sortedPlayers = sortPlayersBySeed(players);
-    const cutoff = Math.min(round.players_advancing, sortedPlayers.length);
 
-    // Map advancing players with 1-based sort order based on seed rank
-    const advancingPlayers = sortedPlayers.slice(0, cutoff).map((p, index) => ({
-      playerTourneyId: p.player_tourney_id,
-      sortOrder: index + 1
-    }));
-
-    // Map remaining non-advancing players with consistent ordering
-    const nonAdvancingPlayers = sortedPlayers.slice(cutoff).map((p, index) => ({
+    // Map players to ranks based on seed order (rank 1 = best seed)
+    const rankedPlayers = sortedPlayers.map((p, index) => ({
       playerTourneyId: p.player_tourney_id,
       sortOrder: index + 1
     }));
@@ -37,8 +30,7 @@ export default async function handleSkipRound({ tourneyId, round, tourneyType }:
       tourneyId,
       round,
       tourneyType,
-      advancingPlayers,
-      nonAdvancingPlayers
+      rankedPlayers
     });
   } catch (error) {
     console.error('Failed to skip round:', error);

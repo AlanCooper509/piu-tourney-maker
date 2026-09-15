@@ -4,6 +4,8 @@ import { handleUpdateTourneyStatus } from '../../handleUpdateTourneyStatus';
 import { handleUpdateRoundName } from '../handleUpdateRoundName';
 import { formatRoundName } from '../../../helpers/formatRoundName';
 import { getRoundsInTourney } from '../../../helpers/getRoundsInTourney';
+import { getRoundAdvancementsInTourney } from '../../../helpers/getRoundAdvancementsInTourney';
+import { resolveAdvancementDestination } from '../../../helpers/resolveAdvancementDestination';
 import getPlayersInRound from '../../../helpers/getPlayersInRound';
 
 import type { Round } from '../../../types/Round';
@@ -19,16 +21,11 @@ interface TransitionProps {
   tourneyId: number;
   round: Round;
   tourneyType: TourneyType | null;
-  advancingPlayers: PlayerRankPair[];
-  nonAdvancingPlayers: PlayerRankPair[];
+  rankedPlayers: PlayerRankPair[];
 }
 
 function getRoundFromId(roundId: number, rounds: Round[]): Round | undefined {
   return rounds.find(r => r.id === roundId);
-}
-
-function determineChildRounds(roundId: number, rounds: Round[]): Round[] {
-  return rounds.filter(r => r.parent_round_id === roundId);
 }
 
 function renameRoundWithPlayerNames(round: Round | undefined, players: PlayerRound[] | null) {
@@ -42,47 +39,41 @@ export async function executeRoundTransition({
   tourneyId,
   round,
   tourneyType,
-  advancingPlayers,
-  nonAdvancingPlayers,
+  rankedPlayers,
 }: TransitionProps) {
-  // fetch rounds associated with tourney for progression mapping
+  // fetch rounds and advancement rules associated with tourney for progression mapping
   const rounds = await getRoundsInTourney(tourneyId);
+  const roundAdvancements = await getRoundAdvancementsInTourney(tourneyId);
+  const advancementsForRound = roundAdvancements.filter(a => a.round_id === round.id);
 
-  // winner(s) path
-  const nextRoundId = round.next_round_id ?? null;
-  if (nextRoundId && advancingPlayers.length > 0) {
-    await handleAddPlayersToRound(advancingPlayers, nextRoundId);
+  // Group ranked players by resolved destination round. A rank with no matching
+  // advancement rule is eliminated and is not added to any round.
+  const playersByDestination = new Map<number, PlayerRankPair[]>();
+  for (const player of rankedPlayers) {
+    const destinationRoundId = resolveAdvancementDestination(player.sortOrder, advancementsForRound);
+    if (destinationRoundId == null) continue;
+
+    const group = playersByDestination.get(destinationRoundId) ?? [];
+    group.push(player);
+    playersByDestination.set(destinationRoundId, group);
   }
 
-  // (optional) redemption path
-  const childRounds = determineChildRounds(round.id, rounds);
-  const upcomingRedemptionRound = round.parent_round_id === null ? childRounds[0] ?? null : null;
-  if (upcomingRedemptionRound && nonAdvancingPlayers.length > 0) {
-    await handleAddPlayersToRound(nonAdvancingPlayers, upcomingRedemptionRound.id);
-  }
-
-  // (optional) loser(s) path
-  const upcomingLoserRoundId = round.lost_next_round_id;
-  if (upcomingLoserRoundId && nonAdvancingPlayers.length > 0) {
-    await handleAddPlayersToRound(nonAdvancingPlayers, upcomingLoserRoundId);
+  for (const [destinationRoundId, players] of playersByDestination) {
+    await handleAddPlayersToRound(players, destinationRoundId);
   }
 
   // handle Double Elimination dynamic naming updates
   if (tourneyType === "Double Elimination") {
-    if (nextRoundId) {
-      const nextRoundPlayers = await getPlayersInRound(nextRoundId);
-      renameRoundWithPlayerNames(getRoundFromId(nextRoundId, rounds), nextRoundPlayers);
-    }
-    if (upcomingLoserRoundId) {
-      const upcomingLoserRoundPlayers = await getPlayersInRound(upcomingLoserRoundId);
-      renameRoundWithPlayerNames(getRoundFromId(upcomingLoserRoundId, rounds), upcomingLoserRoundPlayers);
+    for (const destinationRoundId of playersByDestination.keys()) {
+      const destinationPlayers = await getPlayersInRound(destinationRoundId);
+      renameRoundWithPlayerNames(getRoundFromId(destinationRoundId, rounds), destinationPlayers);
     }
   }
 
   // complete current round & check/update tourney completion status
   const updatedRound = await handleUpdateRoundStatus(round.id, 'Complete');
   rounds[rounds.findIndex(r => r.id === updatedRound[0].id)] = updatedRound[0];
-  
+
   if (rounds.every(r => r.status === 'Complete')) {
     await handleUpdateTourneyStatus(tourneyId, 'Complete');
   }

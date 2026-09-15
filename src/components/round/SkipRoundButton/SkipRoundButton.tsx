@@ -6,9 +6,11 @@ import handleSkipRound from "../../../handlers/round/transition/handleSkipRound"
 import DialogForm from "../../ui/DialogForm";
 import { toaster } from "../../ui/toaster";
 import sortPlayersBySeed from "../../../helpers/sortPlayersBySeed";
+import { resolveAdvancementDestination } from "../../../helpers/resolveAdvancementDestination";
 
 import type { TourneyType } from "../../../types/Tourney";
 import type { Round } from "../../../types/Round";
+import type { RoundAdvancement } from "../../../types/RoundAdvancement";
 import type { PlayerRound } from "../../../types/PlayerRound";
 
 const toasterErrorTitleText = 'Failed to Skip Round';
@@ -19,34 +21,42 @@ interface SkipRoundButtonProps {
   round: Round | null;
   setRound: (round: Round | null) => void;
   players: PlayerRound[] | null;
+  rounds: Round[];
+  roundAdvancements: RoundAdvancement[];
 }
 
-export default function SkipRoundButton({ tourneyId, tourneyType, round, setRound, players }: SkipRoundButtonProps) {
+export default function SkipRoundButton({ tourneyId, tourneyType, round, setRound, players, rounds, roundAdvancements }: SkipRoundButtonProps) {
   const [isEnding, setIsEnding] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const { advancingPlayers, eliminatedPlayers, nonAdvancingTitle } = useMemo(() => {
+  const { destinationGroups, eliminatedPlayers } = useMemo(() => {
     if (!round || !players || players.length === 0) {
-      return { advancingPlayers: [], eliminatedPlayers: [], nonAdvancingTitle: "Eliminated" };
+      return { destinationGroups: [], eliminatedPlayers: [] };
     }
 
     const sortedPlayers = sortPlayersBySeed(players);
-    const cutoff = Math.min(round.players_advancing, sortedPlayers.length);
+    const groupsByDestination = new Map<number, PlayerRound[]>();
+    const eliminated: PlayerRound[] = [];
 
-    // Determine the label dynamically based on the round configuration
-    let title = "Eliminated";
-    if (round.lost_next_round_id != null) {
-      title = "To Losers";
-    } else if (round.parent_round_id != null) {
-      title = "To Redemption";
-    }
+    sortedPlayers.forEach((player, index) => {
+      const rank = index + 1;
+      const destinationRoundId = resolveAdvancementDestination(rank, roundAdvancements);
+      if (destinationRoundId == null) {
+        eliminated.push(player);
+        return;
+      }
+      const group = groupsByDestination.get(destinationRoundId) ?? [];
+      group.push(player);
+      groupsByDestination.set(destinationRoundId, group);
+    });
 
-    return {
-      advancingPlayers: sortedPlayers.slice(0, cutoff),
-      eliminatedPlayers: sortedPlayers.slice(cutoff),
-      nonAdvancingTitle: title
-    };
-  }, [players, round]);
+    const groups = Array.from(groupsByDestination.entries()).map(([destinationRoundId, groupPlayers]) => ({
+      title: `To ${rounds.find(r => r.id === destinationRoundId)?.name ?? "Next Round"}`,
+      players: groupPlayers
+    }));
+
+    return { destinationGroups: groups, eliminatedPlayers: eliminated };
+  }, [players, round, rounds, roundAdvancements]);
 
   const handleConfirmSkip = async (): Promise<boolean> => {
     if (!round) return false;
@@ -93,15 +103,18 @@ export default function SkipRoundButton({ tourneyId, tourneyType, round, setRoun
       
       <Box borderWidth="1px" borderRadius="md" p={3} bg="gray.50" _dark={{ bg: "whiteAlpha.50" }}>
         <VStack align="stretch" gap={3}>
-          <PlayerPreviewList 
-            title="Advancing" 
-            players={advancingPlayers} 
-            colorScheme="green" 
-          />
-          <PlayerPreviewList 
-            title={nonAdvancingTitle} // <-- Now dynamic!
-            players={eliminatedPlayers} 
-            colorScheme="red" 
+          {destinationGroups.map(group => (
+            <PlayerPreviewList
+              key={group.title}
+              title={group.title}
+              players={group.players}
+              colorScheme="green"
+            />
+          ))}
+          <PlayerPreviewList
+            title="Eliminated"
+            players={eliminatedPlayers}
+            colorScheme="red"
           />
         </VStack>
       </Box>
