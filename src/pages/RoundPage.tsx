@@ -653,39 +653,42 @@ function RoundPage() {
       />
 
       {tourney?.type === 'Double Elimination' ? (
-        <VStack gap={4}>
-          <PlayersH2H
-            round={round}
-            players={players}
-            setPlayers={setPlayers}
-            stages={stages}
-            tourneyPlayers={tourneyPlayers}
-            loading={loadingPlayersInRound || loadingPlayersInTourney}
-            error={errorPlayersInRound || errorPlayersInTourney}
-          />
-          <ChosenStagesContainer
-            round={round}
-            stages={stages}
-            setStages={setStages}
-            players={players}
-          />
-          {activeConfig && (
-            <>
-              <ChartDrawContainer
-                round={round}
-                activeConfig={activeConfig}
-                chartdrawEntries={sortedChartdrawEntries}
-              />
-              <RulesetContainer
-                activeConfig={activeConfig}
-                setChartdrawConfigs={setChartdrawConfigs}
-                pickbanRulesets={pickbanRulesets}
-                roundPools={roundPools}
-                setRoundPools={setRoundPools}
-              />
-            </>
-          )}
-        </VStack>
+        <>
+          <Separator mt={"24px"} mb={"24px"} />
+          <VStack gap={4}>
+            <PlayersH2H
+              round={round}
+              players={players}
+              setPlayers={setPlayers}
+              stages={stages}
+              tourneyPlayers={tourneyPlayers}
+              loading={loadingPlayersInRound || loadingPlayersInTourney}
+              error={errorPlayersInRound || errorPlayersInTourney}
+            />
+            <ChosenStagesContainer
+              round={round}
+              stages={stages}
+              setStages={setStages}
+              players={players}
+            />
+            {activeConfig && (
+              <>
+                <ChartDrawContainer
+                  round={round}
+                  activeConfig={activeConfig}
+                  chartdrawEntries={sortedChartdrawEntries}
+                />
+                <RulesetContainer
+                  activeConfig={activeConfig}
+                  setChartdrawConfigs={setChartdrawConfigs}
+                  pickbanRulesets={pickbanRulesets}
+                  roundPools={roundPools}
+                  setRoundPools={setRoundPools}
+                />
+              </>
+            )}
+          </VStack>
+        </>
       ) : (
         <>
           <Separator mt={"24px"} mb={"24px"} />

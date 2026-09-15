@@ -81,6 +81,8 @@ export function RoundDetails({
     linkedPickbanRuleset &&
     linkedPickbanRuleset.pickban_ruleset_steps.length > 0;
 
+  const showSkipRoundButton =
+    !loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Not Started";
   const showStartRoundButton =
     !loadingTourneyAdminStatus && isTourneyAdmin && tourneyType !== "Double Elimination" && round?.status === "Not Started";
   const showDrawChartsButton =
@@ -94,6 +96,7 @@ export function RoundDetails({
 
   const hasRoundActionButtons =
     (tourneyType !== "Double Elimination" && showLeaderboardLink) ||
+    showSkipRoundButton ||
     showStartRoundButton ||
     showDrawChartsButton ||
     showStartPickBanDialog ||
@@ -112,18 +115,6 @@ export function RoundDetails({
               {!loadingTourneyAdminStatus && isTourneyAdmin && (
                 <Box my={2}>
                   <HStack gap={2}>
-                    {!loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Not Started" && (
-                      <SkipRoundButton
-                        tourneyId={tourneyId}
-                        tourneyType={tourneyType}
-                        round={round}
-                        setRound={setRound}
-                        players={players}
-                        rounds={rounds}
-                        roundAdvancements={advancementsForRound}
-                      />
-                    )}
-
                     <EditRoundDetailsButton
                       round={round}
                       rounds={rounds}
@@ -155,6 +146,17 @@ export function RoundDetails({
                       <LeaderboardLinkButton
                         tourneyId={tourneyId}
                         roundId={round?.id ?? 0}
+                      />
+                    )}
+                    {showSkipRoundButton && (
+                      <SkipRoundButton
+                        tourneyId={tourneyId}
+                        tourneyType={tourneyType}
+                        round={round}
+                        setRound={setRound}
+                        players={players}
+                        rounds={rounds}
+                        roundAdvancements={advancementsForRound}
                       />
                     )}
                     {showStartRoundButton && (
