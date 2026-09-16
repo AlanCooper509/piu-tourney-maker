@@ -11,6 +11,8 @@ export async function generateBracketFromTemplate(
   template: any,
   initialSeeding: (PlayerTourney | null)[][]
 ) {
+  // initialSeeding[i] is the group of players for the match with seedIndex === i;
+  // a 1v1 match's group has length 2, but any group size is supported.
   try {
     // PASS 1: create the structure (Round Pools and Rounds shells)
     const idLookup = await createPoolsAndRounds(tourneyId, template);
@@ -21,7 +23,7 @@ export async function generateBracketFromTemplate(
     console.log("Pass 2 Complete. Relationships linked.");
 
     // PASS 3: Seed initial players into WR1:M1, WR1:M2, etc.
-    await seedInitialMatches(idLookup, template, initialSeeding as [PlayerTourney | null, PlayerTourney | null][]);
+    await seedInitialMatches(idLookup, template, initialSeeding);
     console.log("Pass 3 Complete. Players seeded.");
 
     return true;
@@ -57,7 +59,7 @@ async function createPoolsAndRounds(tourneyId: number, template: any): Promise<R
       round_pool_id: pool.id,
       name: m.id, // Using the Logical ID as the initial name for mapping
       status: 'Not Started',
-      points_per_stage: template.format === "Double Elimination" ? 1 : undefined
+      points_per_stage: template.pointsPerStage
     }));
 
     // 3. Insert all matches for this pool at once
@@ -78,40 +80,33 @@ async function createPoolsAndRounds(tourneyId: number, template: any): Promise<R
 }
 
 /**
- * PASS 2: Inserts round_advancements rows linking each match's winner (rank 1) and,
- * where applicable, loser (rank 2) to their destination matches. Every match here is
- * a fixed 1v1, so rank 1/rank 2 map directly to the template's .next/.loser pointers.
+ * PASS 2: Inserts round_advancements rows from each match's `advancements` list,
+ * resolving each entry's logical `destination` id through idLookup. Generic over any
+ * rank-range shape, not just a fixed 1v1 winner/loser pair.
  */
 async function linkAdvancementPaths(idLookup: Record<string, number>, template: any) {
   const rowsToInsert: {
     round_id: number;
     rank_start: number;
-    rank_end: number;
+    rank_end?: number;
     destination_round_id: number;
-    label: string;
+    label?: string;
   }[] = [];
 
   for (const pool of template.pools) {
     for (const matchTemplate of pool.matches) {
       const currentDbId = idLookup[matchTemplate.id];
 
-      if (matchTemplate.next && idLookup[matchTemplate.next]) {
-        rowsToInsert.push({
-          round_id: currentDbId,
-          rank_start: 1,
-          rank_end: 1,
-          destination_round_id: idLookup[matchTemplate.next],
-          label: 'Winner'
-        });
-      }
+      for (const advancement of matchTemplate.advancements ?? []) {
+        const destinationRoundId = idLookup[advancement.destination];
+        if (!destinationRoundId) continue;
 
-      if (matchTemplate.loser && idLookup[matchTemplate.loser]) {
         rowsToInsert.push({
           round_id: currentDbId,
-          rank_start: 2,
-          rank_end: 2,
-          destination_round_id: idLookup[matchTemplate.loser],
-          label: 'Loser'
+          rank_start: advancement.rankStart,
+          rank_end: advancement.rankEnd,
+          destination_round_id: destinationRoundId,
+          label: advancement.label
         });
       }
     }
@@ -132,9 +127,9 @@ async function linkAdvancementPaths(idLookup: Record<string, number>, template: 
  * Uses the initialSeeding array to get the player data (these should be in the same order as the seedIndex values)
  */
 export async function seedInitialMatches(
-  idLookup: Record<string, number>, 
+  idLookup: Record<string, number>,
   template: any,
-  initialSeeding: [PlayerTourney | null, PlayerTourney | null][]
+  initialSeeding: (PlayerTourney | null)[][]
 ) {
   const seedInserts: { round_id: number; player_tourney_id: number }[] = [];
   const nameUpdatePromises = [];

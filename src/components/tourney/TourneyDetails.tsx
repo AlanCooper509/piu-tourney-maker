@@ -14,20 +14,18 @@ import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import EditableTourneyName from "./EditableTourneyName";
 import GenerateBracketButton from "./GenerateBracketButton/GenerateBracketButton";
-import SeedPlayersButton from "./SeedPlayersButton/SeedPlayersButton";
+import GenerateSingleStreamBracketButton from "./GenerateSingleStreamBracket/GenerateSingleStreamBracketButton";
 import { handleUpdateTourneyName } from "../../handlers/handleUpdateTourneyName";
 import { StatusElement } from "../StatusElement";
 import { toaster } from "../ui/toaster";
 import { handleStartTourney } from "../../handlers/handleStartTourney";
 
 import type { Round } from "../../types/Round";
-import type { RoundAdvancement } from "../../types/RoundAdvancement";
 import type { PlayerTourney } from "../../types/PlayerTourney";
 
 interface TourneyDetailsProps {
   players: PlayerTourney[] | null;
   rounds: Round[] | null;
-  roundAdvancements: RoundAdvancement[];
   loading: boolean;
   error: Error | null;
 }
@@ -35,7 +33,6 @@ interface TourneyDetailsProps {
 export function TourneyDetails({
   players,
   rounds,
-  roundAdvancements,
   loading,
   error,
 }: TourneyDetailsProps) {
@@ -86,7 +83,6 @@ export function TourneyDetails({
       setIsStarting(true);
       const { updatedTourney } = await handleStartTourney({
         tourneyId: tourney.id,
-        seedPlayersIntoEarliestRound: tourney.type === "Gauntlet",
       });
       setTourney(updatedTourney[0]);
       toaster.create({
@@ -148,11 +144,15 @@ export function TourneyDetails({
                         />
                       </>
                     )}
-                    {/* TODO: Archive this Seed Players button after migrating existing Gauntlet/Waterfall functionality to GenerateBracketButton */}
                     {tourney.type !== "Double Elimination" && (
-                      <>
-                        <SeedPlayersButton players={players} rounds={rounds} roundAdvancements={roundAdvancements} />
-                      </>
+                      <GenerateSingleStreamBracketButton
+                        players={players}
+                        buttonText={
+                          rounds && rounds.length > 0
+                            ? "Regenerate Bracket"
+                            : "Generate Bracket"
+                        }
+                      />
                     )}
                     <IconButton
                       colorPalette="green"

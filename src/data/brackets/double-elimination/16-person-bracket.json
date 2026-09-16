@@ -1,92 +1,492 @@
 {
   "bracketSize": 16,
-  "format": "Double Elimination",
   "pools": [
     {
       "name": "Winners Round 1",
       "matches": [
-        { "id": "WR1:M1", "next": "WQF:M1", "loser": "LR1:M1", "seedIndex": 0 },
-        { "id": "WR1:M2", "next": "WQF:M1", "loser": "LR1:M1", "seedIndex": 1 },
-        { "id": "WR1:M3", "next": "WQF:M2", "loser": "LR1:M2", "seedIndex": 2 },
-        { "id": "WR1:M4", "next": "WQF:M2", "loser": "LR1:M2", "seedIndex": 3 },
-        { "id": "WR1:M5", "next": "WQF:M3", "loser": "LR1:M3", "seedIndex": 4 },
-        { "id": "WR1:M6", "next": "WQF:M3", "loser": "LR1:M3", "seedIndex": 5 },
-        { "id": "WR1:M7", "next": "WQF:M4", "loser": "LR1:M4", "seedIndex": 6 },
-        { "id": "WR1:M8", "next": "WQF:M4", "loser": "LR1:M4", "seedIndex": 7 }
+        {
+          "id": "WR1:M1",
+          "seedIndex": 0,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "WQF:M1",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR1:M1",
+              "label": "Loser"
+            }
+          ]
+        },
+        {
+          "id": "WR1:M2",
+          "seedIndex": 1,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "WQF:M1",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR1:M1",
+              "label": "Loser"
+            }
+          ]
+        },
+        {
+          "id": "WR1:M3",
+          "seedIndex": 2,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "WQF:M2",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR1:M2",
+              "label": "Loser"
+            }
+          ]
+        },
+        {
+          "id": "WR1:M4",
+          "seedIndex": 3,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "WQF:M2",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR1:M2",
+              "label": "Loser"
+            }
+          ]
+        },
+        {
+          "id": "WR1:M5",
+          "seedIndex": 4,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "WQF:M3",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR1:M3",
+              "label": "Loser"
+            }
+          ]
+        },
+        {
+          "id": "WR1:M6",
+          "seedIndex": 5,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "WQF:M3",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR1:M3",
+              "label": "Loser"
+            }
+          ]
+        },
+        {
+          "id": "WR1:M7",
+          "seedIndex": 6,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "WQF:M4",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR1:M4",
+              "label": "Loser"
+            }
+          ]
+        },
+        {
+          "id": "WR1:M8",
+          "seedIndex": 7,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "WQF:M4",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR1:M4",
+              "label": "Loser"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Winners Quarter-Finals",
       "matches": [
-        { "id": "WQF:M1", "next": "WSF:M1", "loser": "LR2:M3" },
-        { "id": "WQF:M2", "next": "WSF:M1", "loser": "LR2:M4" },
-        { "id": "WQF:M3", "next": "WSF:M2", "loser": "LR2:M1" },
-        { "id": "WQF:M4", "next": "WSF:M2", "loser": "LR2:M2" }
+        {
+          "id": "WQF:M1",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "WSF:M1",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR2:M3",
+              "label": "Loser"
+            }
+          ]
+        },
+        {
+          "id": "WQF:M2",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "WSF:M1",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR2:M4",
+              "label": "Loser"
+            }
+          ]
+        },
+        {
+          "id": "WQF:M3",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "WSF:M2",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR2:M1",
+              "label": "Loser"
+            }
+          ]
+        },
+        {
+          "id": "WQF:M4",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "WSF:M2",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR2:M2",
+              "label": "Loser"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Winners Semi-Finals",
       "matches": [
-        { "id": "WSF:M1", "next": "Winners Finals", "loser": "LR4:M2" },
-        { "id": "WSF:M2", "next": "Winners Finals", "loser": "LR4:M1" }
+        {
+          "id": "WSF:M1",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Winners Finals",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR4:M2",
+              "label": "Loser"
+            }
+          ]
+        },
+        {
+          "id": "WSF:M2",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Winners Finals",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "LR4:M1",
+              "label": "Loser"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Winners Finals",
       "matches": [
-        { "id": "Winners Finals", "next": "Grand Finals", "loser": "Losers Finals" }
+        {
+          "id": "Winners Finals",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Grand Finals",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "Losers Finals",
+              "label": "Loser"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Losers Round 1",
       "matches": [
-        { "id": "LR1:M1", "next": "LR2:M1" },
-        { "id": "LR1:M2", "next": "LR2:M2" },
-        { "id": "LR1:M3", "next": "LR2:M3" },
-        { "id": "LR1:M4", "next": "LR2:M4" }
+        {
+          "id": "LR1:M1",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "LR2:M1",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "LR1:M2",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "LR2:M2",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "LR1:M3",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "LR2:M3",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "LR1:M4",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "LR2:M4",
+              "label": "Winner"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Losers Round 2",
       "matches": [
-        { "id": "LR2:M1", "next": "LR3:M1" },
-        { "id": "LR2:M2", "next": "LR3:M1" },
-        { "id": "LR2:M3", "next": "LR3:M2" },
-        { "id": "LR2:M4", "next": "LR3:M2" }
+        {
+          "id": "LR2:M1",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "LR3:M1",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "LR2:M2",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "LR3:M1",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "LR2:M3",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "LR3:M2",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "LR2:M4",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "LR3:M2",
+              "label": "Winner"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Losers Round 3",
       "matches": [
-        { "id": "LR3:M1", "next": "LR4:M1" },
-        { "id": "LR3:M2", "next": "LR4:M2" }
+        {
+          "id": "LR3:M1",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "LR4:M1",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "LR3:M2",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "LR4:M2",
+              "label": "Winner"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Losers Round 4",
       "matches": [
-        { "id": "LR4:M1", "next": "Losers Semi-Finals" },
-        { "id": "LR4:M2", "next": "Losers Semi-Finals" }
+        {
+          "id": "LR4:M1",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Losers Semi-Finals",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "LR4:M2",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Losers Semi-Finals",
+              "label": "Winner"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Losers Semi-Finals",
       "matches": [
-        { "id": "Losers Semi-Finals", "next": "Losers Finals" }
+        {
+          "id": "Losers Semi-Finals",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Losers Finals",
+              "label": "Winner"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Losers Finals",
       "matches": [
-        { "id": "Losers Finals", "next": "Grand Finals" }
+        {
+          "id": "Losers Finals",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Grand Finals",
+              "label": "Winner"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Grand Finals",
       "matches": [
-        { "id": "Grand Finals", "next": "RESET" },
-        { "id": "RESET", "next": null }
+        {
+          "id": "Grand Finals",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "RESET",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "RESET"
+        }
       ]
     }
-  ]
+  ],
+  "pointsPerStage": 1
 }

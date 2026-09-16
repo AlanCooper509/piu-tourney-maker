@@ -1,38 +1,120 @@
 {
   "bracketSize": 4,
-  "format": "Double Elimination",
   "pools": [
     {
       "name": "Winners Semi-Finals",
       "matches": [
-        { "id": "WSF:M1", "next": "Winners Finals", "loser": "Losers SF", "seedIndex": 0 },
-        { "id": "WSF:M2", "next": "Winners Finals", "loser": "Losers SF", "seedIndex": 1 }
+        {
+          "id": "WSF:M1",
+          "seedIndex": 0,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Winners Finals",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "Losers SF",
+              "label": "Loser"
+            }
+          ]
+        },
+        {
+          "id": "WSF:M2",
+          "seedIndex": 1,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Winners Finals",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "Losers SF",
+              "label": "Loser"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Winners Finals",
       "matches": [
-        { "id": "Winners Finals", "next": "Grand Finals", "loser": "Losers Finals" }
+        {
+          "id": "Winners Finals",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Grand Finals",
+              "label": "Winner"
+            },
+            {
+              "rankStart": 2,
+              "rankEnd": 2,
+              "destination": "Losers Finals",
+              "label": "Loser"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Losers Semi-Finals",
       "matches": [
-        { "id": "Losers SF", "next": "Losers Finals" }
+        {
+          "id": "Losers SF",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Losers Finals",
+              "label": "Winner"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Losers Finals",
       "matches": [
-        { "id": "Losers Finals", "next": "Grand Finals" }
+        {
+          "id": "Losers Finals",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Grand Finals",
+              "label": "Winner"
+            }
+          ]
+        }
       ]
     },
     {
       "name": "Grand Finals",
       "matches": [
-        { "id": "Grand Finals", "next": "RESET" },
-        { "id": "RESET", "next": null }
+        {
+          "id": "Grand Finals",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "RESET",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "RESET"
+        }
       ]
     }
-  ]
+  ],
+  "pointsPerStage": 1
 }

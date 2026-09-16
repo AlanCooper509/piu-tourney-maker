@@ -1,13 +1,26 @@
 {
   "bracketSize": 2,
-  "format": "Double Elimination",
   "pools": [
     {
       "name": "Grand Finals",
       "matches": [
-        { "id": "Grand Finals", "next": "RESET", "seedIndex": 0 },
-        { "id": "RESET", "next": null }
+        {
+          "id": "Grand Finals",
+          "seedIndex": 0,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "RESET",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "RESET"
+        }
       ]
     }
-  ]
+  ],
+  "pointsPerStage": 1
 }

@@ -15,7 +15,6 @@ import RoundsList from "../components/round/RoundsList/RoundsList";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
 import { useSyncEventForTourney } from "../hooks/useSyncEventForTourney";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
-import { getRoundAdvancementsInTourney } from "../helpers/getRoundAdvancementsInTourney";
 import { deleteRound, upsertRound } from "../helpers/state/rounds";
 import { deletePlayerTourney, upsertPlayerTourney } from "../helpers/state/playerTourney";
 
@@ -23,7 +22,6 @@ import type { Tourney } from '../types/Tourney';
 import type { PlayerTourney } from "../types/PlayerTourney";
 import type { Round } from "../types/Round";
 import type { RoundPool } from "../types/RoundPool";
-import type { RoundAdvancement } from "../types/RoundAdvancement";
 import type { ChartdrawConfig, ChartdrawConfigSpec, ChartdrawConfigWithSpecs } from "../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps, PickbanRulesetSteps } from "../types/Pickban";
 import type { PlayerRound } from "../types/PlayerRound";
@@ -38,7 +36,6 @@ function TourneyPage() {
   const tourneyPlayersRef = useRef<PlayerTourney[]>([]);
   const [roundPlayers, setRoundPlayers] = useState<PlayerRound[]>([]);
   const [rounds, setRounds] = useState<Round[]>([]);
-  const [roundAdvancements, setRoundAdvancements] = useState<RoundAdvancement[]>([]);
   const [roundPools, setRoundPools] = useState<RoundPool[]>([]);
   const [chartdrawConfigs, setChartdrawConfigs] = useState<ChartdrawConfigWithSpecs[]>([]);
   const [pickbanRulesets, setPickbanRulesets] = useState<PickbanRulesetWithSteps[]>([]);
@@ -111,16 +108,6 @@ function TourneyPage() {
   useEffect(() => {
     if (queriedRoundsInTourney) setRounds(queriedRoundsInTourney);
   }, [queriedRoundsInTourney]);
-
-  useEffect(() => {
-    if (!rounds.length) {
-      setRoundAdvancements([]);
-      return;
-    }
-    getRoundAdvancementsInTourney(Number(tourneyId))
-      .then(setRoundAdvancements)
-      .catch(console.error);
-  }, [tourneyId, rounds]);
 
   useEffect(() => {
     if (queriedRoundPools) setRoundPools(queriedRoundPools);
@@ -359,7 +346,6 @@ function TourneyPage() {
         <TourneyDetails
           players={players}
           rounds={sortedRounds}
-          roundAdvancements={roundAdvancements}
           loading={loadingTourney}
           error={errorTourney}
         />
