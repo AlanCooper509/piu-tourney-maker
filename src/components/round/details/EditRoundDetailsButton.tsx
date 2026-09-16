@@ -6,23 +6,27 @@ import { handleUpdateRoundDetails } from "../../../handlers/round/handleRoundRow
 import { toaster } from "../../ui/toaster";
 
 import type { Round } from "../../../types/Round";
+import type { RoundPool } from "../../../types/RoundPool";
 
 interface EditRoundDetailsButtonProps {
   round: Round;
   setRound: (round: Round) => void;
   rounds?: Round[];
+  roundPools?: RoundPool[];
   setRounds: React.Dispatch<React.SetStateAction<Round[]>>;
 }
 
-export default function EditRoundDetailsButton({ round, setRound, rounds, setRounds }: EditRoundDetailsButtonProps) {
+export default function EditRoundDetailsButton({ round, setRound, rounds, roundPools, setRounds }: EditRoundDetailsButtonProps) {
   async function onAdminClick(
     name: string,
     pointsPerStage: string | undefined,
+    roundPoolId: number | null | undefined
   ) {
     const updatedRound = await handleUpdateRoundDetails(
       round.id,
       name,
-      pointsPerStage
+      pointsPerStage,
+      roundPoolId
     );
 
     setRound(updatedRound);
@@ -57,6 +61,7 @@ export default function EditRoundDetailsButton({ round, setRound, rounds, setRou
     <RoundModal
       round={round}
       rounds={rounds}
+      roundPools={roundPools}
       trigger={button}
       onSubmitForm={onAdminClick}
     />

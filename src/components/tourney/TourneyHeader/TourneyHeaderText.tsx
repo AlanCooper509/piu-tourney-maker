@@ -76,13 +76,15 @@ export default function TourneyHeaderText({
 
   async function onAdminClick(
     name: string,
-    pointsPerStage: string | undefined
+    pointsPerStage: string | undefined,
+    roundPoolId: number | null | undefined
   ) {
     if (!tourney) return;
     const updatedRound = await handleAddRoundToTourney(
       tourney.id,
       name,
-      pointsPerStage
+      pointsPerStage,
+      roundPoolId
     );
 
     setRounds((prev) =>
@@ -228,6 +230,7 @@ export default function TourneyHeaderText({
         {showAddRoundButton && (
           <RoundModal
             rounds={rounds}
+            roundPools={roundPools ?? []}
             trigger={addRoundButton}
             onSubmitForm={onAdminClick}
             />

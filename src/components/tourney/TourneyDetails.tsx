@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
-  Heading,
   VStack,
   Text,
   IconButton,
@@ -103,37 +102,29 @@ export function TourneyDetails({
     }
   };
 
-  const tourneyNameText = (
-    <>
-      {!loadingTourneyAdminStatus && isTourneyAdmin ? (
-        <EditableTourneyName
-          tourneyName={tourney?.name ?? ""}
-          onRename={onRenameTourney}
-          isLoading={updatingName}
-        />
-      ) : (
-        <Text></Text>
-      )}
-    </>
-  );
   return (
     <>
       <title>
         {tourney && tourney.name ? tourney.name : "Tournament Details"}
       </title>
-      <Heading mb={-2}>{tourneyNameText}</Heading>
+      {!loadingTourneyAdminStatus && isTourneyAdmin && (
+        <EditableTourneyName
+          tourneyName={tourney?.name ?? ""}
+          onRename={onRenameTourney}
+          isLoading={updatingName}
+        />
+      )}
       <Box>
         <VStack style={{ gap: "0px" }}>
           {loading && <Text>Loading tournament...</Text>}
           {error && <Text color="red">Error: {error.message}</Text>}
           {!loading && !error && tourney && (
             <>
-              {!loadingTourneyAdminStatus &&
-                isTourneyAdmin &&
-                tourney?.status === "Not Started" && (
-                  <HStack mb={4}>
-                    {tourney.type === "Double Elimination" && (
-                      <>
+              {!loadingTourneyAdminStatus && isTourneyAdmin && (
+                <HStack mb={4}>
+                  {tourney?.status === "Not Started" && (
+                    <>
+                      {tourney.type === "Double Elimination" ? (
                         <GenerateBracketButton
                           players={players}
                           buttonText={
@@ -142,18 +133,30 @@ export function TourneyDetails({
                               : "Generate Bracket"
                           }
                         />
-                      </>
-                    )}
-                    {tourney.type !== "Double Elimination" && (
-                      <GenerateSingleStreamBracketButton
-                        players={players}
-                        buttonText={
-                          rounds && rounds.length > 0
-                            ? "Regenerate Bracket"
-                            : "Generate Bracket"
-                        }
-                      />
-                    )}
+                      ) : (
+                        <GenerateSingleStreamBracketButton
+                          players={players}
+                          buttonText={
+                            rounds && rounds.length > 0
+                              ? "Regenerate Bracket"
+                              : "Generate Bracket"
+                          }
+                        />
+                      )}
+                    </>
+                  )}
+                  <Button
+                    colorPalette="purple"
+                    variant="outline"
+                    borderWidth={2}
+                    size="sm"
+                    onClick={() =>
+                      navigate(`/tourney/${tourney.id}/StreamHelper`)
+                    }
+                  >
+                    Stream Helper
+                  </Button>
+                  {tourney?.status === "Not Started" && (
                     <IconButton
                       colorPalette="green"
                       variant="outline"
@@ -165,21 +168,8 @@ export function TourneyDetails({
                     >
                       Start Tourney
                     </IconButton>
-                  </HStack>
-                )}
-              {!loadingTourneyAdminStatus && isTourneyAdmin && (
-                <Button
-                  colorPalette="purple"
-                  variant="outline"
-                  borderWidth={2}
-                  size="sm"
-                  mb={4}
-                  onClick={() =>
-                    navigate(`/tourney/${tourney.id}/StreamHelper`)
-                  }
-                >
-                  Stream Helper
-                </Button>
+                  )}
+                </HStack>
               )}
               <Text>Type: {tourney.type}</Text>
               <StatusElement element={tourney} />

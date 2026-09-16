@@ -4,7 +4,8 @@ import type { Round } from '../../types/Round';
 export async function handleUpdateRoundDetails(
   roundId: number,
   newName: string,
-  pointsPerStage: string | undefined
+  pointsPerStage: string | undefined,
+  roundPoolId: number | null | undefined
 ): Promise<Round> {
   if (!roundId) {
     throw new Error('Round ID is required');
@@ -18,7 +19,8 @@ export async function handleUpdateRoundDetails(
     .update(
       {
         name: newName.trim(),
-        points_per_stage: pointsPerStage ?? null
+        points_per_stage: pointsPerStage ?? null,
+        round_pool_id: roundPoolId ?? null
       }
     )
     .eq('id', roundId)
@@ -42,7 +44,8 @@ export async function handleUpdateRoundDetails(
 export async function handleAddRoundToTourney(
   tourneyId: number,
   roundName: string,
-  pointsPerStage: string | undefined
+  pointsPerStage: string | undefined,
+  roundPoolId: number | null | undefined
 ) {
   const { data, error } = await supabaseClient
     .from("rounds")
@@ -50,7 +53,8 @@ export async function handleAddRoundToTourney(
       {
         tourney_id: tourneyId,
         name: roundName,
-        points_per_stage: pointsPerStage ?? null
+        points_per_stage: pointsPerStage ?? null,
+        round_pool_id: roundPoolId ?? null
       },
     ])
     .select()

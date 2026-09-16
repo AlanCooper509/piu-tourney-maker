@@ -631,6 +631,7 @@ function RoundPage() {
         setRound={setRound}
         rounds={tourneyRounds}
         setRounds={setTourneyRounds}
+        roundPools={roundPools}
         roundAdvancements={roundAdvancements}
         players={players}
         stages={stages}

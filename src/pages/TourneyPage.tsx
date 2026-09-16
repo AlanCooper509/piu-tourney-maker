@@ -12,7 +12,9 @@ import { Toaster } from "../components/ui/toaster";
 import ChartRulesList from "../components/rulesets/ChartRulesList";
 import { SidebarTourneyPlayersList } from "../components/tourney/PlayersList/SidebarTourneyPlayersList";
 import RoundsList from "../components/round/RoundsList/RoundsList";
+import RoundPoolsManager from "../components/round/roundpools/RoundPoolsManager";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
+import { useIsAdminForTourney } from "../context/admin/AdminTourneyContext";
 import { useSyncEventForTourney } from "../hooks/useSyncEventForTourney";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 import { deleteRound, upsertRound } from "../helpers/state/rounds";
@@ -32,6 +34,7 @@ function TourneyPage() {
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
 
   const { tourney, setTourney } = useCurrentTourney();
+  const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
   const [players, setPlayers] = useState<PlayerTourney[]>([]);
   const tourneyPlayersRef = useRef<PlayerTourney[]>([]);
   const [roundPlayers, setRoundPlayers] = useState<PlayerRound[]>([]);
@@ -110,7 +113,12 @@ function TourneyPage() {
   }, [queriedRoundsInTourney]);
 
   useEffect(() => {
-    if (queriedRoundPools) setRoundPools(queriedRoundPools);
+    if (queriedRoundPools) {
+      const sorted = [...queriedRoundPools].sort((a, b) =>
+        (a.sort_order ?? a.id) - (b.sort_order ?? b.id)
+      );
+      setRoundPools(sorted);
+    }
   }, [queriedRoundPools]);
 
   useEffect(() => {
@@ -343,12 +351,22 @@ function TourneyPage() {
       />
       <Separator mt={2} mb={4} />
       <VStack separator={<StackSeparator />}>
-        <TourneyDetails
-          players={players}
-          rounds={sortedRounds}
-          loading={loadingTourney}
-          error={errorTourney}
-        />
+        <Box w="100%">
+          <TourneyDetails
+            players={players}
+            rounds={sortedRounds}
+            loading={loadingTourney}
+            error={errorTourney}
+          />
+          {!loadingTourneyAdminStatus && isTourneyAdmin && (
+            <RoundPoolsManager
+              tourneyId={Number(tourneyId)}
+              roundPools={roundPools}
+              setRoundPools={setRoundPools}
+              rounds={rounds}
+            />
+          )}
+        </Box>
         {tourney?.type === "Double Elimination" ? (
           <Stack
             direction={{ base: "column", lg: "row" }}

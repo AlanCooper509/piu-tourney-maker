@@ -13,6 +13,7 @@ import DrawChartsButton from "../ChartDraw/DrawChartsButton";
 import StartPickBanDialog from "../PickBan/StartPickBanDialog";
 
 import type { Round } from "../../../types/Round";
+import type { RoundPool } from "../../../types/RoundPool";
 import type { RoundAdvancement } from "../../../types/RoundAdvancement";
 import type { PlayerRound } from "../../../types/PlayerRound";
 import type { Stage } from "../../../types/Stage";
@@ -26,6 +27,7 @@ interface RoundDetailsProps {
   setRound: (round: Round | null) => void;
   rounds: Round[];
   setRounds: React.Dispatch<React.SetStateAction<Round[]>>;
+  roundPools?: RoundPool[];
   roundAdvancements: RoundAdvancement[];
   players: PlayerRound[] | null;
   stages: Stage[] | null;
@@ -44,6 +46,7 @@ export function RoundDetails({
   setRound,
   rounds,
   setRounds,
+  roundPools,
   roundAdvancements,
   players,
   stages,
@@ -118,6 +121,7 @@ export function RoundDetails({
                     <EditRoundDetailsButton
                       round={round}
                       rounds={rounds}
+                      roundPools={roundPools}
                       setRound={setRound}
                       setRounds={setRounds}
                     />

@@ -1,8 +1,8 @@
-import { HStack, Input, IconButton, Text } from "@chakra-ui/react";
+import { Field, HStack, IconButton, Input, Text } from "@chakra-ui/react";
 import { CiEdit } from "react-icons/ci";
-import { IoCloseSharp } from "react-icons/io5";
-import { FaCheck } from "react-icons/fa";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import DialogForm from "../ui/DialogForm";
 import { toaster } from "../ui/toaster";
 
 function EditableTourneyName({
@@ -14,85 +14,75 @@ function EditableTourneyName({
   onRename: (newName: string) => Promise<void>;
   isLoading?: boolean;
 }) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState(tourneyName);
 
-  const handleSave = async () => {
+  useEffect(() => {
+    if (open) setNewName(tourneyName);
+  }, [open, tourneyName]);
+
+  const submitWithGuards = async () => {
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      toaster.create({
+        title: "Invalid Name",
+        description: "Tourney name cannot be empty.",
+        type: "error",
+        closable: true,
+      });
+      return false;
+    }
+
     try {
-      await onRename(newName);
-      setIsEditing(false);
+      await onRename(trimmed);
       toaster.create({
-        title: 'Tourney Renamed',
-        description: `Tourney name updated to "${newName}"`,
-        type: 'success',
+        title: "Tourney Renamed",
+        description: `Tourney name updated to "${trimmed}"`,
+        type: "success",
         closable: true,
       });
+      return true;
     } catch (err: any) {
-      console.error(err);
       toaster.create({
-        title: 'Failed to rename tourney',
-        description: err.message || 'An error occurred',
-        type: 'error',
+        title: "Failed to rename tourney",
+        description: err.message || "An error occurred",
+        type: "error",
         closable: true,
       });
+      return false;
     }
   };
 
-  const handleCancel = () => {
-    setNewName(tourneyName);
-    setIsEditing(false);
-  };
+  const formBody = (
+    <Field.Root>
+      <Field.Label>Tourney Name</Field.Label>
+      <Input value={newName} onChange={(e) => setNewName(e.target.value)} autoFocus />
+    </Field.Root>
+  );
 
   return (
-    <HStack mb={4}>
-      <Text>
-      Name: 
-      </Text>
-      {isEditing ? (
-        <>
-          <Input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            size="sm"
-            autoFocus
-          />
+    <HStack w="fit-content" mx="auto" mb={4} gap={2}>
+      <Text fontWeight="semibold">{tourneyName}</Text>
+      <DialogForm
+        title="Edit Tourney Name"
+        trigger={
           <IconButton
-            aria-label="Save name"
-            onClick={handleSave}
-            loading={isLoading}
-            variant="outline"
-            borderWidth={2}
-            size="sm"
-            colorPalette="green"
-          >
-            <FaCheck />
-          </IconButton>
-          <IconButton
-            aria-label="Cancel edit"
-            onClick={handleCancel}
-            variant="outline"
-            borderWidth={2}
-            size="sm"
-            colorPalette="red"
-          >
-            <IoCloseSharp />
-          </IconButton>
-        </>
-      ) : (
-        <>
-          <Text>{tourneyName}</Text>
-          <IconButton
-            aria-label="Edit name"
+            aria-label="Edit tourney name"
             colorPalette="blue"
-            onClick={() => setIsEditing(true)}
             variant="outline"
             borderWidth={2}
             size="sm"
           >
             <CiEdit />
           </IconButton>
-        </>
-      )}
+        }
+        onSubmit={submitWithGuards}
+        onCancel={() => setOpen(false)}
+        formBody={formBody}
+        open={open}
+        setOpen={setOpen}
+        loading={isLoading}
+      />
     </HStack>
   );
 }
