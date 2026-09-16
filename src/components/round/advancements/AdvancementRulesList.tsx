@@ -63,7 +63,7 @@ export default function AdvancementRulesList({
             justify={isTourneyAdmin ? "space-between" : "center"}
             borderWidth={isTourneyAdmin ? 1 : 0}
             borderRadius="md"
-            px={isTourneyAdmin ? 3 : 0}
+            px={isTourneyAdmin ? 2 : 0}
             py={isTourneyAdmin ? 2 : 0}
           >
             <NextRoundIndicator

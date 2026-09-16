@@ -30,7 +30,7 @@ export default function AdvancementRuleModal({
   const [open, setOpen] = useState(false);
 
   const [formRankStart, setFormRankStart] = useState(rule?.rank_start?.toString() ?? "1");
-  const [formOpenEnded, setFormOpenEnded] = useState(rule ? rule.rank_end == null : true);
+  const [formOpenEnded, setFormOpenEnded] = useState(rule ? rule.rank_end == null : false);
   const [formRankEnd, setFormRankEnd] = useState(rule?.rank_end?.toString() ?? "");
   const [formDestinationRoundId, setFormDestinationRoundId] = useState<string[]>(
     rule ? [rule.destination_round_id.toString()] : []
@@ -39,7 +39,7 @@ export default function AdvancementRuleModal({
 
   useEffect(() => {
     setFormRankStart(rule?.rank_start?.toString() ?? "1");
-    setFormOpenEnded(rule ? rule.rank_end == null : true);
+    setFormOpenEnded(rule ? rule.rank_end == null : false);
     setFormRankEnd(rule?.rank_end?.toString() ?? "");
     setFormDestinationRoundId(rule ? [rule.destination_round_id.toString()] : []);
     setFormLabel(rule?.label ?? "");
@@ -198,7 +198,7 @@ export default function AdvancementRuleModal({
 
   return (
     <DialogForm
-      title={isEditMode ? "Edit Advancement Rule" : "Add Advancement Rule"}
+      title={isEditMode ? `Edit Advancement Rule for ${round.name}` : `Add Advancement Rule for ${round.name}`}
       trigger={trigger}
       onSubmit={submitWithGuards}
       onCancel={() => setOpen(false)}

@@ -107,15 +107,17 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
     setNewSeed(player.seed ? String(player.seed) : "");
   };
 
+  const isAdminView = !loadingTourneyAdminStatus && isTourneyAdmin;
+
   return (
     <HStack w="full" maxW="100%" minW="0" justify="space-between" align="center">
       <HStack
-        gap={3}
+        gap={(player.seed || isAdminView) ? 3 : 0}
         align="center"
         justify="center"
         flex="1"
         minW="0"
-        maxW={(!loadingTourneyAdminStatus && isTourneyAdmin) ? "200px" : "100%"}
+        maxW={isAdminView ? "200px" : "100%"}
         mx="auto"
         title={player.player_name}
       >
@@ -133,15 +135,15 @@ export default function EditablePlayerRow({ player, updatePlayer, removePlayer }
             <FaSeedling size={12} />
             <Text as="span" fontWeight="bold">{player.seed}</Text>
           </HStack>
-        ) : (
+        ) : isAdminView ? (
           <Box w="35px" flexShrink={0} marginEnd={1} />
-        )}
+        ) : null}
 
         {/* Player Name */}
         <Text
           truncate
           fontWeight="medium"
-          textAlign="left"
+          textAlign={(player.seed || isAdminView) ? "left" : "center"}
           flex="1"
         >
           {player.player_name}

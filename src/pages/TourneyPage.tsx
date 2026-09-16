@@ -53,7 +53,7 @@ function TourneyPage() {
     'player_tourneys',
     { column: 'tourney_id', value: tourneyId }
   );
-  const { data: queriedPlayersInRound } = getSupabaseTable<PlayerRound>(
+  const { data: queriedPlayersInRound, loading: loadingRoundPlayers } = getSupabaseTable<PlayerRound>(
     "player_rounds",
     { column: "player_tourneys.tourney_id", value: tourneyId }, // Filter via the joined table
     "*, player_tourneys!inner(player_name, seed, tourney_id)"   // !inner makes it a hard filter
@@ -399,6 +399,8 @@ function TourneyPage() {
           <ColumnarTourneyPlayersList
             players={players}
             setPlayers={setPlayers}
+            roundPlayers={roundPlayers}
+            loadingRoundPlayers={loadingRoundPlayers}
             loading={loadingPlayers}
             error={errorPlayers}
           />

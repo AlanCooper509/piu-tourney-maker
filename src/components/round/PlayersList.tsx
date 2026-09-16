@@ -223,7 +223,10 @@ function usePlayerCollection({ players, tourneyPlayers, searchTerm }: UsePlayerC
   const collection = useMemo(() => {
     const filtered = !searchTerm
       ? playerOptions
-      : playerOptions.filter((item) => contains(item.label, searchTerm));
+      : playerOptions.filter((item) =>
+          contains(item.label, searchTerm) ||
+          (item.seed != null && contains(String(item.seed), searchTerm))
+        );
 
     return createListCollection({
       items: filtered,

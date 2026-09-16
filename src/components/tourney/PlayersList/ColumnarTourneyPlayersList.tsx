@@ -1,27 +1,37 @@
 import { Box, Center, Heading, HStack, SimpleGrid, Text } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import AddPlayer from '../../players/AddPlayer';
 import EditablePlayerRow from '../EditablePlayerRow';
+import MissingPlayersWarning from '../MissingPlayersWarning';
 import { handleAddPlayerToTourney } from '../../../handlers/handleAddPlayerToTourney';
 import { toaster } from "../../ui/toaster";
 import { useCurrentTourney } from '../../../context/CurrentTourneyContext';
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 
 import type { PlayerTourney } from '../../../types/PlayerTourney';
+import type { PlayerRound } from '../../../types/PlayerRound';
 
 interface ColumnarTourneyPlayersListProps {
   players: PlayerTourney[] | null;
   setPlayers: React.Dispatch<React.SetStateAction<PlayerTourney[]>>;
+  roundPlayers: PlayerRound[];
+  loadingRoundPlayers: boolean;
   loading: boolean;
   error: Error | null;
 }
 
-export function ColumnarTourneyPlayersList({ players, setPlayers, loading, error }: ColumnarTourneyPlayersListProps) {
+export function ColumnarTourneyPlayersList({ players, setPlayers, roundPlayers, loadingRoundPlayers, loading, error }: ColumnarTourneyPlayersListProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
   const [addingPlayer, setAddingPlayer] = useState(false);
   const [newName, setNewName] = useState("");
+
+  // Tourney players not yet added to any round in this tourney
+  const missingPlayers = useMemo(() => {
+    const roundPlayerTourneyIds = new Set(roundPlayers.map((rp) => rp.player_tourney_id));
+    return (players ?? []).filter((p) => !roundPlayerTourneyIds.has(p.id));
+  }, [players, roundPlayers]);
 
   const onAddPlayer = async (name: string, seed: number | null) => {
     if (!tourney) return;    
@@ -91,7 +101,13 @@ return (
             />
           }
         </HStack>
-        
+
+        {!loadingTourneyAdminStatus && isTourneyAdmin && !loadingRoundPlayers && (
+          <Box mb={2}>
+            <MissingPlayersWarning missingPlayers={missingPlayers} />
+          </Box>
+        )}
+
         {loading && <Text>Loading players...</Text>}
         {error && <Text color="red">Error: {error.message}</Text>}
         
