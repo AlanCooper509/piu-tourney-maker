@@ -1,13 +1,15 @@
-import { 
-  VStack, 
-  HStack, 
-  Field, 
-  Input, 
-  NumberInput, 
-  Button, 
+import {
+  VStack,
+  HStack,
+  Field,
+  Input,
+  NumberInput,
+  Button,
   Combobox,
+  Text,
   type ListCollection
 } from "@chakra-ui/react";
+import { FaSeedling } from "react-icons/fa";
 
 interface PlayerFormProps {
   name: string;
@@ -18,7 +20,7 @@ interface PlayerFormProps {
   onCancel: () => void;
   submitLabel: string;
   loading: boolean;
-  collection?: ListCollection<{ label: string; value: string }>;
+  collection?: ListCollection<{ label: string; value: string; seed: number | null }>;
   hideSeed?: boolean;
 }
 
@@ -61,7 +63,22 @@ export function PlayerForm({
                   <Combobox.Empty>No players found</Combobox.Empty>
                   {collection.items.map((item) => (
                     <Combobox.Item key={item.value} item={item}>
-                      {item.label}
+                      <HStack gap={item.seed != null ? 3 : 0}>
+                        {item.seed != null && (
+                          <HStack
+                            justify="space-between"
+                            gap={1}
+                            fontSize="xs"
+                            color="green.600"
+                            flexShrink={0}
+                            w="35px"
+                          >
+                            <FaSeedling size={12} />
+                            <Text as="span" fontWeight="bold">{item.seed}</Text>
+                          </HStack>
+                        )}
+                        <Text>{item.label}</Text>
+                      </HStack>
                       <Combobox.ItemIndicator />
                     </Combobox.Item>
                   ))}

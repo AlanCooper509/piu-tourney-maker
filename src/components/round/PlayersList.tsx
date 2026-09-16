@@ -197,8 +197,8 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
 }
 
 interface UsePlayerCollectionProps {
-  players: any[] | null;
-  tourneyPlayers: any[] | null;
+  players: PlayerRound[] | null;
+  tourneyPlayers: PlayerTourney[] | null;
   searchTerm: string;
 }
 function usePlayerCollection({ players, tourneyPlayers, searchTerm }: UsePlayerCollectionProps) {
@@ -215,7 +215,7 @@ function usePlayerCollection({ players, tourneyPlayers, searchTerm }: UsePlayerC
     if (!tourneyPlayers) return [];
     return tourneyPlayers
       .filter((p) => !roundPlayerNames.has(p.player_name))
-      .map((p) => ({ label: p.player_name, value: p.player_name }))
+      .map((p) => ({ label: p.player_name, value: p.player_name, seed: p.seed }))
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [tourneyPlayers, roundPlayerNames]);
 

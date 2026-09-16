@@ -9,7 +9,7 @@ interface AddPlayerProps {
   newName: string;
   setNewName: (name: string) => void;
   loading: boolean;
-  collection?: ListCollection<{ label: string; value: string }>;
+  collection?: ListCollection<{ label: string; value: string; seed: number | null }>;
   hideSeed?: boolean;
   text?: string;
 }
