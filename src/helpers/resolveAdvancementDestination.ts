@@ -20,11 +20,31 @@ export function resolveAdvancementDestination(
   return resolveAdvancementRule(rank, roundAdvancements)?.destination_round_id;
 }
 
-/** Fallback display text for a rule with no TO-provided label, e.g. "Rank 2" or "Rank 3+". */
-export function formatRankRangeLabel(rule: RoundAdvancement): string {
-  if (rule.rank_end == null) return `Rank ${rule.rank_start}+`;
-  if (rule.rank_end === rule.rank_start) return `Rank ${rule.rank_start}`;
-  return `Rank ${rule.rank_start}-${rule.rank_end}`;
+/** Converts 1 -> "1st", 2 -> "2nd", 3 -> "3rd", 4 -> "4th", 11 -> "11th", etc. */
+export function ordinal(n: number): string {
+  const j = n % 10;
+  const k = n % 100;
+  if (j === 1 && k !== 11) return `${n}st`;
+  if (j === 2 && k !== 12) return `${n}nd`;
+  if (j === 3 && k !== 13) return `${n}rd`;
+  return `${n}th`;
+}
+
+/** Ordinal rank range covered by a rule, e.g. "1st", "1st - 2nd", or "3rd+" for an open-ended rule. */
+export function formatOrdinalRankRange(rule: RoundAdvancement): string {
+  if (rule.rank_end == null) return `${ordinal(rule.rank_start)}+`;
+  if (rule.rank_end === rule.rank_start) return ordinal(rule.rank_start);
+  return `${ordinal(rule.rank_start)} - ${ordinal(rule.rank_end)}`;
+}
+
+/**
+ * Display label for an advancement rule: the TO-provided label with its rank range
+ * appended, e.g. "Winner (1st)" or "Winner (1st - 2nd)" — or just the range,
+ * e.g. "3rd+", when no label is set.
+ */
+export function formatAdvancementLabel(rule: RoundAdvancement): string {
+  const range = formatOrdinalRankRange(rule);
+  return rule.label ? `${rule.label} (${range})` : range;
 }
 
 /** True if two rank ranges (open-ended when rank_end is null) cover any rank in common. */

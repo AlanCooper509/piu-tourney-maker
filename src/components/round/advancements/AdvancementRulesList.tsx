@@ -4,7 +4,7 @@ import { FaTrash } from "react-icons/fa";
 
 import { NextRoundIndicator } from "../details/NextRoundIndicator";
 import AdvancementRuleModal from "./AdvancementRuleModal";
-import { formatRankRangeLabel } from "../../../helpers/resolveAdvancementDestination";
+import { formatAdvancementLabel } from "../../../helpers/resolveAdvancementDestination";
 import { toaster } from "../../ui/toaster";
 import { handleDeleteRoundAdvancement } from "../../../handlers/round/handleRoundAdvancementRow";
 
@@ -50,20 +50,30 @@ export default function AdvancementRulesList({
     }
   };
 
+  const sortedAdvancements = [...roundAdvancements].sort((a, b) => a.rank_start - b.rank_start);
+
   return (
     <VStack align="stretch" gap={1}>
-      {roundAdvancements.map(advancement => {
+      {sortedAdvancements.map(advancement => {
         const destinationRound = rounds.find(r => r.id === advancement.destination_round_id);
         if (!destinationRound) return null;
         return (
-          <HStack key={advancement.id} justify="center">
+          <HStack
+            key={advancement.id}
+            justify={isTourneyAdmin ? "space-between" : "center"}
+            borderWidth={isTourneyAdmin ? 1 : 0}
+            borderRadius="md"
+            px={isTourneyAdmin ? 3 : 0}
+            py={isTourneyAdmin ? 2 : 0}
+          >
             <NextRoundIndicator
-              label={advancement.label ?? formatRankRangeLabel(advancement)}
+              label={formatAdvancementLabel(advancement)}
               tourneyId={tourneyId}
               nextRound={destinationRound}
+              centered={!isTourneyAdmin}
             />
             {isTourneyAdmin && (
-              <HStack gap={1}>
+              <HStack gap={1} flexShrink={0}>
                 <AdvancementRuleModal
                   round={round}
                   rounds={rounds}

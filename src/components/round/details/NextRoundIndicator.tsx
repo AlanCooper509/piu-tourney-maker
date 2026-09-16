@@ -7,26 +7,30 @@ interface NextRoundIndicatorProps {
   label: string;
   tourneyId: number;
   nextRound: Round;
+  centered?: boolean;
 }
 
-export function NextRoundIndicator({ 
+export function NextRoundIndicator({
   label,
-  tourneyId, 
-  nextRound
+  tourneyId,
+  nextRound,
+  centered = false,
 }: NextRoundIndicatorProps) {
   if (!nextRound) return null;
 
   const navigate = useNavigate();
+  const textAlign = centered ? "center" : { base: "center", sm: "left" };
 
   return (
     <Stack
-      direction={{ base: "column", sm: "row" }} 
-      align="center" 
-      justify="center"
+      direction={{ base: "column", sm: "row" }}
+      align={centered ? "center" : { base: "center", sm: "baseline" }}
+      justify={centered ? "center" : "flex-start"}
       gap={0}
-      mb={2}
+      minW={0}
+      flex={centered ? undefined : 1}
     >
-      <Text textAlign="center">
+      <Text textAlign={textAlign} flexShrink={0}>
         {label}:
       </Text>
       <Text
@@ -34,7 +38,9 @@ export function NextRoundIndicator({
         cursor="pointer"
         fontWeight="bold"
         ml={{ base: 0, sm: 1 }}
-        textAlign="center"
+        textAlign={textAlign}
+        truncate={!centered}
+        minW={0}
         onClick={() => navigate(`/tourney/${tourneyId}/round/${nextRound.id}`)}
       >
         {nextRound.name}
