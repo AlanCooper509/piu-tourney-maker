@@ -81,7 +81,7 @@ export default function RoundAdvancementsSection({
   return (
     <>
       <Separator mt={"24px"} mb={"24px"} />
-      <Box w="100%" maxW={{ base: "100%", md: "700px" }} mx="auto">
+      <Box w="100%" maxW={{ base: "100%", md: "md" }} mx="auto">
         {isCollapsible ? (
           <Collapsible.Root open={isOpen} onOpenChange={(details) => setIsOpen(details.open)}>
             <HStack mb={isTourneyAdmin ? 2 : 1} justifyContent="center" gap={2}>
@@ -103,7 +103,7 @@ export default function RoundAdvancementsSection({
         ) : (
           <>
             <HStack mb={isTourneyAdmin ? 2 : 1} justifyContent="center">
-              <Heading mb={isTourneyAdmin ? 2 : 1}>Advancements</Heading>
+              <Heading>Advancements</Heading>
               {addRuleButton}
             </HStack>
             {list}
