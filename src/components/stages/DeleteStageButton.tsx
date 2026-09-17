@@ -8,6 +8,7 @@ import DialogForm from "../ui/DialogForm";
 
 import type { Round } from "../../types/Round";
 import type { Stage } from "../../types/Stage";
+import { getStageChart } from "../../helpers/getStageChart";
 
 interface DeleteStageButtonProps {
   round: Round | null;
@@ -30,7 +31,7 @@ export default function DeleteStageButton({ round, stage, setStages }: DeleteSta
       
       toaster.create({
         title: "Stage deleted",
-        description: `Stage ID: ${stage.id} (${stage.charts?.name_en}) was removed from the round.`,
+        description: `Stage ID: ${stage.id} (${getStageChart(stage)?.name_en}) was removed from the round.`,
         type: "success",
         closable: true,
       });
