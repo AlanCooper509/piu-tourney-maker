@@ -51,7 +51,7 @@ export async function handlePullRoundResults(
         play_order: index + 1,
         chart_source: "ddrtools",
         chart_name: chart.name,
-        chart_difficulty: chart.diffAbbr,
+        chart_type: chart.diffAbbr,
         chart_level: chart.level,
         chart_image_url: absoluteJacketUrl(chart.jacket),
         chart_meta: {
