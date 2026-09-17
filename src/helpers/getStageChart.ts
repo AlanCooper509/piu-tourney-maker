@@ -3,6 +3,21 @@ import type { ChartType } from "../types/ChartType";
 import type { Stage } from "../types/Stage";
 
 /**
+ * A Chart synthesized from a stage's inline snapshot rather than read from
+ * `charts`. Structurally still a Chart, so existing card/row components need
+ * no changes, but callers that want the source's own type label can check for
+ * `sourceTypeLabel` instead of assuming every Chart might have one.
+ */
+export interface SnapshotChart extends Chart {
+  /**
+   * Type/class exactly as the source labelled it (e.g. "ESP"). Prefer this
+   * over `type` for display, since `type` can only express this app's four
+   * values.
+   */
+  sourceTypeLabel: string | null;
+}
+
+/**
  * The chart a stage was played on, however it was recorded.
  *
  * A stage either points at a `charts` row (chosen here) or describes its chart
@@ -10,7 +25,7 @@ import type { Stage } from "../types/Stage";
  * this returns one shape either way — a snapshot is presented as a synthetic
  * Chart so the existing card and row components need no changes.
  */
-export function getStageChart(stage: Stage | null | undefined): Chart | null {
+export function getStageChart(stage: Stage | null | undefined): Chart | SnapshotChart | null {
   if (!stage) return null;
   if (stage.charts) return stage.charts;
   if (!stage.chart_name) return null;
@@ -22,12 +37,12 @@ export function getStageChart(stage: Stage | null | undefined): Chart | null {
     name_en: stage.chart_name,
     name_kr: null,
     level: stage.chart_level ?? 0,
-    type: chartTypeForLabel(stage.chart_difficulty),
+    type: chartTypeForLabel(stage.chart_type),
     duration: null,
     image_url: stage.chart_image_url ?? null,
     game_id: 0,
     created_at: stage.created_at,
-    difficulty_label: stage.chart_difficulty ?? null,
+    sourceTypeLabel: stage.chart_type ?? null,
   };
 }
 
@@ -37,9 +52,10 @@ export function isImportedChart(stage: Stage | null | undefined) {
 }
 
 /**
- * Best-effort mapping of a source's difficulty label onto our chart_types
- * enum, which exists mainly to pick a display color. Labels from other games
- * have no equivalent and stay null, which reads as neutral rather than wrong.
+ * Best-effort mapping of a source's chart type/class label onto our
+ * chart_types enum, which exists mainly to pick a display color. Labels from
+ * other games have no equivalent and stay null, which reads as neutral rather
+ * than wrong.
  */
 function chartTypeForLabel(label: string | null | undefined): ChartType | null {
   if (!label) return null;
@@ -51,9 +67,9 @@ function chartTypeForLabel(label: string | null | undefined): ChartType | null {
   return null;
 }
 
-/** Short difficulty label for dense displays, from either chart shape. */
-export function chartDifficultyLabel(chart: Chart | null | undefined): string {
+/** Short type/class label for dense displays, from either chart shape. */
+export function chartTypeLabel(chart: Chart | SnapshotChart | null | undefined): string {
   if (!chart) return "";
-  if (chart.difficulty_label) return chart.difficulty_label;
+  if ("sourceTypeLabel" in chart && chart.sourceTypeLabel) return chart.sourceTypeLabel;
   return chart.type?.charAt(0) ?? "";
 }

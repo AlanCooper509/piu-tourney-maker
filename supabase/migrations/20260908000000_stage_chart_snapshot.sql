@@ -22,7 +22,7 @@
 alter table public.stages
   add column if not exists chart_source     text,
   add column if not exists chart_name       text,
-  add column if not exists chart_difficulty text,
+  add column if not exists chart_type       text,
   add column if not exists chart_level      bigint,
   add column if not exists chart_image_url  text,
   add column if not exists chart_meta       jsonb;
@@ -31,8 +31,8 @@ comment on column public.stages.chart_source is
   'Where a snapshot chart came from, e.g. ''ddrtools''. Null for charts chosen from the charts table.';
 comment on column public.stages.chart_name is
   'Song name as the source recorded it. Display only; not matched against charts.name_en.';
-comment on column public.stages.chart_difficulty is
-  'Free-text difficulty label from the source (''S'', ''D'', ''COOPx2'', ''ESP''…). Free text rather than the chart_types enum so non-Pump games fit.';
+comment on column public.stages.chart_type is
+  'Free-text chart type/class label from the source (''S'', ''D'', ''COOPx2'', ''ESP''…). This app''s own charts use the chart_types enum (Single/Double/Co-Op/UCS); free text here because some sources express type and difficulty as one combined label (e.g. DDR''s ''ESP'') that does not cleanly split.';
 comment on column public.stages.chart_level is
   'Numeric level as the source recorded it.';
 comment on column public.stages.chart_image_url is

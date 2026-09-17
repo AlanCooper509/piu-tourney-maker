@@ -8,7 +8,7 @@ import type { Chart } from '../../types/Chart';
 import type { PlayerRound } from '../../types/PlayerRound';
 import type { Round } from '../../types/Round';
 import type { CalculatedPlayerStats } from '../round/PlayersList';
-import { chartDifficultyLabel, getStageChart } from "../../helpers/getStageChart";
+import { chartTypeLabel, getStageChart } from "../../helpers/getStageChart";
 
 interface ScoreMappingEntry {
   stage: Stage;
@@ -30,7 +30,7 @@ export default function NonEditablePlayerScores({ player, stages, round, stats }
     stages?.map((stage) => {
       const stageChart = getStageChart(stage);
       const chartName = stageChart ? stageChart.name_en ?? "No Name" : <Span fontStyle="italic" color="fg.subtle">awaiting chart selection...</Span>;
-      const chartType = stageChart ? chartDifficultyLabel(stageChart) : '';
+      const chartType = stageChart ? chartTypeLabel(stageChart) : '';
       const chartLevel = stageChart ? stageChart.level ?? "" : '??';
 
       const scoreEntry = scoreMapping?.find((fs: ScoreMappingEntry) =>

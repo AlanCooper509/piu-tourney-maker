@@ -9,7 +9,7 @@ import { isValidScore1mil } from '../../helpers/isValidScore1mil';
 
 import type { Stage } from '../../types/Stage';
 import type { PlayerRound } from '../../types/PlayerRound';
-import { chartDifficultyLabel, getStageChart } from "../../helpers/getStageChart";
+import { chartTypeLabel, getStageChart } from "../../helpers/getStageChart";
 
 interface EditablePlayerScoresProps {
   player: PlayerRound;
@@ -160,7 +160,7 @@ export default function EditablePlayerScores({ player, stages, incrementStagesPl
     localStages?.map(stage => {
       const stageChart = getStageChart(stage);
       const chartName = stageChart?.name_en ?? 'awaiting chart selection...';
-      const chartType = chartDifficultyLabel(stageChart);
+      const chartType = chartTypeLabel(stageChart);
       const chartLevel = stageChart?.level ?? '??';
 
       const playerScore = stage.scores?.find(s => s.player_round_id === player.id);

@@ -16,7 +16,7 @@ export interface Stage {
   // at a `charts` row. Read these through getStageChart(), never directly.
   chart_source?: string | null;      // text, e.g. 'ddrtools'
   chart_name?: string | null;        // text
-  chart_difficulty?: string | null;  // text, free-form so non-Pump games fit
+  chart_type?: string | null;        // text, free-form so non-Pump games fit
   chart_level?: number | null;       // bigint -> number
   chart_image_url?: string | null;   // text
   chart_meta?: StageChartMeta | null; // jsonb

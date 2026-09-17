@@ -11,12 +11,4 @@ export interface Chart {
   image_url: string | null;       // text
   game_id: number;                // bigint -> number
   created_at: string;             // ISO timestamp string
-
-  /**
-   * Difficulty exactly as an outside source labelled it, for charts that came
-   * from one. Present only on charts synthesized by getStageChart(); charts
-   * read from the table never set it. Prefer it over `type` when displaying a
-   * difficulty, since `type` can only express Pump's four values.
-   */
-  difficulty_label?: string | null;
 }
