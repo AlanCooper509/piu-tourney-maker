@@ -7,6 +7,7 @@ import { useRoundStreamData } from "../hooks/useRoundStreamData";
 import { useTransparentBackground } from "../hooks/useTransparentBackground";
 import { calculateH2HScoring } from "../helpers/calculateH2HScoring";
 import { getStageChart } from "../helpers/getStageChart";
+import { isBracketFormat } from "../helpers/isBracketFormat";
 import { PlayerAvatar } from "../components/PlayerAvatar";
 
 import type { PlayerRound } from "../types/PlayerRound";
@@ -500,7 +501,7 @@ function StreamViewer() {
     "stream-viewer",
   );
 
-  const isDoubleElimination = tourney?.type === "Double Elimination";
+  const isBracketTourney = isBracketFormat(tourney?.type);
   const activeStreamState = currentRound?.active_stream_state;
 
   const activeHeat = useMemo(() => {
@@ -519,7 +520,7 @@ function StreamViewer() {
   const roundDisplayName = useMemo(() => {
     if (!currentRound) return "";
 
-    if (isDoubleElimination && roundPools?.length) {
+    if (isBracketTourney && roundPools?.length) {
       const matchedPool = roundPools.find(
         (pool) => Number(pool.id) === Number(currentRound.round_pool_id)
       );
@@ -530,7 +531,7 @@ function StreamViewer() {
     }
 
     return currentRound.name;
-  }, [currentRound, isDoubleElimination, roundPools]);
+  }, [currentRound, isBracketTourney, roundPools]);
 
   const isFlipped = activeStreamState?.reverse_order ?? false;
 
@@ -599,9 +600,9 @@ function StreamViewer() {
     }));
   }, [displayedPlayers, isPairedTwo, isSingleCab]);
 
-  // Head-to-head match score: only shown for a 1v1 pairing in a Double
-  // Elimination tourney. A 4-player free-for-all never shows a score.
-  const showScore = isPairedTwo && isDoubleElimination;
+  // Head-to-head match score: only shown for a 1v1 pairing in a bracket-style
+  // tourney. A 4-player free-for-all never shows a score.
+  const showScore = isPairedTwo && isBracketTourney;
 
   const scoring = useMemo(
     () => calculateH2HScoring({ players: displayedPlayers, stages, round: currentRound }),

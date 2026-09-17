@@ -1,0 +1,43 @@
+{
+  "bracketSize": 4,
+  "pools": [
+    {
+      "name": "Semi-Finals",
+      "matches": [
+        {
+          "id": "SF:M1",
+          "seedIndex": 0,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Finals",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "SF:M2",
+          "seedIndex": 1,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Finals",
+              "label": "Winner"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Finals",
+      "matches": [
+        {
+          "id": "Finals"
+        }
+      ]
+    }
+  ],
+  "pointsPerStage": 1
+}

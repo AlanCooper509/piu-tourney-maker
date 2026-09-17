@@ -17,6 +17,7 @@ import { useCurrentTourney } from "../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../context/admin/AdminTourneyContext";
 import { useSyncEventForTourney } from "../hooks/useSyncEventForTourney";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
+import { isBracketFormat } from "../helpers/isBracketFormat";
 import { deleteRound, upsertRound } from "../helpers/state/rounds";
 import { deletePlayerTourney, upsertPlayerTourney } from "../helpers/state/playerTourney";
 
@@ -367,7 +368,7 @@ function TourneyPage() {
             />
           )}
         </Box>
-        {tourney?.type === "Double Elimination" ? (
+        {isBracketFormat(tourney?.type) ? (
           <Stack
             direction={{ base: "column", lg: "row" }}
             alignItems={{ base: "center", lg: "start" }}

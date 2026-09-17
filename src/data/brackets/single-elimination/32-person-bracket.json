@@ -1,0 +1,230 @@
+{
+  "bracketSize": 32,
+  "pools": [
+    {
+      "name": "Round 1",
+      "matches": [
+        {
+          "id": "R1:M1",
+          "seedIndex": 0,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M1", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M2",
+          "seedIndex": 1,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M1", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M3",
+          "seedIndex": 2,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M2", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M4",
+          "seedIndex": 3,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M2", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M5",
+          "seedIndex": 4,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M3", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M6",
+          "seedIndex": 5,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M3", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M7",
+          "seedIndex": 6,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M4", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M8",
+          "seedIndex": 7,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M4", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M9",
+          "seedIndex": 8,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M5", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M10",
+          "seedIndex": 9,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M5", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M11",
+          "seedIndex": 10,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M6", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M12",
+          "seedIndex": 11,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M6", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M13",
+          "seedIndex": 12,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M7", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M14",
+          "seedIndex": 13,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M7", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M15",
+          "seedIndex": 14,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M8", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R1:M16",
+          "seedIndex": 15,
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "R2:M8", "label": "Winner" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Round 2",
+      "matches": [
+        {
+          "id": "R2:M1",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "QF:M1", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R2:M2",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "QF:M1", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R2:M3",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "QF:M2", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R2:M4",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "QF:M2", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R2:M5",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "QF:M3", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R2:M6",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "QF:M3", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R2:M7",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "QF:M4", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "R2:M8",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "QF:M4", "label": "Winner" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Quarter-Finals",
+      "matches": [
+        {
+          "id": "QF:M1",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "SF:M1", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "QF:M2",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "SF:M1", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "QF:M3",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "SF:M2", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "QF:M4",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "SF:M2", "label": "Winner" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Semi-Finals",
+      "matches": [
+        {
+          "id": "SF:M1",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "Finals", "label": "Winner" }
+          ]
+        },
+        {
+          "id": "SF:M2",
+          "advancements": [
+            { "rankStart": 1, "rankEnd": 1, "destination": "Finals", "label": "Winner" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Finals",
+      "matches": [
+        {
+          "id": "Finals"
+        }
+      ]
+    }
+  ],
+  "pointsPerStage": 1
+}

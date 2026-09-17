@@ -1,0 +1,15 @@
+{
+  "bracketSize": 2,
+  "pools": [
+    {
+      "name": "Finals",
+      "matches": [
+        {
+          "id": "Finals",
+          "seedIndex": 0
+        }
+      ]
+    }
+  ],
+  "pointsPerStage": 1
+}

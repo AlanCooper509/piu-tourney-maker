@@ -20,6 +20,7 @@ import { deleteRound, upsertRound } from "../helpers/state/rounds";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 import { getRoundAdvancementsInTourney } from "../helpers/getRoundAdvancementsInTourney";
 import { sortChartdrawEntries } from "../helpers/sortChartdrawEntries";
+import { isBracketFormat } from "../helpers/isBracketFormat";
 import RulesetContainer from "../components/round/Ruleset/RulesetContainer";
 import ChartDrawContainer from "../components/round/ChartDraw/ChartDrawContainer";
 import ChosenStagesContainer from "../components/round/ChosenStagesContainer";
@@ -653,7 +654,7 @@ function RoundPage() {
         tourneyId={Number(tourneyId)}
       />
 
-      {tourney?.type === 'Double Elimination' ? (
+      {isBracketFormat(tourney?.type) ? (
         <>
           <Separator mt={"24px"} mb={"24px"} />
           <VStack gap={4}>

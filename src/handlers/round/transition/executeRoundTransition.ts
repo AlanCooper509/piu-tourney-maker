@@ -7,6 +7,7 @@ import { getRoundsInTourney } from '../../../helpers/getRoundsInTourney';
 import { getRoundAdvancementsInTourney } from '../../../helpers/getRoundAdvancementsInTourney';
 import { resolveAdvancementDestination } from '../../../helpers/resolveAdvancementDestination';
 import getPlayersInRound from '../../../helpers/getPlayersInRound';
+import { isBracketFormat } from '../../../helpers/isBracketFormat';
 
 import type { Round } from '../../../types/Round';
 import type { TourneyType } from '../../../types/Tourney';
@@ -62,8 +63,8 @@ export async function executeRoundTransition({
     await handleAddPlayersToRound(players, destinationRoundId);
   }
 
-  // handle Double Elimination dynamic naming updates
-  if (tourneyType === "Double Elimination") {
+  // handle bracket-format dynamic naming updates
+  if (isBracketFormat(tourneyType)) {
     for (const destinationRoundId of playersByDestination.keys()) {
       const destinationPlayers = await getPlayersInRound(destinationRoundId);
       renameRoundWithPlayerNames(getRoundFromId(destinationRoundId, rounds), destinationPlayers);

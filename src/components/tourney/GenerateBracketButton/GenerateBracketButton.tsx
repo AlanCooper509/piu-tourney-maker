@@ -2,7 +2,7 @@ import { useState } from "react";
 import { IconButton } from "@chakra-ui/react"
 
 import DialogForm from "../../ui/DialogForm"
-import SeedPlayersFormBody from "./GenerateBracketFormBody";
+import GenerateBracketFormBody from "./GenerateBracketFormBody";
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import onSubmitHandler from "./onSubmitHandler";
 
@@ -18,7 +18,6 @@ export default function GenerateBracketButton({ players, buttonText }: SeedPlaye
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const isDoubleElimination = tourney?.type === "Double Elimination";
   const seedingData = players ? calculateSeeding(players) : null;
 
   const handleSubmit = async () => {
@@ -26,8 +25,9 @@ export default function GenerateBracketButton({ players, buttonText }: SeedPlaye
 
     setSubmitting(true);
     try {
-      const success = await onSubmitHandler({ 
+      const success = await onSubmitHandler({
         tourneyId: tourney.id,
+        tourneyType: tourney.type,
         matches: seedingData.roundMatches,
         bracketSize: seedingData.bracketSize
       });
@@ -57,8 +57,8 @@ export default function GenerateBracketButton({ players, buttonText }: SeedPlaye
         </IconButton>
       }
       formBody={
-        <SeedPlayersFormBody 
-          isDoubleElimination={isDoubleElimination}
+        <GenerateBracketFormBody
+          bracketType={tourney?.type ?? null}
           roundMatches={seedingData?.roundMatches || []}
           playerCount={seedingData?.playerCount || 0}
           players={players || []}

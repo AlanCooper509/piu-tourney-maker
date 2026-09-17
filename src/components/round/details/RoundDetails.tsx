@@ -11,6 +11,7 @@ import EditRoundDetailsButton from "./EditRoundDetailsButton";
 import ScoringDetailsText from "./ScoringDetailsText";
 import DrawChartsButton from "../ChartDraw/DrawChartsButton";
 import StartPickBanDialog from "../PickBan/StartPickBanDialog";
+import { isBracketFormat } from "../../../helpers/isBracketFormat";
 
 import type { Round } from "../../../types/Round";
 import type { RoundPool } from "../../../types/RoundPool";
@@ -87,18 +88,18 @@ export function RoundDetails({
   const showSkipRoundButton =
     !loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "Not Started";
   const showStartRoundButton =
-    !loadingTourneyAdminStatus && isTourneyAdmin && tourneyType !== "Double Elimination" && round?.status === "Not Started";
+    !loadingTourneyAdminStatus && isTourneyAdmin && !isBracketFormat(tourneyType) && round?.status === "Not Started";
   const showDrawChartsButton =
-    !loadingTourneyAdminStatus && isTourneyAdmin && tourneyType === "Double Elimination" && round?.status === "Not Started" &&
+    !loadingTourneyAdminStatus && isTourneyAdmin && isBracketFormat(tourneyType) && round?.status === "Not Started" &&
     !!activeConfig && chartdrawEntries.length === 0;
   const showStartPickBanDialog =
-    !loadingTourneyAdminStatus && isTourneyAdmin && tourneyType === "Double Elimination" && round?.status !== "Not Started" &&
+    !loadingTourneyAdminStatus && isTourneyAdmin && isBracketFormat(tourneyType) && round?.status !== "Not Started" &&
     !!readyToStartPickBan && !!setChartdrawEntries;
   const showEndRoundButton =
     !loadingTourneyAdminStatus && isTourneyAdmin && round?.status === "In Progress";
 
   const hasRoundActionButtons =
-    (tourneyType !== "Double Elimination" && showLeaderboardLink) ||
+    (!isBracketFormat(tourneyType) && showLeaderboardLink) ||
     showSkipRoundButton ||
     showStartRoundButton ||
     showDrawChartsButton ||
@@ -135,7 +136,7 @@ export function RoundDetails({
 
               <StatusElement element={round} />
 
-              {tourneyType !== "Double Elimination" && (
+              {!isBracketFormat(tourneyType) && (
                 <ScoringDetailsText
                   pointsPerStage={round?.points_per_stage}
                 />
@@ -146,7 +147,7 @@ export function RoundDetails({
                   <Separator></Separator>
 
                   <HStack mt={4}>
-                    {tourneyType !== "Double Elimination" && showLeaderboardLink && (
+                    {!isBracketFormat(tourneyType) && showLeaderboardLink && (
                       <LeaderboardLinkButton
                         tourneyId={tourneyId}
                         roundId={round?.id ?? 0}

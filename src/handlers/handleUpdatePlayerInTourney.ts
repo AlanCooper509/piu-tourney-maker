@@ -2,14 +2,16 @@ import { supabaseClient } from '../lib/supabaseClient';
 
 import { handleUpdateRoundName } from './round/handleUpdateRoundName';
 import { formatRoundName } from '../helpers/formatRoundName';
+import { isBracketFormat } from '../helpers/isBracketFormat';
 
 import type { PlayerTourney } from '../types/PlayerTourney';
+import type { TourneyType } from '../types/Tourney';
 
 export async function handleUpdatePlayerInTourney(
   id: number,
   newName: string,
   newSeed: number | null,
-  tourneyType?: string
+  tourneyType?: TourneyType
 ): Promise<PlayerTourney> {
   if (!newName.trim()) {
     throw new Error('Player name cannot be empty');
@@ -34,8 +36,8 @@ export async function handleUpdatePlayerInTourney(
     throw new Error('Player not found in this tournament');
   }
 
-  // 2. Renaming dynamically named rounds with the updated player name (for Double Elimination tournaments only currently)
-  if (tourneyType === "Double Elimination") {
+  // 2. Renaming dynamically named rounds with the updated player name (bracket-format tournaments only)
+  if (isBracketFormat(tourneyType)) {
     await cascadePlayerNameChangeToRounds(id, newName.trim());
   }
 

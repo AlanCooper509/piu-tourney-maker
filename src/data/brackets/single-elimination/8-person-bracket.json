@@ -1,0 +1,94 @@
+{
+  "bracketSize": 8,
+  "pools": [
+    {
+      "name": "Round 1",
+      "matches": [
+        {
+          "id": "R1:M1",
+          "seedIndex": 0,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "SF:M1",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "R1:M2",
+          "seedIndex": 1,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "SF:M1",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "R1:M3",
+          "seedIndex": 2,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "SF:M2",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "R1:M4",
+          "seedIndex": 3,
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "SF:M2",
+              "label": "Winner"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Semi-Finals",
+      "matches": [
+        {
+          "id": "SF:M1",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Finals",
+              "label": "Winner"
+            }
+          ]
+        },
+        {
+          "id": "SF:M2",
+          "advancements": [
+            {
+              "rankStart": 1,
+              "rankEnd": 1,
+              "destination": "Finals",
+              "label": "Winner"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Finals",
+      "matches": [
+        {
+          "id": "Finals"
+        }
+      ]
+    }
+  ],
+  "pointsPerStage": 1
+}

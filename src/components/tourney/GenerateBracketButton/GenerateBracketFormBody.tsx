@@ -1,31 +1,35 @@
 import { Box, Text, VStack, HStack, List, Heading } from "@chakra-ui/react";
 
 import type { PlayerTourney } from "../../../types/PlayerTourney";
+import type { TourneyType } from "../../../types/Tourney";
 
-interface SeedPlayersFormBodyProps {
-  isDoubleElimination: boolean;
+interface GenerateBracketFormBodyProps {
+  bracketType: TourneyType | null;
   roundMatches: (PlayerTourney | null)[][];
   playerCount: number;
   players: PlayerTourney[];
 }
 
-export default function SeedPlayersFormBody({
-  isDoubleElimination,
+export default function GenerateBracketFormBody({
+  bracketType,
   roundMatches,
   playerCount,
   players
-}: SeedPlayersFormBodyProps) {
+}: GenerateBracketFormBodyProps) {
   if (!roundMatches) {
     return <Text>No player data available to generate a bracket.</Text>;
   }
 
+  const isDoubleElimination = bracketType === "Double Elimination";
+  const isBracketType = isDoubleElimination || bracketType === "Single Elimination";
+
   const headerText = <Text fontWeight="bold">
-    {isDoubleElimination ?
-      `Generate and seed the ${playerCount}-person double elimination bracket?` :
+    {isBracketType ?
+      `Generate and seed the ${playerCount}-person ${bracketType?.toLowerCase()} bracket?` :
       "Add seeded players into advanced rounds?"
     }
   </Text>
-  const paragraphText = isDoubleElimination ?
+  const paragraphText = isBracketType ?
     "This will also prepare all of the future rounds and advancement paths." :
     "This will add the seeded players to the future rounds of the tournament."
   const footerText = <Text color="yellow.500">Note: This will delete any pre-existing rounds in this tournament!</Text>
@@ -62,10 +66,10 @@ export default function SeedPlayersFormBody({
       {warningSection}
       {headerText}
 
-      {isDoubleElimination && (
+      {isBracketType && (
         <Box w="100%" p={3} mb={2} borderWidth={1} borderColor="border.emphasized" borderRadius="md">
           <Text fontWeight="bold" mb={2}>
-            Winners Bracket Preview (Round 1)
+            {isDoubleElimination ? "Winners Bracket Preview (Round 1)" : "Bracket Preview (Round 1)"}
           </Text>
 
           <VStack align="start" gap={2}>
@@ -84,12 +88,14 @@ export default function SeedPlayersFormBody({
             })}
           </VStack>
 
-          <Box mt={4}>
-            <Text fontWeight="bold">Losers Bracket</Text>
-            <Text color="gray.400" fontStyle="italic">
-              (Will be generated from Winners Bracket outcomes)
-            </Text>
-          </Box>
+          {isDoubleElimination && (
+            <Box mt={4}>
+              <Text fontWeight="bold">Losers Bracket</Text>
+              <Text color="gray.400" fontStyle="italic">
+                (Will be generated from Winners Bracket outcomes)
+              </Text>
+            </Box>
+          )}
         </Box>
       )}
 

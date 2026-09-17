@@ -16,6 +16,7 @@ import GenerateBracketButton from "./GenerateBracketButton/GenerateBracketButton
 import GenerateSingleStreamBracketButton from "./GenerateSingleStreamBracket/GenerateSingleStreamBracketButton";
 import PullFromDdrToolsButton from "./PullFromDdrToolsButton/PullFromDdrToolsButton";
 import { handleUpdateTourneyName } from "../../handlers/handleUpdateTourneyName";
+import { isBracketFormat } from "../../helpers/isBracketFormat";
 import { StatusElement } from "../StatusElement";
 import { toaster } from "../ui/toaster";
 import { handleStartTourney } from "../../handlers/handleStartTourney";
@@ -125,7 +126,7 @@ export function TourneyDetails({
                 <HStack mb={4}>
                   {tourney?.status === "Not Started" && (
                     <>
-                      {tourney.type === "Double Elimination" ? (
+                      {isBracketFormat(tourney.type) ? (
                         <GenerateBracketButton
                           players={players}
                           buttonText={

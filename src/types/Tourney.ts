@@ -1,8 +1,9 @@
 export type TourneyStatus = "Not Started" | "In Progress" | "Complete";
-export type TourneyType = "Gauntlet" | "Double Elimination" | "Waterfall (Redemption)";
+export type TourneyType = "Gauntlet" | "Double Elimination" | "Single Elimination" | "Waterfall (Redemption)";
 export const tourneyTypes: TourneyType[] = [
   "Gauntlet",
   "Double Elimination",
+  "Single Elimination",
   "Waterfall (Redemption)",
 ] as const;
 
