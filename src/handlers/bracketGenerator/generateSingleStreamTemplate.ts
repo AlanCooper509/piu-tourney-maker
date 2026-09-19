@@ -28,7 +28,9 @@ function sortBySeed(players: PlayerTourney[]): PlayerTourney[] {
     .filter(p => typeof p.seed === "number")
     .sort((a, b) => (a.seed ?? 0) - (b.seed ?? 0));
   const unseeded = players.filter(p => typeof p.seed !== "number");
-  return [...seeded, ...unseeded];
+  // Worst seed (and any unseeded player, treated as worse than the lowest
+  // seed) enters Round 1 first; the best seeds enter last, in later stages.
+  return [...seeded, ...unseeded].reverse();
 }
 
 /**
@@ -116,13 +118,27 @@ function linkStage(
 ) {
   const pool = pools.find(p => p.matches.some(m => m.id === mainId))!;
 
-  pool.matches.find(m => m.id === mainId)!.advancements = [
-    { rankStart: 1, rankEnd: directAdvancers, destination: destinationId, label: "Advance" },
+  const winnerLabel = directAdvancers > 1 ? "Winners" : "Winner";
+  const mainAdvancements: NonNullable<TemplateMatch["advancements"]> = [
+    { rankStart: 1, rankEnd: directAdvancers, destination: destinationId, label: winnerLabel },
   ];
 
+  // Everyone who doesn't advance directly falls to the redemption round
+  // instead of being silently eliminated, when this format has one.
   if (redemptionId) {
+    mainAdvancements.push({
+      rankStart: directAdvancers + 1,
+      destination: redemptionId,
+      label: "Redemption",
+    });
+  }
+
+  pool.matches.find(m => m.id === mainId)!.advancements = mainAdvancements;
+
+  if (redemptionId) {
+    const redemptionWinnerLabel = redemptionAdvancers > 1 ? "Winners" : "Winner";
     pool.matches.find(m => m.id === redemptionId)!.advancements = [
-      { rankStart: 1, rankEnd: redemptionAdvancers, destination: destinationId, label: "Advance (Redemption)" },
+      { rankStart: 1, rankEnd: redemptionAdvancers, destination: destinationId, label: redemptionWinnerLabel },
     ];
   }
 }

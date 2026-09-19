@@ -38,13 +38,13 @@ export async function handleUpdatePlayerInTourney(
 
   // 2. Renaming dynamically named rounds with the updated player name (bracket-format tournaments only)
   if (isBracketFormat(tourneyType)) {
-    await cascadePlayerNameChangeToRounds(id, newName.trim());
+    await cascadePlayerNameChangeToRounds(id, newName.trim(), tourneyType ?? null);
   }
 
   return updatedPlayer;
 }
 
-async function cascadePlayerNameChangeToRounds(playerTourneyId: number, newName: string): Promise<void> {
+async function cascadePlayerNameChangeToRounds(playerTourneyId: number, newName: string, tourneyType: TourneyType | null): Promise<void> {
   try {
     // Fetch all round ids that this player is in
     const { data: playerRounds, error: fetchRoundsError } = await supabaseClient
@@ -92,7 +92,7 @@ async function cascadePlayerNameChangeToRounds(playerTourneyId: number, newName:
           .filter(Boolean) as string[];
 
         // Re-generate the round name
-        const updatedRoundTitle = formatRoundName(roundMeta.name, playerNames);
+        const updatedRoundTitle = formatRoundName(roundMeta.name, playerNames, tourneyType);
         
         // Push the update to Supabase only if the title structure actually changed
         if (updatedRoundTitle && updatedRoundTitle !== roundMeta.name) {

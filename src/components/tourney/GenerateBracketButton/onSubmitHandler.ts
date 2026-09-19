@@ -50,7 +50,7 @@ export default async function onSubmitHandler({
   try {
     await handleDeleteRoundsInTourney(tourneyId);
     await handleDeleteRoundPoolsInTourney(tourneyId);
-    await generateBracketFromTemplate(tourneyId, template, matches);
+    await generateBracketFromTemplate(tourneyId, template, matches, tourneyType);
 
     toaster.create({
       title: "Generate Bracket",

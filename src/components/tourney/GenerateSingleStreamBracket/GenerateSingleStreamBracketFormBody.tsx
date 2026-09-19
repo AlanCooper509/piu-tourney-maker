@@ -47,16 +47,17 @@ export default function GenerateSingleStreamBracketFormBody({
         </Box>
       )}
 
+      <Field.Root>
+        <Field.Label>Group Size</Field.Label>
+        <NumberInput.Root value={String(groupSize)} onValueChange={(e) => setGroupSize(Number(e.value))} min={2}>
+          <NumberInput.Control />
+          <NumberInput.Input />
+        </NumberInput.Root>
+      </Field.Root>
+
       <HStack align="start">
         <Field.Root>
-          <Field.Label>Group Size</Field.Label>
-          <NumberInput.Root value={String(groupSize)} onValueChange={(e) => setGroupSize(Number(e.value))} min={2}>
-            <NumberInput.Control />
-            <NumberInput.Input />
-          </NumberInput.Root>
-        </Field.Root>
-        <Field.Root>
-          <Field.Label>Advancers per Group</Field.Label>
+          <Field.Label>Direct Advancers</Field.Label>
           <NumberInput.Root value={String(directAdvancers)} onValueChange={(e) => setDirectAdvancers(Number(e.value))} min={1}>
             <NumberInput.Control />
             <NumberInput.Input />

@@ -49,6 +49,7 @@ export default function GenerateSingleStreamBracketButton({ players, buttonText 
     try {
       const success = await onSubmitHandler({
         tourneyId: tourney.id,
+        tourneyType: tourney.type,
         template: generated.template,
         initialSeeding: generated.initialSeeding,
       });

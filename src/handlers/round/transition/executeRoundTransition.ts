@@ -29,10 +29,10 @@ function getRoundFromId(roundId: number, rounds: Round[]): Round | undefined {
   return rounds.find(r => r.id === roundId);
 }
 
-function renameRoundWithPlayerNames(round: Round | undefined, players: PlayerRound[] | null) {
+function renameRoundWithPlayerNames(round: Round | undefined, players: PlayerRound[] | null, tourneyType: TourneyType | null) {
   if (!round || !players) return;
   const playerNames = players.map(p => p.player_tourneys?.player_name).filter(Boolean);
-  const updatedName = formatRoundName(round.name, playerNames);
+  const updatedName = formatRoundName(round.name, playerNames, tourneyType);
   handleUpdateRoundName(round.id, updatedName);
 }
 
@@ -67,7 +67,7 @@ export async function executeRoundTransition({
   if (isBracketFormat(tourneyType)) {
     for (const destinationRoundId of playersByDestination.keys()) {
       const destinationPlayers = await getPlayersInRound(destinationRoundId);
-      renameRoundWithPlayerNames(getRoundFromId(destinationRoundId, rounds), destinationPlayers);
+      renameRoundWithPlayerNames(getRoundFromId(destinationRoundId, rounds), destinationPlayers, tourneyType);
     }
   }
 

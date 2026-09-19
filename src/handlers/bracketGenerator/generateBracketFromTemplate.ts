@@ -2,6 +2,7 @@ import { supabaseClient } from "../../lib/supabaseClient";
 import { formatRoundName } from "../../helpers/formatRoundName";
 
 import type { PlayerTourney } from "../../types/PlayerTourney";
+import type { TourneyType } from "../../types/Tourney";
 
 /**
  * Orchestrator for the 3-pass bracket generation process
@@ -9,7 +10,8 @@ import type { PlayerTourney } from "../../types/PlayerTourney";
 export async function generateBracketFromTemplate(
   tourneyId: number,
   template: any,
-  initialSeeding: (PlayerTourney | null)[][]
+  initialSeeding: (PlayerTourney | null)[][],
+  tourneyType: TourneyType | null | undefined
 ) {
   // initialSeeding[i] is the group of players for the match with seedIndex === i;
   // a 1v1 match's group has length 2, but any group size is supported.
@@ -23,7 +25,7 @@ export async function generateBracketFromTemplate(
     console.log("Pass 2 Complete. Relationships linked.");
 
     // PASS 3: Seed initial players into WR1:M1, WR1:M2, etc.
-    await seedInitialMatches(idLookup, template, initialSeeding);
+    await seedInitialMatches(idLookup, template, initialSeeding, tourneyType);
     console.log("Pass 3 Complete. Players seeded.");
 
     return true;
@@ -129,7 +131,8 @@ async function linkAdvancementPaths(idLookup: Record<string, number>, template: 
 export async function seedInitialMatches(
   idLookup: Record<string, number>,
   template: any,
-  initialSeeding: (PlayerTourney | null)[][]
+  initialSeeding: (PlayerTourney | null)[][],
+  tourneyType: TourneyType | null | undefined
 ) {
   const seedInserts: { round_id: number; player_tourney_id: number }[] = [];
   const nameUpdatePromises = [];
@@ -152,8 +155,9 @@ export async function seedInitialMatches(
             });
           });
           const newName = formatRoundName(
-            matchTemplate.id, 
+            matchTemplate.id,
             validPlayers.map(p => p.player_name),
+            tourneyType,
             true
           );
           nameUpdatePromises.push(
