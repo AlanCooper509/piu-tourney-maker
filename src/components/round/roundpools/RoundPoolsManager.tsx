@@ -131,10 +131,15 @@ export default function RoundPoolsManager({
                             <LuArrowDown />
                           </IconButton>
                         </HStack>
-                        <Text fontWeight="semibold" truncate title={pool.name}>
+                        <Text
+                          fontWeight="semibold"
+                          truncate
+                          title={pool.name}
+                          color={roundCount === 0 ? "orange.400" : undefined}
+                        >
                           {pool.name}
                         </Text>
-                        <Badge colorPalette="gray" variant="subtle" flexShrink={0}>
+                        <Badge colorPalette={roundCount === 0 ? "red" : "gray"} variant="subtle" flexShrink={0}>
                           {roundCount} round{roundCount !== 1 ? "s" : ""}
                         </Badge>
                       </HStack>
