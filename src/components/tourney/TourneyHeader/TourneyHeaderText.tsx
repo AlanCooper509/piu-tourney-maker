@@ -77,14 +77,16 @@ export default function TourneyHeaderText({
   async function onAdminClick(
     name: string,
     pointsPerStage: string | undefined,
-    roundPoolId: number | null | undefined
+    roundPoolId: number | null | undefined,
+    carryOverRoundId: number | null | undefined
   ) {
     if (!tourney) return;
     const updatedRound = await handleAddRoundToTourney(
       tourney.id,
       name,
       pointsPerStage,
-      roundPoolId
+      roundPoolId,
+      carryOverRoundId
     );
 
     setRounds((prev) =>

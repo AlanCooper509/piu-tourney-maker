@@ -190,21 +190,50 @@ export default function PlayerRoundStats({
           py={2}
           px={4}
         >
-          {hasStages ? (
-            !loadingTourneyAdminStatus && isTourneyAdmin ? (
-              <EditablePlayerScores
-                player={player}
-                stages={stages}
-                incrementStagesPlayed={incrementStagesPlayed}
-              />
-            ) : (
-              <NonEditablePlayerScores
-                player={player}
-                stages={stages}
-                round={round}
-                stats={stats}
-              />
-            )
+          {hasStages || stats?.carryOver ? (
+            <VStack align="stretch" gap={3}>
+              {hasStages && (
+                <Box>
+                  {stats?.carryOver && (
+                    <Text fontSize="xs" fontWeight="bold" color="fg.muted" mb={1}>
+                      {round?.name ?? "This Round"}
+                    </Text>
+                  )}
+                  {!loadingTourneyAdminStatus && isTourneyAdmin ? (
+                    <EditablePlayerScores
+                      player={player}
+                      stages={stages}
+                      incrementStagesPlayed={incrementStagesPlayed}
+                    />
+                  ) : (
+                    <NonEditablePlayerScores
+                      player={player}
+                      stages={stages}
+                      round={round}
+                      stats={stats}
+                    />
+                  )}
+                </Box>
+              )}
+              {stats?.carryOver && (
+                <Box>
+                  <Text fontSize="xs" fontWeight="bold" color="fg.muted" mb={1}>
+                    {stats.carryOver.round.name}
+                  </Text>
+                  <NonEditablePlayerScores
+                    player={stats.carryOver.player}
+                    stages={stats.carryOver.stages}
+                    round={stats.carryOver.round}
+                    stats={{
+                      rank: 0,
+                      total: stats.carryOver.total,
+                      cumulative: stats.carryOver.cumulative,
+                      stagePointsMap: stats.carryOver.stagePointsMap,
+                    }}
+                  />
+                </Box>
+              )}
+            </VStack>
           ) : (
             <Text fontSize="sm" color="gray.200" textAlign="center" py={1}>
               No stages yet.

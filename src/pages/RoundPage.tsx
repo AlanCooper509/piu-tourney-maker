@@ -55,6 +55,8 @@ function RoundPage() {
   const [roundPools, setRoundPools] = useState<RoundPool[]>([]);
   const [players, setPlayers] = useState<PlayerRound[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
+  const [carryOverPlayers, setCarryOverPlayers] = useState<PlayerRound[]>([]);
+  const [carryOverStages, setCarryOverStages] = useState<Stage[]>([]);
   const [tourneyPlayers, setTourneyPlayers] = useState<PlayerTourney[]>([]);
   const [chartdrawConfigs, setChartdrawConfigs] = useState<ChartdrawConfigWithSpecs[]>([]);
   const [pickbanRulesets, setPickbanRulesets] = useState<PickbanRulesetWithSteps[]>([]);
@@ -69,6 +71,17 @@ function RoundPage() {
   }, [roundId]);
 
   const activeRoundId = Number(roundId);
+  const carryOverRoundId = round?.carry_over_round_id ?? null;
+  const carryOverRound = useMemo(() => {
+    if (!carryOverRoundId || !tourneyRounds.length) return null;
+    return tourneyRounds.find((r) => r.id === carryOverRoundId) ?? null;
+  }, [carryOverRoundId, tourneyRounds]);
+
+  useEffect(() => {
+    setCarryOverPlayers([]);
+    setCarryOverStages([]);
+  }, [carryOverRoundId]);
+
   const activeRoundPool = useMemo(() => {
     if (!round || !roundPools.length) return null;
     return roundPools.find((pool) => pool.id === round.round_pool_id) || null;
@@ -102,6 +115,16 @@ function RoundPage() {
   const { data: queriedStagesInRound, loading: loadingStagesInRound, error: errorStagesInRound } = getSupabaseTable<Stage>(
     "stages",
     { column: "round_id", value: roundId },
+    "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)"
+  );
+  const { data: queriedCarryOverPlayers } = getSupabaseTable<PlayerRound>(
+    "player_rounds",
+    { column: "round_id", value: carryOverRoundId ?? -1 },
+    "*, player_tourneys(player_name, seed)"
+  );
+  const { data: queriedCarryOverStages } = getSupabaseTable<Stage>(
+    "stages",
+    { column: "round_id", value: carryOverRoundId ?? -1 },
     "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)"
   );
   const { data: queriedPlayersInTourney, loading: loadingPlayersInTourney, error: errorPlayersInTourney } = getSupabaseTable<PlayerTourney>(
@@ -195,6 +218,30 @@ function RoundPage() {
       setStages(sortedStages);
     }
   }, [queriedStagesInRound]);
+
+  // Sync carry-over round players/stages when their queried data changes
+  useEffect(() => {
+    if (!carryOverRoundId) return;
+    if (queriedCarryOverPlayers) {
+      const sortedPlayers = [...queriedCarryOverPlayers].sort(
+        (b, a) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setCarryOverPlayers(sortedPlayers);
+    }
+  }, [queriedCarryOverPlayers, carryOverRoundId]);
+
+  const carryOverStagesRef = useRef(carryOverStages);
+  useEffect(() => {
+    carryOverStagesRef.current = carryOverStages;
+  }, [carryOverStages]);
+  useEffect(() => {
+    if (!carryOverRoundId) return;
+    if (queriedCarryOverStages) {
+      const sortedStages = [...queriedCarryOverStages].sort((a, b) => a.id - b.id);
+      setCarryOverStages(sortedStages);
+    }
+  }, [queriedCarryOverStages, carryOverRoundId]);
 
   useEffect(() => {
     setTourneyPlayers(queriedPlayersInTourney ?? []);
@@ -301,12 +348,16 @@ function RoundPage() {
         (payload) => {
           if (payload.eventType === 'DELETE') {
             setPlayers(prev => deletePlayerFromRound(prev, payload.old.id));
+            setCarryOverPlayers(prev => deletePlayerFromRound(prev, payload.old.id));
             return;
           }
           const incoming = payload.new as PlayerRound;
-          if (incoming.round_id !== activeRoundId) return;
-          // mutable ref is used here to protect the socket boundary
-          setPlayers(prev => upsertPlayerInRound(prev, incoming, tourneyPlayersRef.current ?? []));
+          if (incoming.round_id === activeRoundId) {
+            // mutable ref is used here to protect the socket boundary
+            setPlayers(prev => upsertPlayerInRound(prev, incoming, tourneyPlayersRef.current ?? []));
+          } else if (carryOverRoundId != null && incoming.round_id === carryOverRoundId) {
+            setCarryOverPlayers(prev => upsertPlayerInRound(prev, incoming, tourneyPlayersRef.current ?? []));
+          }
         }
       )
       .subscribe();
@@ -319,14 +370,22 @@ function RoundPage() {
         async (payload) => {
           if (payload.eventType === 'DELETE') {
             setStages(prev => deleteStage(prev, payload.old.id));
+            setCarryOverStages(prev => deleteStage(prev, payload.old.id));
             return;
           }
 
           const incoming = payload.new as Stage;
-          if (!incoming || (incoming.round_id !== activeRoundId)) return;
+          if (!incoming) return;
+
+          const isActiveRound = incoming.round_id === activeRoundId;
+          const isCarryOverRound = carryOverRoundId != null && incoming.round_id === carryOverRoundId;
+          if (!isActiveRound && !isCarryOverRound) return;
+
+          const targetRef = isActiveRound ? stagesRef : carryOverStagesRef;
+          const setTargetStages = isActiveRound ? setStages : setCarryOverStages;
 
           try {
-            const existingStage = stagesRef.current.find(s => s.id === incoming.id);
+            const existingStage = targetRef.current.find(s => s.id === incoming.id);
             const alreadyHasChart = existingStage?.charts?.id === incoming.chart_id;
 
             let fetchedChart = null;
@@ -343,7 +402,7 @@ function RoundPage() {
               }
             }
 
-            setStages(prev => {
+            setTargetStages(prev => {
               // Get the most up-to-date version of this stage at the exact moment of state update
               const currentStage = prev.find(s => s.id === incoming.id);
 
@@ -373,12 +432,18 @@ function RoundPage() {
         payload => {
           if (payload.eventType === 'DELETE') {
             setStages(prev => deleteScoreFromStages(prev, payload.old.id));
+            setCarryOverStages(prev => deleteScoreFromStages(prev, payload.old.id));
             return;
           }
           const incoming = payload.new as Score;
           setStages(prev => {
             const stage = prev.find(s => s.id === incoming?.stage_id);
             if (!stage || stage.round_id !== activeRoundId) return prev;
+            return upsertScoreInStages(prev, incoming);
+          });
+          setCarryOverStages(prev => {
+            const stage = prev.find(s => s.id === incoming?.stage_id);
+            if (!stage || carryOverRoundId == null || stage.round_id !== carryOverRoundId) return prev;
             return upsertScoreInStages(prev, incoming);
           });
         }
@@ -393,12 +458,18 @@ function RoundPage() {
         (payload) => {
           if (payload.eventType === 'DELETE') {
             setStages(prev => deleteChartPoolFromStages(prev, payload.old.id));
+            setCarryOverStages(prev => deleteChartPoolFromStages(prev, payload.old.id));
             return;
           }
           const incoming = payload.new as ChartPool;
           setStages(prev => {
             const stage = prev.find(s => s.id === incoming?.stage_id);
             if (!stage || stage.round_id !== activeRoundId) return prev;
+            return upsertChartPoolInStages(prev, incoming, tourney?.game_id ?? undefined);
+          });
+          setCarryOverStages(prev => {
+            const stage = prev.find(s => s.id === incoming?.stage_id);
+            if (!stage || carryOverRoundId == null || stage.round_id !== carryOverRoundId) return prev;
             return upsertChartPoolInStages(prev, incoming, tourney?.game_id ?? undefined);
           });
         }
@@ -614,7 +685,7 @@ function RoundPage() {
       supabaseClient.removeChannel(pickbanSequenceChannel);
       supabaseClient.removeChannel(chartdrawEntriesChannel);
     };
-  }, [activeRoundId, tourneyId]);
+  }, [activeRoundId, carryOverRoundId, tourneyId]);
 
   return (
     <Box mt={8}>
@@ -710,6 +781,9 @@ function RoundPage() {
                   tourneyPlayers={tourneyPlayers}
                   loading={loadingPlayersInRound || loadingPlayersInTourney}
                   error={errorPlayersInRound || errorPlayersInTourney}
+                  carryOverRound={carryOverRound}
+                  carryOverPlayers={carryOverPlayers}
+                  carryOverStages={carryOverStages}
                 />
               </Box>
               <Box

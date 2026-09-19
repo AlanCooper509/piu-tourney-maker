@@ -6,7 +6,7 @@ import { supabaseClient } from "../lib/supabaseClient";
 import { IoReturnDownBack } from "react-icons/io5";
 
 import getSupabaseTable from "../hooks/getSupabaseTable";
-import calculatePlayerRankingsInRound from "../helpers/calculatePlayerRankingsInRound";
+import { calculateCombinedRoundRankings } from "../helpers/calculateCombinedRoundRankings";
 import { getScoresForPlayer } from "../helpers/getScoresForPlayer";
 import { resolveAdvancementDestination } from "../helpers/resolveAdvancementDestination";
 import RoundLink from "../components/tourney/RoundLink";
@@ -57,6 +57,10 @@ interface Player {
   songs: Song[];
   total: number; // points total OR cumulative total depending on round
   cumulative: number; // raw cumulative total score
+  carryOver?: {
+    label: string;
+    songs: Song[];
+  } | null;
 }
 
 // --------------------
@@ -160,34 +164,76 @@ function PlayerRow({
         bg="gray.800"
         borderBottom={isExpanded ? "2px solid gray" : "none"}
       >
-        <VStack align="stretch" py={3} px={6}>
-          {player.songs.map((song, idx) => (
-            <Box
-              key={`${song.name}-${idx}`}
-              borderBottom={idx !== player.songs.length - 1 ? "1px solid gray" : "none"}
-              py={3}
-            >
-              <HStack justify="space-between">
-                <Tag.Root colorPalette={song.type?.startsWith("D") ? "green" : song.type?.startsWith("S") ? "red" : song.type?.startsWith("C") ? "yellow" : "blue"}>
-                  <Tag.Label>{song.level}</Tag.Label>
-                </Tag.Root>
-                <Text truncate fontSize={songFontSize} textAlign="left">{song.name}</Text>
-                <Spacer/>
-                {round?.points_per_stage ? (
-                  <HStack>
-                    <Text fontSize={"sm"} mr={2}>{song.score?.toLocaleString()}</Text>
-                    <Text fontWeight="bold">{song.points}</Text>
-                  </HStack>
-                )
-                :
-                (
-                  <Text>{song.score?.toLocaleString()}</Text>
-                )}
-              </HStack>
-            </Box>
-          ))}
+        <VStack align="stretch" py={3} px={6} gap={player.carryOver ? 4 : 0}>
+          <VStack align="stretch" gap={0}>
+            {player.carryOver && (
+              <Text fontSize="xs" fontWeight="bold" color="gray.400" mb={1}>
+                {round?.name ?? "This Round"}
+              </Text>
+            )}
+            {player.songs.map((song, idx) => (
+              <SongRow
+                key={`${song.name}-${idx}`}
+                song={song}
+                isLast={idx === player.songs.length - 1}
+                showPoints={!!round?.points_per_stage}
+                songFontSize={songFontSize}
+              />
+            ))}
+          </VStack>
+
+          {player.carryOver && (
+            <VStack align="stretch" gap={0}>
+              <Text fontSize="xs" fontWeight="bold" color="gray.400" mb={1}>
+                {player.carryOver.label}
+              </Text>
+              {player.carryOver.songs.map((song, idx) => (
+                <SongRow
+                  key={`${song.name}-${idx}`}
+                  song={song}
+                  isLast={idx === player.carryOver!.songs.length - 1}
+                  showPoints={!!round?.points_per_stage}
+                  songFontSize={songFontSize}
+                />
+              ))}
+            </VStack>
+          )}
         </VStack>
       </Box>
+    </Box>
+  );
+}
+
+function SongRow({
+  song,
+  isLast,
+  showPoints,
+  songFontSize
+}: {
+  song: Song;
+  isLast: boolean;
+  showPoints: boolean;
+  songFontSize: string | undefined;
+}) {
+  return (
+    <Box borderBottom={isLast ? "none" : "1px solid gray"} py={3}>
+      <HStack justify="space-between">
+        <Tag.Root colorPalette={song.type?.startsWith("D") ? "green" : song.type?.startsWith("S") ? "red" : song.type?.startsWith("C") ? "yellow" : "blue"}>
+          <Tag.Label>{song.level}</Tag.Label>
+        </Tag.Root>
+        <Text truncate fontSize={songFontSize} textAlign="left">{song.name}</Text>
+        <Spacer/>
+        {showPoints ? (
+          <HStack>
+            <Text fontSize={"sm"} mr={2}>{song.score?.toLocaleString()}</Text>
+            <Text fontWeight="bold">{song.points}</Text>
+          </HStack>
+        )
+        :
+        (
+          <Text>{song.score?.toLocaleString()}</Text>
+        )}
+      </HStack>
     </Box>
   );
 }
@@ -240,12 +286,21 @@ function Leaderboard() {
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set());
   const [p, setP] = useState<PlayerRound[]>([]);
   const [s, setS] = useState<Stage[]>([]);
+  const [cp, setCp] = useState<PlayerRound[]>([]);
+  const [cs, setCs] = useState<Stage[]>([]);
+
+  const carryOverRoundId = round?.carry_over_round_id ?? null;
 
   const { data: rounds } = getSupabaseTable<Round>('rounds', { column: 'id', value: roundId });
+  const { data: carryOverRounds } = getSupabaseTable<Round>('rounds', { column: 'id', value: carryOverRoundId ?? -1 });
   const { data: roundAdvancements } = getSupabaseTable<RoundAdvancement>('round_advancements', { column: 'round_id', value: roundId });
   const { data: playersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: roundId }, "*, player_tourneys(player_name, seed)");
   const { data: stagesData, refetch: refetchStages } = getSupabaseTable<Stage>("stages", { column: "round_id", value: roundId }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
   const { data: tourneyPlayersData } = getSupabaseTable<PlayerTourney>("player_tourneys", { column: "tourney_id", value: tourneyId });
+  const { data: carryOverPlayersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: carryOverRoundId ?? -1 }, "*, player_tourneys(player_name, seed)");
+  const { data: carryOverStagesData, refetch: refetchCarryOverStages } = getSupabaseTable<Stage>("stages", { column: "round_id", value: carryOverRoundId ?? -1 }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
+
+  const carryOverRound = carryOverRoundId ? (carryOverRounds?.find(r => r.id === carryOverRoundId) ?? null) : null;
 
   // --------------------
   // Sync Supabase data
@@ -254,6 +309,14 @@ function Leaderboard() {
   useEffect(() => { if (playersData) setP([...playersData].sort((b, a) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())); }, [playersData]);
   useEffect(() => { if (stagesData) setS([...stagesData].sort((a, b) => a.id - b.id)); }, [stagesData]);
   useEffect(() => { if (tourneyPlayersData) setTourneyPlayers([...tourneyPlayersData]); }, [tourneyPlayersData]);
+  useEffect(() => {
+    if (!carryOverRoundId) { setCp([]); setCs([]); return; }
+    if (carryOverPlayersData) setCp([...carryOverPlayersData].sort((b, a) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+  }, [carryOverPlayersData, carryOverRoundId]);
+  useEffect(() => {
+    if (!carryOverRoundId) return;
+    if (carryOverStagesData) setCs([...carryOverStagesData].sort((a, b) => a.id - b.id));
+  }, [carryOverStagesData, carryOverRoundId]);
 
   // --------------------
   // Real-time subscriptions for highlighting updated players
@@ -265,21 +328,28 @@ function Leaderboard() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, payload => {
           if (payload.eventType === 'DELETE') {
             setS(prev => deleteScoreFromStages(prev, payload.old.id));
+            setCs(prev => deleteScoreFromStages(prev, payload.old.id));
             return;
           }
 
           const incoming = payload.new as Score;
           const stage = s.find(st => st.id === incoming.stage_id);
-          if (!stage || stage.round_id !== activeRoundId) return;
+          const carryOverStage = cs.find(st => st.id === incoming.stage_id);
+          if (!stage && !carryOverStage) return;
 
-          const affectedPlayerRound = p.find(player => player.id === incoming.player_round_id);
+          const affectedPlayerRound = [...p, ...cp].find(player => player.id === incoming.player_round_id);
           if (affectedPlayerRound) {
             const name = affectedPlayerRound.player_tourneys.player_name;
             setUpdatedPlayer(name);
-            setTimeout(() => setUpdatedPlayer(null), 1500); 
+            setTimeout(() => setUpdatedPlayer(null), 1500);
           }
 
-          setS(prev => upsertScoreInStages(prev, incoming));
+          if (stage && stage.round_id === activeRoundId) {
+            setS(prev => upsertScoreInStages(prev, incoming));
+          }
+          if (carryOverStage && carryOverRoundId != null && carryOverStage.round_id === carryOverRoundId) {
+            setCs(prev => upsertScoreInStages(prev, incoming));
+          }
         }
       )
       .subscribe();
@@ -293,15 +363,16 @@ function Leaderboard() {
         payload => {
           if (payload.eventType === 'DELETE') {
             setP(prev => deletePlayerFromRound(prev, payload.old.id));
+            setCp(prev => deletePlayerFromRound(prev, payload.old.id));
             return;
           }
 
           const incoming = payload.new as PlayerRound;
-          if (incoming.round_id !== activeRoundId) return;
-
-          setP(prev =>
-            upsertPlayerInRound(prev, incoming, tourneyPlayers ?? [])
-          );
+          if (incoming.round_id === activeRoundId) {
+            setP(prev => upsertPlayerInRound(prev, incoming, tourneyPlayers ?? []));
+          } else if (carryOverRoundId != null && incoming.round_id === carryOverRoundId) {
+            setCp(prev => upsertPlayerInRound(prev, incoming, tourneyPlayers ?? []));
+          }
         }
       )
       .subscribe();
@@ -314,15 +385,16 @@ function Leaderboard() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'stages' },
         payload => {
-          if (payload.eventType === 'DELETE' && s.find(stage => stage.id === payload.old.id)) {
-            refetchStages();
+          if (payload.eventType === 'DELETE') {
+            if (s.find(stage => stage.id === payload.old.id)) refetchStages();
+            if (cs.find(stage => stage.id === payload.old.id)) refetchCarryOverStages();
             return;
           }
 
           const incoming = payload.new as Stage | null;
-          if (!incoming || incoming.round_id !== activeRoundId) return;
-          // trigger refetch
-          refetchStages();
+          if (!incoming) return;
+          if (incoming.round_id === activeRoundId) refetchStages();
+          if (carryOverRoundId != null && incoming.round_id === carryOverRoundId) refetchCarryOverStages();
         }
       )
       .subscribe();
@@ -335,8 +407,9 @@ function Leaderboard() {
         payload => {
           const incoming = payload.new as ChartPool | null;
           const stage = s.find(st => st.id === incoming?.stage_id);
-          if (!stage || stage.round_id !== activeRoundId) return;
-          refetchStages();
+          const carryOverStage = cs.find(st => st.id === incoming?.stage_id);
+          if (stage && stage.round_id === activeRoundId) refetchStages();
+          if (carryOverStage && carryOverRoundId != null && carryOverStage.round_id === carryOverRoundId) refetchCarryOverStages();
         }
       )
       .subscribe();
@@ -366,7 +439,7 @@ function Leaderboard() {
       supabaseClient.removeChannel(chartPoolsChannel);
       supabaseClient.removeChannel(playerTourneyChannel);
     };
-  }, [activeRoundId, s, playersData]);
+  }, [activeRoundId, carryOverRoundId, s, cs, playersData]);
 
   // --------------------
   // Build leaderboard
@@ -374,18 +447,46 @@ function Leaderboard() {
   useEffect(() => {
     if (!p.length || !s.length || !round) return;
 
-  const { rankings, cumulativeScores, pointsMap } = calculatePlayerRankingsInRound({ players: p, stages: s, round });
+    const carryOverData = (carryOverRound && cp.length && cs.length)
+      ? { round: carryOverRound, players: cp, stages: cs }
+      : null;
+
+    const combined = calculateCombinedRoundRankings(round, p, s, carryOverData);
+    const { rankings, cumulativeScores } = combined;
 
     // Map back to a structure usable in the leaderboard UI
     const results: Player[] = rankings.map(([playerId, total]) => {
       const playerRound = p.find(pr => pr.id === playerId)!;
       const scores = getScoresForPlayer(playerRound, s); // returns entries with entry.stage.id
 
+      let carryOver: Player["carryOver"] = null;
+      const carryOverPlayerRoundId = combined.carryOverPlayerRoundId[playerId];
+      if (combined.carryOver && carryOverRound && carryOverPlayerRoundId != null) {
+        const carryOverPlayerRound = cp.find(pr => pr.id === carryOverPlayerRoundId);
+        if (carryOverPlayerRound) {
+          const carryOverScores = getScoresForPlayer(carryOverPlayerRound, cs);
+          carryOver = {
+            label: carryOverRound.name,
+            songs: carryOverScores.map(entry => {
+              const stageId = entry.stage.id;
+              const points = combined.carryOver!.pointsMap.get(`${carryOverPlayerRoundId}-${stageId}`) ?? 0;
+              return {
+                name: entry.chart?.name_en ?? "",
+                score: entry.score?.score ?? null,
+                level: entry.chart?.level ?? 0,
+                type: entry.chart?.type ?? "??",
+                points
+              };
+            })
+          };
+        }
+      }
+
       return {
         name: playerRound.player_tourneys.player_name,
         songs: scores.map(entry => {
           const stageId = entry.stage.id;
-          const points = pointsMap.get(`${playerRound.id}-${stageId}`) ?? 0;
+          const points = combined.own.pointsMap.get(`${playerRound.id}-${stageId}`) ?? 0;
           return {
             name: entry.chart?.name_en ?? "",
             score: entry.score?.score ?? null,
@@ -395,12 +496,13 @@ function Leaderboard() {
           };
         }),
         total,
-        cumulative: cumulativeScores[playerRound.id]
+        cumulative: cumulativeScores[playerRound.id],
+        carryOver
       };
     });
 
     setPlayers(results);
-  }, [p, s, round]);
+  }, [p, s, round, carryOverRound, cp, cs]);
 
   // --------------------
   // Expand / Collapse

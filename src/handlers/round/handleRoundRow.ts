@@ -5,7 +5,8 @@ export async function handleUpdateRoundDetails(
   roundId: number,
   newName: string,
   pointsPerStage: string | undefined,
-  roundPoolId: number | null | undefined
+  roundPoolId: number | null | undefined,
+  carryOverRoundId: number | null | undefined
 ): Promise<Round> {
   if (!roundId) {
     throw new Error('Round ID is required');
@@ -20,7 +21,8 @@ export async function handleUpdateRoundDetails(
       {
         name: newName.trim(),
         points_per_stage: pointsPerStage ?? null,
-        round_pool_id: roundPoolId ?? null
+        round_pool_id: roundPoolId ?? null,
+        carry_over_round_id: carryOverRoundId ?? null
       }
     )
     .eq('id', roundId)
@@ -45,7 +47,8 @@ export async function handleAddRoundToTourney(
   tourneyId: number,
   roundName: string,
   pointsPerStage: string | undefined,
-  roundPoolId: number | null | undefined
+  roundPoolId: number | null | undefined,
+  carryOverRoundId: number | null | undefined
 ) {
   const { data, error } = await supabaseClient
     .from("rounds")
@@ -54,7 +57,8 @@ export async function handleAddRoundToTourney(
         tourney_id: tourneyId,
         name: roundName,
         points_per_stage: pointsPerStage ?? null,
-        round_pool_id: roundPoolId ?? null
+        round_pool_id: roundPoolId ?? null,
+        carry_over_round_id: carryOverRoundId ?? null
       },
     ])
     .select()

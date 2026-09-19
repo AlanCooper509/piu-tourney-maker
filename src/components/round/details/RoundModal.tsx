@@ -7,6 +7,7 @@ import type { Round } from "../../../types/Round";
 import type { RoundPool } from "../../../types/RoundPool";
 
 const UNGROUPED = "__ungrouped__";
+const NO_CARRY_OVER = "__no_carry_over__";
 
 interface RoundModalProps {
   round?: Round;
@@ -16,12 +17,14 @@ interface RoundModalProps {
   onSubmitForm: (
     name: string,
     pointsPerStage: string | undefined,
-    roundPoolId: number | null | undefined
+    roundPoolId: number | null | undefined,
+    carryOverRoundId: number | null | undefined
   ) => void;
 }
 
 export default function RoundModal({
   round,
+  rounds = [],
   roundPools = [],
   trigger,
   onSubmitForm,
@@ -35,6 +38,10 @@ export default function RoundModal({
   const [formRoundPoolId, setFormRoundPoolId] = useState<string[]>(
     [round?.round_pool_id ? String(round.round_pool_id) : UNGROUPED]
   );
+  const [carryOverEnabled, setCarryOverEnabled] = useState(round?.carry_over_round_id != null);
+  const [formCarryOverRoundId, setFormCarryOverRoundId] = useState<string[]>(
+    [round?.carry_over_round_id ? String(round.carry_over_round_id) : NO_CARRY_OVER]
+  );
 
   // Sync form state whenever the round changes
   useEffect(() => {
@@ -42,6 +49,8 @@ export default function RoundModal({
     setFormPointsPerStage(round?.points_per_stage ?? "");
     setPointsScoringChecked(!!round?.points_per_stage);
     setFormRoundPoolId([round?.round_pool_id ? String(round.round_pool_id) : UNGROUPED]);
+    setCarryOverEnabled(round?.carry_over_round_id != null);
+    setFormCarryOverRoundId([round?.carry_over_round_id ? String(round.carry_over_round_id) : NO_CARRY_OVER]);
   }, [round]);
 
   const submitWithGuards = async () => {
@@ -58,7 +67,10 @@ export default function RoundModal({
     const selectedPool = formRoundPoolId[0];
     const roundPoolId = !selectedPool || selectedPool === UNGROUPED ? null : Number(selectedPool);
 
-    onSubmitForm(formRoundName, formPointsPerStage, roundPoolId);
+    const selectedCarryOver = formCarryOverRoundId[0];
+    const carryOverRoundId = !carryOverEnabled || !selectedCarryOver || selectedCarryOver === NO_CARRY_OVER ? null : Number(selectedCarryOver);
+
+    onSubmitForm(formRoundName, formPointsPerStage, roundPoolId, carryOverRoundId);
     return true;
   };
 
@@ -67,6 +79,12 @@ export default function RoundModal({
       { label: "Ungrouped", value: UNGROUPED },
       ...roundPools.map((pool) => ({ label: pool.name, value: String(pool.id) })),
     ],
+  });
+
+  const carryOverOptions = createListCollection({
+    items: rounds
+      .filter((r) => r.id !== round?.id)
+      .map((r) => ({ label: r.name, value: String(r.id) })),
   });
 
   const formBody = (
@@ -106,6 +124,53 @@ export default function RoundModal({
             </Select.Positioner>
           </Select.Root>
         </Field.Root>
+      )}
+
+      {rounds.length > 1 && (
+        <>
+          <Checkbox.Root
+            checked={carryOverEnabled}
+            onCheckedChange={(e) => {
+              setCarryOverEnabled(!!e.checked);
+              if (!e.checked) setFormCarryOverRoundId([NO_CARRY_OVER]);
+            }}
+          >
+            <Checkbox.HiddenInput />
+            <Checkbox.Control />
+            <Checkbox.Label>Include scores from another round?</Checkbox.Label>
+          </Checkbox.Root>
+          {carryOverEnabled && (
+            <Field.Root>
+              <Select.Root
+                collection={carryOverOptions}
+                value={formCarryOverRoundId}
+                onValueChange={({ value }) => setFormCarryOverRoundId(value)}
+                size="sm"
+              >
+                <Select.HiddenSelect />
+                <Select.Label>Carries Over From</Select.Label>
+                <Select.Control>
+                  <Select.Trigger>
+                    <Select.ValueText placeholder="Choose a round" />
+                  </Select.Trigger>
+                  <Select.IndicatorGroup>
+                    <Select.Indicator />
+                  </Select.IndicatorGroup>
+                </Select.Control>
+                <Select.Positioner>
+                  <Select.Content>
+                    {carryOverOptions.items.map((item) => (
+                      <Select.Item key={item.value} item={item}>
+                        {item.label}
+                        <Select.ItemIndicator />
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Positioner>
+              </Select.Root>
+            </Field.Root>
+          )}
+        </>
       )}
 
       {/* Points Based Scoring */}

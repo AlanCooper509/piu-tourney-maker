@@ -20,13 +20,15 @@ export default function EditRoundDetailsButton({ round, setRound, rounds, roundP
   async function onAdminClick(
     name: string,
     pointsPerStage: string | undefined,
-    roundPoolId: number | null | undefined
+    roundPoolId: number | null | undefined,
+    carryOverRoundId: number | null | undefined
   ) {
     const updatedRound = await handleUpdateRoundDetails(
       round.id,
       name,
       pointsPerStage,
-      roundPoolId
+      roundPoolId,
+      carryOverRoundId
     );
 
     setRound(updatedRound);

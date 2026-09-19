@@ -1,7 +1,8 @@
 import handleCheckTourneyStatus from '../../handleCheckTourneyStatus';
-import calculatePlayerRankingsInRound from '../../../helpers/calculatePlayerRankingsInRound';
+import { calculateCombinedRoundRankings } from '../../../helpers/calculateCombinedRoundRankings';
 import getStagesInRound from '../../../helpers/getstagesInRound';
 import getPlayersInRound from '../../../helpers/getPlayersInRound';
+import { getRoundsInTourney } from '../../../helpers/getRoundsInTourney';
 import { executeRoundTransition } from './executeRoundTransition';
 
 import type { Round } from '../../../types/Round';
@@ -28,7 +29,20 @@ export default async function handleEndRound({ tourneyId, round, tourneyType }: 
       throw new Error('Tournament is not in progress. Cannot make modifications.');
     }
 
-    const { rankings } = calculatePlayerRankingsInRound({ players, stages, round });
+    let carryOverData = null;
+    if (round.carry_over_round_id) {
+      const roundsInTourney = await getRoundsInTourney(tourneyId);
+      const carryOverRound = roundsInTourney.find(r => r.id === round.carry_over_round_id);
+      if (carryOverRound) {
+        const [carryOverStages, carryOverPlayers] = await Promise.all([
+          getStagesInRound(carryOverRound.id),
+          getPlayersInRound(carryOverRound.id)
+        ]);
+        carryOverData = { round: carryOverRound, players: carryOverPlayers, stages: carryOverStages };
+      }
+    }
+
+    const { rankings } = calculateCombinedRoundRankings(round, players, stages, carryOverData);
 
     const idMap = Object.fromEntries(players.map(p => [p.id, p.player_tourney_id]));
 

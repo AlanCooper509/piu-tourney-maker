@@ -7,7 +7,7 @@ import AddPlayer from '../players/AddPlayer'
 import { toaster } from '../ui/toaster'
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
 import { useCurrentTourney } from '../../context/CurrentTourneyContext'
-import calculatePlayerRankingsInRound from "../../helpers/calculatePlayerRankingsInRound";
+import { calculateCombinedRoundRankings } from "../../helpers/calculateCombinedRoundRankings";
 import { getScoresForPlayer } from '../../helpers/getScoresForPlayer';
 
 import type { PlayerRound } from '../../types/PlayerRound'
@@ -20,6 +20,14 @@ export interface CalculatedPlayerStats {
   total: number;       // Points or cumulative score depending on round mode
   cumulative: number;  // Raw cumulative score
   stagePointsMap: Map<number, number>; // stageId -> stagePoints for this player
+  carryOver?: {
+    round: Round;
+    player: PlayerRound;
+    stages: Stage[];
+    total: number;
+    cumulative: number;
+    stagePointsMap: Map<number, number>;
+  } | null;
 }
 
 interface PlayersListProps {
@@ -30,9 +38,23 @@ interface PlayersListProps {
   tourneyPlayers: PlayerTourney[] | null;
   loading: boolean
   error: Error | null
+  carryOverRound?: Round | null
+  carryOverPlayers?: PlayerRound[] | null
+  carryOverStages?: Stage[] | null
 }
 
-export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers, loading, error }: PlayersListProps) {
+export function PlayersList({
+  round,
+  players,
+  setPlayers,
+  stages,
+  tourneyPlayers,
+  loading,
+  error,
+  carryOverRound,
+  carryOverPlayers,
+  carryOverStages
+}: PlayersListProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
 
@@ -78,12 +100,17 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
     });
   }, [players, stages, round]);
 
-  // Calculate live rankings & scores for all players in this round
+  // Calculate live rankings & scores for all players in this round (plus any carry-over round)
   const calculatedStatsMap = useMemo(() => {
     const map = new Map<number, CalculatedPlayerStats>();
     if (!players?.length || !stages?.length || !round) return map;
 
-    const { rankings, cumulativeScores, pointsMap } = calculatePlayerRankingsInRound({ players, stages, round });
+    const carryOverData = (carryOverRound && carryOverPlayers?.length && carryOverStages?.length)
+      ? { round: carryOverRound, players: carryOverPlayers, stages: carryOverStages }
+      : null;
+
+    const combined = calculateCombinedRoundRankings(round, players, stages, carryOverData);
+    const { rankings, cumulativeScores } = combined;
 
     const isPointsMode = Boolean(round.points_per_stage);
 
@@ -110,26 +137,53 @@ export function PlayersList({ round, players, setPlayers, stages, tourneyPlayers
       }
     });
 
+    const carryOverTotalById = new Map(combined.carryOver?.rankings ?? []);
+
     sortedRankings.forEach(([playerId, total], idx) => {
       // Extract stage-level points for this player: stageId -> points
       const stagePointsMap = new Map<number, number>();
       stages.forEach((stage) => {
         const key = `${playerId}-${stage.id}`;
-        if (pointsMap.has(key)) {
-          stagePointsMap.set(stage.id, pointsMap.get(key)!);
+        if (combined.own.pointsMap.has(key)) {
+          stagePointsMap.set(stage.id, combined.own.pointsMap.get(key)!);
         }
       });
+
+      let carryOver: CalculatedPlayerStats["carryOver"] = null;
+      const carryOverPlayerRoundId = combined.carryOverPlayerRoundId[playerId];
+      if (combined.carryOver && carryOverRound && carryOverPlayerRoundId != null) {
+        const carryOverPlayer = (carryOverPlayers ?? []).find(p => p.id === carryOverPlayerRoundId);
+        if (carryOverPlayer) {
+          const carryOverStagePointsMap = new Map<number, number>();
+          (carryOverStages ?? []).forEach((stage) => {
+            const key = `${carryOverPlayerRoundId}-${stage.id}`;
+            if (combined.carryOver!.pointsMap.has(key)) {
+              carryOverStagePointsMap.set(stage.id, combined.carryOver!.pointsMap.get(key)!);
+            }
+          });
+
+          carryOver = {
+            round: carryOverRound,
+            player: carryOverPlayer,
+            stages: carryOverStages ?? [],
+            total: carryOverTotalById.get(carryOverPlayerRoundId) ?? 0,
+            cumulative: combined.carryOver.cumulativeScores[carryOverPlayerRoundId] ?? 0,
+            stagePointsMap: carryOverStagePointsMap,
+          };
+        }
+      }
 
       map.set(playerId, {
         rank: idx + 1,
         total,
         cumulative: cumulativeScores[playerId] ?? 0,
         stagePointsMap,
+        carryOver,
       });
     });
 
     return map;
-  }, [players, stages, round]);
+  }, [players, stages, round, carryOverRound, carryOverPlayers, carryOverStages]);
 
   // Sort by leaderboard score if all scores are reported or round is completed; otherwise sort by default sort_order
   const sortedPlayers = useMemo(() => {

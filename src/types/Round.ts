@@ -14,5 +14,6 @@ export interface Round {
   active_stream_state?: StreamState | null; // jsonb -> StreamState | null
   round_pool_id?: number;                   // bigint -> number
   points_per_stage?: string;                // text
+  carry_over_round_id?: number | null;      // bigint -> number
   created_at: string;                       // ISO timestamp string
 }
