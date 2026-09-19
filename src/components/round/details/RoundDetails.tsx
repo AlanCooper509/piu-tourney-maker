@@ -64,6 +64,9 @@ export function RoundDetails({
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourneyId);
 
   const roundName = round?.name ?? "";
+  const carryOverRoundName = round?.carry_over_round_id
+    ? rounds.find(r => r.id === round.carry_over_round_id)?.name ?? null
+    : null;
   const advancementsForRound = round
     ? roundAdvancements.filter(a => a.round_id === round.id)
     : [];
@@ -139,6 +142,9 @@ export function RoundDetails({
               {!isBracketFormat(tourneyType) && (
                 <ScoringDetailsText
                   pointsPerStage={round?.points_per_stage}
+                  tourneyId={tourneyId}
+                  carryOverRoundId={round?.carry_over_round_id}
+                  carryOverRoundName={carryOverRoundName}
                 />
               )}
 
