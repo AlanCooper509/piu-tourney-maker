@@ -47,6 +47,7 @@ export default function RoundsList({
         key={round.id}
         as="article"
         p={4}
+        minW={{ base: "100%", md: "md" }}
         borderWidth="1px"
         borderRadius="md"
         bg="bg.panel"
