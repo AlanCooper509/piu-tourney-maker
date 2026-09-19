@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Box,
   VStack,
   Text,
   IconButton,
-  Button,
   HStack,
 } from "@chakra-ui/react";
 
@@ -41,7 +39,7 @@ export function TourneyDetails({
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(
     tourney?.id ?? undefined,
   );
-  const navigate = useNavigate();
+  // const navigate = useNavigate(); // for StreamHelper, currently disabled
   const [updatingName, setUpdatingName] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
 
@@ -147,17 +145,19 @@ export function TourneyDetails({
                       )}
                     </>
                   )}
-                  <Button
-                    colorPalette="purple"
-                    variant="outline"
-                    borderWidth={2}
-                    size="sm"
-                    onClick={() =>
-                      navigate(`/tourney/${tourney.id}/StreamHelper`)
-                    }
-                  >
-                    Stream Helper
-                  </Button>
+                  {/*
+                    <Button
+                      colorPalette="purple"
+                      variant="outline"
+                      borderWidth={2}
+                      size="sm"
+                      onClick={() =>
+                        navigate(`/tourney/${tourney.id}/StreamHelper`)
+                      }
+                    >
+                      Stream Helper
+                    </Button>
+                  */}
                   {tourney?.status === "In Progress" && (
                     <PullFromDdrToolsButton rounds={rounds} />
                   )}
