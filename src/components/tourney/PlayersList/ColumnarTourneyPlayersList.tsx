@@ -2,9 +2,10 @@ import { Box, Center, Heading, HStack, SimpleGrid, Text } from '@chakra-ui/react
 import { useMemo, useState } from 'react';
 
 import AddPlayer from '../../players/AddPlayer';
+import BulkAddPlayers from '../../players/BulkAddPlayers';
 import EditablePlayerRow from '../EditablePlayerRow';
 import MissingPlayersWarning from '../MissingPlayersWarning';
-import { handleAddPlayerToTourney } from '../../../handlers/handleAddPlayerToTourney';
+import { handleAddPlayerToTourney, handleAddPlayersToTourney } from '../../../handlers/handleAddPlayerToTourney';
 import { toaster } from "../../ui/toaster";
 import { useCurrentTourney } from '../../../context/CurrentTourneyContext';
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
@@ -67,6 +68,41 @@ export function ColumnarTourneyPlayersList({ players, setPlayers, roundPlayers, 
     }
   };
 
+  const existingPlayerNames = useMemo(
+    () => new Set((players ?? []).map((p) => p.player_name.toLowerCase())),
+    [players]
+  );
+
+  const onBulkAddPlayers = async (entries: { name: string; seed: number | null }[]) => {
+    if (!tourney) return;
+    try {
+      setAddingPlayer(true);
+      const newPlayers = await handleAddPlayersToTourney(tourney.id, entries);
+
+      setPlayers((prev: PlayerTourney[]) => {
+        const existingList = prev ?? [];
+        const existingIds = new Set(existingList.map((p) => p.id));
+        return [...existingList, ...newPlayers.filter((p) => !existingIds.has(p.id))];
+      });
+
+      toaster.create({
+        title: "Players Added",
+        description: `Added ${newPlayers.length} player${newPlayers.length === 1 ? "" : "s"} successfully.`,
+        type: "success",
+        closable: true,
+      });
+    } catch (err: any) {
+      toaster.create({
+        title: "Failed to add players",
+        description: err.message,
+        type: "error",
+        closable: true,
+      });
+    } finally {
+      setAddingPlayer(false);
+    }
+  };
+
   const updatePlayer = (updated: PlayerTourney) => {
     setPlayers((prev) =>
       prev?.map(p => (p.id === updated.id ? updated : p)) ?? []
@@ -93,12 +129,19 @@ return (
         <HStack mb={2} justifyContent="center" alignItems="center">
           <Heading mb={2}>Players</Heading>
           {!loadingTourneyAdminStatus && isTourneyAdmin &&
-            <AddPlayer
-              onAdd={onAddPlayer}
-              newName={newName}
-              setNewName={setNewName}
-              loading={addingPlayer}
-            />
+            <>
+              <AddPlayer
+                onAdd={onAddPlayer}
+                newName={newName}
+                setNewName={setNewName}
+                loading={addingPlayer}
+              />
+              <BulkAddPlayers
+                onBulkAdd={onBulkAddPlayers}
+                existingPlayerNames={existingPlayerNames}
+                loading={addingPlayer}
+              />
+            </>
           }
         </HStack>
 

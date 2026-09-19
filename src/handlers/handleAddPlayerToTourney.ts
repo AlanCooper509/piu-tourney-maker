@@ -16,3 +16,24 @@ export async function handleAddPlayerToTourney(tourneyId: number, playerName: st
 
   return data;
 };
+
+export async function handleAddPlayersToTourney(
+  tourneyId: number,
+  players: { name: string; seed: number | null }[]
+) {
+  if (players.length === 0) return [];
+
+  const { data, error } = await supabaseClient
+    .from('player_tourneys')
+    .insert(players.map(p => ({ tourney_id: tourneyId, player_name: p.name, seed: p.seed ?? null })))
+    .select();
+
+  if (error) {
+    if (error.code === '23505') {
+      throw new Error(`One or more of these players already exist in this tourney.`);
+    }
+    throw error;
+  }
+
+  return data;
+}

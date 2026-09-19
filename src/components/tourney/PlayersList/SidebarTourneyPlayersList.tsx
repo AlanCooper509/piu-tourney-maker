@@ -1,9 +1,10 @@
 import { Box, Center, Heading, HStack, Text, VStack, Card } from '@chakra-ui/react';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 
 import AddPlayer from '../../players/AddPlayer';
+import BulkAddPlayers from '../../players/BulkAddPlayers';
 import EditablePlayerRow from '../EditablePlayerRow';
-import { handleAddPlayerToTourney } from '../../../handlers/handleAddPlayerToTourney';
+import { handleAddPlayerToTourney, handleAddPlayersToTourney } from '../../../handlers/handleAddPlayerToTourney';
 import { toaster } from "../../ui/toaster";
 import { useCurrentTourney } from '../../../context/CurrentTourneyContext';
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
@@ -77,6 +78,41 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
     }
   };
 
+  const existingPlayerNames = useMemo(
+    () => new Set((players ?? []).map((p) => p.player_name.toLowerCase())),
+    [players]
+  );
+
+  const onBulkAddPlayers = async (entries: { name: string; seed: number | null }[]) => {
+    if (!tourney) return;
+    try {
+      setAddingPlayer(true);
+      const newPlayers = await handleAddPlayersToTourney(tourney.id, entries);
+
+      setPlayers((prev) => {
+        const existingList = prev ?? [];
+        const existingIds = new Set(existingList.map((p) => p.id));
+        return [...existingList, ...newPlayers.filter((p) => !existingIds.has(p.id))];
+      });
+
+      toaster.create({
+        title: "Players Added",
+        description: `Added ${newPlayers.length} player${newPlayers.length === 1 ? "" : "s"} successfully.`,
+        type: "success",
+        closable: true,
+      });
+    } catch (err: any) {
+      toaster.create({
+        title: "Failed to add players",
+        description: err.message,
+        type: "error",
+        closable: true,
+      });
+    } finally {
+      setAddingPlayer(false);
+    }
+  };
+
   const updatePlayer = (updated: PlayerTourney) => {
     setPlayers((prev) =>
       prev?.map(p => (p.id === updated.id ? updated : p)) ?? []
@@ -94,12 +130,19 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
       <HStack mb={3} justifyContent="center" alignItems="center" px={1}>
         <Heading size="md">Players</Heading>
         {!loadingTourneyAdminStatus && isTourneyAdmin && (
-          <AddPlayer
-            onAdd={onAddPlayer}
-            newName={newName}
-            setNewName={setNewName}
-            loading={addingPlayer}
-          />
+          <>
+            <AddPlayer
+              onAdd={onAddPlayer}
+              newName={newName}
+              setNewName={setNewName}
+              loading={addingPlayer}
+            />
+            <BulkAddPlayers
+              onBulkAdd={onBulkAddPlayers}
+              existingPlayerNames={existingPlayerNames}
+              loading={addingPlayer}
+            />
+          </>
         )}
       </HStack>
 
