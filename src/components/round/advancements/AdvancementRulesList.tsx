@@ -61,10 +61,7 @@ export default function AdvancementRulesList({
           <HStack
             key={advancement.id}
             justify={isTourneyAdmin ? "space-between" : "center"}
-            borderWidth={isTourneyAdmin ? 1 : 0}
-            borderRadius="md"
             px={isTourneyAdmin ? 2 : 0}
-            py={isTourneyAdmin ? 2 : 0}
           >
             <NextRoundIndicator
               label={formatAdvancementLabel(advancement)}
