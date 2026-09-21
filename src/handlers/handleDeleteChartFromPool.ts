@@ -1,11 +1,10 @@
 import { supabaseClient } from "../lib/supabaseClient";
 
-export async function handleDeleteChartFromPool(stageId: number, chartId: number) {
+export async function handleDeleteChartFromPool(poolId: number) {
   const { data, error } = await supabaseClient
     .from("chart_pools")
     .delete()
-    .eq("stage_id", stageId)
-    .eq("chart_id", chartId)
+    .eq("id", poolId)
     .select()
     .single();
 

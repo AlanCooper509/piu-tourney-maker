@@ -9,7 +9,7 @@ import { isValidScore1mil } from '../../helpers/isValidScore1mil';
 
 import type { Stage } from '../../types/Stage';
 import type { PlayerRound } from '../../types/PlayerRound';
-import { chartTypeLabel, getStageChart } from "../../helpers/getStageChart";
+import { chartTypeLabel, chartBadgeLabel, smxDiffClassColor, getStageChart } from "../../helpers/getStageChart";
 
 interface EditablePlayerScoresProps {
   player: PlayerRound;
@@ -162,6 +162,7 @@ export default function EditablePlayerScores({ player, stages, incrementStagesPl
       const chartName = stageChart?.name_en ?? 'awaiting chart selection...';
       const chartType = chartTypeLabel(stageChart);
       const chartLevel = stageChart?.level ?? '??';
+      const badgeLabel = chartBadgeLabel(stageChart, chartLevel);
 
       const playerScore = stage.scores?.find(s => s.player_round_id === player.id);
 
@@ -171,9 +172,9 @@ export default function EditablePlayerScores({ player, stages, incrementStagesPl
         <HStack key={stage.id} my={1} w="full" overflow="hidden" justify="space-between" gap={2}>
           <Tag.Root
             flexShrink={0}
-            colorPalette={chartType === 'D' ? 'green' : chartType === 'S' ? 'red' : chartType === 'C' ? 'yellow' : 'blue'}
+            colorPalette={smxDiffClassColor(chartType) ?? (chartType === 'D' ? 'green' : chartType === 'S' ? 'red' : chartType === 'C' ? 'yellow' : 'blue')}
           >
-            <Tag.Label>{chartLevel}</Tag.Label>
+            <Tag.Label>{badgeLabel}</Tag.Label>
           </Tag.Root>
 
           {isAdding ? (

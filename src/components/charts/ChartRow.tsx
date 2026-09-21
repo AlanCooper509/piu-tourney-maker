@@ -3,6 +3,7 @@ import { LuCheck } from "react-icons/lu";
 import { IoBan } from "react-icons/io5";
 import { MdShield } from "react-icons/md";
 
+import { chartBadgeLabel, chartTypeLabel, smxDiffClassColor } from '../../helpers/chartSnapshot'
 import type { Chart } from '../../types/Chart'
 import type { ChartType } from '../../types/ChartType'
 import type { PickbanAction } from '../../types/Pickban'
@@ -14,7 +15,14 @@ interface ChartRowProps {
   darken?: boolean;
 }
 
-function color(type: ChartType | null): string {
+function color(chart: Chart): string {
+  const smxColor = smxDiffClassColor(chartTypeLabel(chart));
+  if (smxColor) return smxColor;
+
+  return piuTypeColor(chart.type);
+}
+
+function piuTypeColor(type: ChartType | null): string {
   switch (type) {
     case "Single": return "red"
     case "Double": return "green"
@@ -58,13 +66,13 @@ export function ChartRow({ chart, subtext, action, darken = true }: ChartRowProp
         <HStack justifyContent="space-between" width="100%" pr={actionStyles ? `${paddingOffset - 20}px` : 0}>
           <HStack flex="1" minW={0} align="center"> {/* Keep alignment centered relative to Badge */}
             <Badge
-              colorPalette={color(chart.type)}
+              colorPalette={color(chart)}
               variant="surface"
               size="lg"
               fontSize="lg"
               flexShrink={0}
             >
-              {chart.level}
+              {chartBadgeLabel(chart, chart.level)}
             </Badge>
 
             <VStack flex="1" minW={0} align="start" gap={0} justify="center">

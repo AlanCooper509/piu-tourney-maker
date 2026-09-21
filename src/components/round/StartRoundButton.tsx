@@ -4,6 +4,7 @@ import { MdOutlinePlayArrow } from "react-icons/md";
 
 import { handleStartRound } from "../../handlers/round/handleStartRound";
 import { toaster } from "../ui/toaster";
+import { getStageChart } from "../../helpers/getStageChart";
 
 import type { Stage } from "../../types/Stage";
 import type { Round } from "../../types/Round";
@@ -36,7 +37,7 @@ export default function StartRoundButton({ round, setRound, players, stages }: S
     }
 
     if (tourney.type === "Double Elimination") {
-      if (!stages || stages.length === 0 || stages.some(stage => !stage.chart_id)) {
+      if (!stages || stages.length === 0 || stages.some(stage => !getStageChart(stage))) {
         toaster.create({ 
           title: toasterErrorTitleText, 
           description: 'All stages in this round must have a chart assigned before starting.', 

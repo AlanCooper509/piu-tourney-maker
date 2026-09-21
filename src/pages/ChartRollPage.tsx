@@ -6,6 +6,8 @@ import type { Stage } from '../types/Stage';
 import { useEffect, useState } from 'react';
 import ChartSpinner from '../components/charts/ChartSpinner';
 import { IoArrowBack, IoPlay } from 'react-icons/io5';
+import { getPoolChart } from '../helpers/getPoolChart';
+import { getStageChart } from '../helpers/getStageChart';
 
 
 function ChartRollPage() {
@@ -38,8 +40,8 @@ function ChartRollPage() {
     setPlaying(true);
   }
 
-  const charts = stage?.chart_pools?.map(chartPool => chartPool.charts).filter(charts => charts !== null);
-  const pick = stage?.charts;
+  const charts = stage?.chart_pools?.map(getPoolChart).filter(chart => chart !== null);
+  const pick = getStageChart(stage);
 
   return <>
     {/* bg */}

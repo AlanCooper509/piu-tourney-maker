@@ -8,7 +8,7 @@ import type { Chart } from '../../types/Chart';
 import type { PlayerRound } from '../../types/PlayerRound';
 import type { Round } from '../../types/Round';
 import type { CalculatedPlayerStats } from '../round/PlayersList';
-import { chartTypeLabel, getStageChart } from "../../helpers/getStageChart";
+import { chartTypeLabel, chartBadgeLabel, smxDiffClassColor, getStageChart } from "../../helpers/getStageChart";
 
 interface ScoreMappingEntry {
   stage: Stage;
@@ -32,6 +32,7 @@ export default function NonEditablePlayerScores({ player, stages, round, stats }
       const chartName = stageChart ? stageChart.name_en ?? "No Name" : <Span fontStyle="italic" color="fg.subtle">awaiting chart selection...</Span>;
       const chartType = stageChart ? chartTypeLabel(stageChart) : '';
       const chartLevel = stageChart ? stageChart.level ?? "" : '??';
+      const badgeLabel = chartBadgeLabel(stageChart, chartLevel);
 
       const scoreEntry = scoreMapping?.find((fs: ScoreMappingEntry) =>
         fs.chart?.name_en === stageChart?.name_en
@@ -47,9 +48,9 @@ export default function NonEditablePlayerScores({ player, stages, round, stats }
         <HStack key={stage.id} my={1} w="full" overflow="hidden" justify="space-between" gap={2}>
           <Tag.Root
             flexShrink={0}
-            colorPalette={chartType === "D" ? "green" : chartType === "S" ? "red" : chartType === "C" ? "yellow" : "blue"}
+            colorPalette={smxDiffClassColor(chartType) ?? (chartType === "D" ? "green" : chartType === "S" ? "red" : chartType === "C" ? "yellow" : "blue")}
           >
-            <Tag.Label>{chartLevel}</Tag.Label>
+            <Tag.Label>{badgeLabel}</Tag.Label>
           </Tag.Root>
 
           <Text flex="1" minW={0} truncate fontSize="sm">

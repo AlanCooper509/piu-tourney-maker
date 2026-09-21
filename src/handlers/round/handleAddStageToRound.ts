@@ -1,16 +1,62 @@
 import { supabaseClient } from "../../lib/supabaseClient";
 
-interface ChartParams {
-  name: string;
-  level: number;
-  type: 'Single' | 'Double' | 'Co-Op' | 'UCS';
-  game_id: number;
-}
+import type { StageChartMeta } from "../../types/Stage";
+
+type ChartParams =
+  | {
+      source: 'db';
+      name: string;
+      level: number;
+      type: 'Single' | 'Double' | 'Co-Op' | 'UCS';
+      game_id: number;
+    }
+  | {
+      source: 'snapshot';
+      chart_source: string;
+      name: string;
+      diffClass: string;
+      level: number;
+      image_url: string | null;
+      meta?: StageChartMeta;
+    };
 
 export async function handleAddStageToRound(
-  roundId: number, 
+  roundId: number,
   chartParams?: ChartParams
 ) {
+  // A chart described inline (no backend `charts` row to look up) skips
+  // straight to the insert - see getStageChart() for the read side.
+  if (chartParams?.source === 'snapshot') {
+    const { data, error } = await supabaseClient
+      .from("stages")
+      .insert([
+        {
+          round_id: roundId,
+          chart_id: null,
+          chart_source: chartParams.chart_source,
+          chart_name: chartParams.name,
+          chart_type: chartParams.diffClass,
+          chart_level: chartParams.level,
+          chart_image_url: chartParams.image_url,
+          chart_meta: chartParams.meta ?? null,
+        },
+      ])
+      .select(`
+        *,
+        charts (*)
+      `)
+      .single();
+
+    if (error) {
+      if (error.code === "23505") {
+        throw new Error(`Stage already exists in this round.`);
+      }
+      throw error;
+    }
+
+    return data;
+  }
+
   let chartId: number | null = null;
 
   // If chart params are provided, fetch the matching chart record

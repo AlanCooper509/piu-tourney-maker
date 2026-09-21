@@ -19,25 +19,23 @@ interface StageRowProps {
   stage: Stage;
   round: Round | null;
   setStages: React.Dispatch<React.SetStateAction<Stage[]>>;
-  onChooseChart: (stageId: number, chartId: number) => Promise<void>;
+  onChooseChart: (stageId: number, poolId: number) => Promise<void>;
   onRollChart: (stageId: number) => Promise<void>;
-  onAddChartToPool: (
-    stageId: number,
-    name: string,
-    level: number,
-    type: 'Single' | 'Double' | 'Co-Op' | 'UCS'
-  ) => Promise<void>;
+  onAddChartToPool: (stageId: number, chartQuery: ChartQuery) => Promise<void>;
 }
 
 export default function StageRow({ stage, round, setStages, onChooseChart, onRollChart, onAddChartToPool }: StageRowProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
 
-  const [isOpen, setIsOpen] = useState(!stage.chart_id);
+  const stageChart = getStageChart(stage);
+
+  const [isOpen, setIsOpen] = useState(!stageChart);
 
   useEffect(() => {
-    setIsOpen(!stage.chart_id);
-  }, [stage.chart_id]);
+    setIsOpen(!getStageChart(stage));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage.chart_id, stage.chart_name]);
 
   return (
     <Box
@@ -63,7 +61,7 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
                     }}
                   />
                   <Text>
-                    Chosen: {!getStageChart(stage) && <Span fontWeight="normal">???</Span>}
+                    Chosen: {!stageChart && <Span fontWeight="normal">???</Span>}
                   </Text>
                 </HStack>
 
@@ -77,25 +75,24 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
               </HStack>
             </Box>
 
-            {getStageChart(stage) && (
+            {stageChart && (
               <Box mt={1}>
-                <ChartRow chart={getStageChart(stage)!} />
+                <ChartRow chart={stageChart} />
               </Box>
             )}
 
             {/* Admin Buttons */}
             {!loadingTourneyAdminStatus && isTourneyAdmin && (
               <HStack alignContent="center" justify="center" mt={2}>
-                {!stage.chart_id &&
+                {!stageChart &&
                   stage.chart_pools &&
                   stage.chart_pools.length !== 0 && (
                     <RollChartButton stageId={stage.id} onClick={onRollChart} />
                   )}
 
-                {stage.chart_id &&
+                {stageChart &&
                   stage.chart_pools &&
-                  stage.chart_pools.length !== 0 &&
-                  stage.charts && (
+                  stage.chart_pools.length !== 0 && (
                     <Button
                       asChild
                       variant="surface"
@@ -123,14 +120,7 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
 
           {!loadingTourneyAdminStatus && isTourneyAdmin && (
             <AddChartForm
-              onSubmit={(chartQuery: ChartQuery) =>
-                onAddChartToPool(
-                  stage.id,
-                  chartQuery.name,
-                  chartQuery.level,
-                  chartQuery.type
-                )
-              }
+              onSubmit={(chartQuery: ChartQuery) => onAddChartToPool(stage.id, chartQuery)}
             />
           )}
 

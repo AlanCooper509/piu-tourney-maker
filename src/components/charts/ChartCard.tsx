@@ -1,4 +1,5 @@
 import { Image, Card, Badge, Text, HStack } from '@chakra-ui/react'
+import { chartBadgeLabel, chartTypeLabel, smxDiffClassColor } from '../../helpers/chartSnapshot'
 import type { Chart } from '../../types/Chart'
 import type { ChartType } from '../../types/ChartType'
 
@@ -7,7 +8,14 @@ interface ChartCardProps {
   shorten?: Boolean
 }
 
-function color(type: ChartType | null): string {
+function color(chart: Chart): string {
+  const smxColor = smxDiffClassColor(chartTypeLabel(chart));
+  if (smxColor) return smxColor;
+
+  return piuTypeColor(chart.type);
+}
+
+function piuTypeColor(type: ChartType | null): string {
   switch (type) {
     case "Single": return "red"
     case "Double": return "green"
@@ -28,8 +36,8 @@ export function ChartCard({ chart, shorten = false }: ChartCardProps) {
               <Text fontSize={{ base: "2xs", sm: "sm" }} fontWeight="bold" truncate flex="1">
                 {chart.name_en}
               </Text>
-              <Badge size={{ base: "sm", md: "md" }} colorPalette={color(chart.type)} variant="surface">
-                {chart.level}
+              <Badge size={{ base: "sm", md: "md" }} colorPalette={color(chart)} variant="surface">
+                {chartBadgeLabel(chart, chart.level)}
               </Badge>
             </HStack>
           </Card.Title>
@@ -40,8 +48,8 @@ export function ChartCard({ chart, shorten = false }: ChartCardProps) {
         <Card.Body py={6} px={6}>
           <Card.Title truncate m={0} lineHeight="shorter">
             <HStack gap={2}>
-              <Badge size={{ base: "sm", md: "md" }} colorPalette={color(chart.type)} variant="surface">
-                {chart.level}
+              <Badge size={{ base: "sm", md: "md" }} colorPalette={color(chart)} variant="surface">
+                {chartBadgeLabel(chart, chart.level)}
               </Badge>
               <Text fontSize={{ base: "2xs", sm: "sm" }} fontWeight="bold" truncate flex="1">
                 {chart.name_en}

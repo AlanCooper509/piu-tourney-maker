@@ -1,17 +1,18 @@
 import { Box, Heading, Text, HStack, VStack, Center } from '@chakra-ui/react';
 
 import { toaster } from '../ui/toaster';
-import { handleAssignRandomChartToStage } from '../../handlers/handleAssignChartToStage';
-import { handleAssignChartToStage } from '../../handlers/handleAssignChartToStage';
+import { handleAssignRandomChartToStage, assignPoolEntryToStage } from '../../handlers/handleAssignChartToStage';
 import { handleAddChartToPool } from '../../handlers/handleAddChartToPool';
 import { useCurrentTourney } from '../../context/CurrentTourneyContext';
 import { useIsAdminForTourney } from '../../context/admin/AdminTourneyContext';
 import AddStageButton from './AddStageButton';
 import StageRow from './StageRow';
+import { getStageChart } from '../../helpers/getStageChart';
+import { smxChartQueryToSnapshotParams } from '../../helpers/chartSnapshot';
 
 import type { Round } from '../../types/Round';
 import type { Stage } from '../../types/Stage';
-import type { ChartType } from '../../types/ChartType';
+import type { ChartQuery } from '../../types/ChartQuery';
 
 interface StageListProps {
   round: Round | null;
@@ -25,8 +26,11 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
 
-  async function onChooseChart(stageId: number, chosenChartId: number) {
-    const updatedStage = await handleAssignChartToStage(stageId, chosenChartId,);
+  async function onChooseChart(stageId: number, poolId: number) {
+    const pool = stages.find(s => s.id === stageId)?.chart_pools?.find(p => p.id === poolId);
+    if (!pool) return;
+
+    const updatedStage = await assignPoolEntryToStage(stageId, pool);
     if (!updatedStage) return;
 
     setStages(prevStages =>
@@ -34,7 +38,7 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
         stage.id === stageId
           ? {
               ...stage,        // keep charts, pools, scores
-              ...updatedStage  // overwrite changed columns (chart_id)
+              ...updatedStage  // overwrite changed columns (chart_id / snapshot columns)
             }
           : stage
       )
@@ -42,7 +46,7 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
 
     toaster.create({
       title: "Chart Selected",
-      description: `Chart ID "${updatedStage.chart_id}" was selected successfully for Stage: "${stageId}".`,
+      description: `Chart "${getStageChart(updatedStage)?.name_en ?? "?"}" was selected successfully for Stage: "${stageId}".`,
       type: "success",
       closable: true,
     });
@@ -58,24 +62,20 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
 
     toaster.create({
       title: "Chart Rolled",
-      description: `Chart ID "${updatedStage.chart_id}" was rolled successfully for Stage: "${stageId}".`,
+      description: `Chart "${getStageChart(updatedStage)?.name_en ?? "?"}" was rolled successfully for Stage: "${stageId}".`,
       type: "success",
       closable: true,
     });
   }
 
-  async function onAddChartToPool(
-    stageId: number,
-    chartName: string,
-    chartLevel: number,
-    chartType: ChartType
-  ) {
+  async function onAddChartToPool(stageId: number, chartQuery: ChartQuery) {
     try {
-      const insertedPool = await handleAddChartToPool(stageId, {
-        name: chartName,
-        level: chartLevel,
-        type: chartType,
-      });
+      const insertedPool = await handleAddChartToPool(
+        stageId,
+        chartQuery.kind === "piu"
+          ? { source: "db", name: chartQuery.name, level: chartQuery.level, type: chartQuery.type }
+          : smxChartQueryToSnapshotParams(chartQuery)
+      );
 
       setStages(prevStages =>
         prevStages?.map(stage =>
@@ -92,7 +92,7 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
 
       toaster.create({
         title: "Chart Added",
-        description: `Chart "${chartName}" was added successfully to Stage ${stageId}.`,
+        description: `Chart "${chartQuery.name}" was added successfully to Stage ${stageId}.`,
         type: "success",
         closable: true,
       });

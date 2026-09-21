@@ -7,27 +7,31 @@ import { useIsAdminForTourney } from '../../context/admin/AdminTourneyContext';
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 
 import { handleDeleteChartFromPool } from "../../handlers/handleDeleteChartFromPool";
+import { getPoolChart } from "../../helpers/getPoolChart";
+import { getStageChart } from "../../helpers/getStageChart";
 import { ChartRow } from "./ChartRow";
+
+import type { ChartPool as ChartPoolRow } from "../../types/ChartPool";
 
 interface ChartPoolProps {
   stage: Stage;
   setStages: React.Dispatch<React.SetStateAction<Stage[]>>;
-  onChooseChart: (stageId: number, chartId: number) => Promise<void>;
+  onChooseChart: (stageId: number, poolId: number) => Promise<void>;
 }
 
 export default function ChartPool({ stage, setStages, onChooseChart }: ChartPoolProps) {
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
 
-  async function onDeleteChartFromPool(stageId: number, chartId: number) {
+  async function onDeleteChartFromPool(stageId: number, poolId: number) {
     try {
-      await handleDeleteChartFromPool(stageId, chartId);
+      await handleDeleteChartFromPool(poolId);
       setStages(prevStages =>
         prevStages?.map(stage =>
           stage.id === stageId
             ? {
               ...stage,
-              chart_pools: stage.chart_pools?.filter(pool => pool.chart_id !== chartId) || [],
+              chart_pools: stage.chart_pools?.filter(pool => pool.id !== poolId) || [],
             }
             : stage
         ) || []
@@ -35,7 +39,7 @@ export default function ChartPool({ stage, setStages, onChooseChart }: ChartPool
 
       toaster.create({
         title: "Chart Removed",
-        description: `Chart ID "${chartId}" was removed successfully from Stage ${stageId}.`,
+        description: `Chart was removed successfully from Stage ${stageId}.`,
         type: "success",
         closable: true,
       });
@@ -50,12 +54,18 @@ export default function ChartPool({ stage, setStages, onChooseChart }: ChartPool
     }
   }
 
-  return (
-    stage.chart_pools?.length ? stage.chart_pools : [{ id: 0, charts: null }]).map(chartInPool => (
+  const pools: Pick<ChartPoolRow, "id" | "charts" | "chart_name" | "chart_type" | "chart_level" | "chart_image_url" | "created_at">[] =
+    stage.chart_pools?.length ? stage.chart_pools : [{ id: 0, charts: null, created_at: stage.created_at }];
+
+  const stageChart = getStageChart(stage);
+
+  return pools.map(chartInPool => {
+      const chart = getPoolChart(chartInPool);
+      return (
       <Box mb={1} key={chartInPool.id} borderWidth={1} borderRadius="sm">
-        {chartInPool.charts ? (
+        {chart ? (
           <HStack width="100%" align="center">
-            <ChartRow chart={chartInPool.charts} />
+            <ChartRow chart={chart} />
             {!loadingTourneyAdminStatus && isTourneyAdmin && (
               <>
                 <IconButton
@@ -65,11 +75,11 @@ export default function ChartPool({ stage, setStages, onChooseChart }: ChartPool
                   borderWidth={2}
                   colorPalette="red"
                   px={2}
-                  onClick={() => onDeleteChartFromPool(stage.id, chartInPool.charts!.id)}
+                  onClick={() => onDeleteChartFromPool(stage.id, chartInPool.id)}
                 >
                   <FaTrash />
                 </IconButton>
-                {!stage.chart_id && stage.chart_pools && stage.chart_pools.length !== 0 && (
+                {!stageChart && stage.chart_pools && stage.chart_pools.length !== 0 && (
                   <IconButton
                     aria-label="Select Chart from Pool"
                     size="xl"
@@ -79,7 +89,7 @@ export default function ChartPool({ stage, setStages, onChooseChart }: ChartPool
                     px={2}
                     mr={2}
                     onClick={async () => {
-                      await onChooseChart(stage.id, chartInPool.charts!.id);
+                      await onChooseChart(stage.id, chartInPool.id);
                     }}
                   >
                     <MdOutlineCheck />
@@ -92,6 +102,7 @@ export default function ChartPool({ stage, setStages, onChooseChart }: ChartPool
           <Text>(No charts in this pool yet)</Text>
         )}
       </Box>
-    )
+      );
+    }
     );
 }

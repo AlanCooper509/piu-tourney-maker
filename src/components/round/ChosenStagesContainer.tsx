@@ -21,6 +21,7 @@ import type { Stage } from "../../types/Stage";
 import type { PlayerRound } from "../../types/PlayerRound";
 import type { ChartQuery } from "../../types/ChartQuery";
 import { getStageChart } from "../../helpers/getStageChart";
+import { smxChartQueryToSnapshotParams } from "../../helpers/chartSnapshot";
 
 interface ChosenStagesContainerProps {
   round: Round | null;
@@ -73,21 +74,27 @@ export default function ChosenStagesContainer({
     setInputValues(prev => ({ ...prev, [`${stageId}-${playerId}`]: value }));
   };
 
-  const onAddStageWithChart = async (
-    name: string,
-    level: number,
-    type: 'Single' | 'Double' | 'Co-Op' | 'UCS'
-  ) => {
+  const onAddStageWithChart = async (chartQuery: ChartQuery) => {
     try {
       if (!tourney) throw new Error("Invalid or missing tourney for adding a stage.");
       if (!round) throw new Error("No round selected to add a stage.");
 
-      const newStage = await handleAddStageToRound(round.id, { name, level, type, game_id: tourney.game_id });
+      const newStage =
+        chartQuery.kind === "piu"
+          ? await handleAddStageToRound(round.id, {
+              source: "db",
+              name: chartQuery.name,
+              level: chartQuery.level,
+              type: chartQuery.type,
+              game_id: tourney.game_id,
+            })
+          : await handleAddStageToRound(round.id, smxChartQueryToSnapshotParams(chartQuery));
       setStages((prev) => [...prev, newStage]);
 
+      const label = chartQuery.kind === "piu" ? chartQuery.type : chartQuery.diffClass;
       toaster.create({
         title: "Stage Added",
-        description: `Successfully added ${name} [${type} ${level}] to the round.`,
+        description: `Successfully added ${chartQuery.name} [${label} ${chartQuery.level}] to the round.`,
         type: "success",
       });
     } catch (err: any) {
@@ -411,11 +418,7 @@ export default function ChosenStagesContainer({
                   </Text>
                   <AddChartForm
                     onSubmit={async (chartQuery: ChartQuery) => {
-                      await onAddStageWithChart(
-                        chartQuery.name,
-                        chartQuery.level,
-                        chartQuery.type
-                      );
+                      await onAddStageWithChart(chartQuery);
                     }}
                   />
                 </Box>
