@@ -126,6 +126,32 @@ export default function RoundModal({
         </Field.Root>
       )}
 
+      {/* Points Based Scoring */}
+      <>
+        <Checkbox.Root
+          checked={pointsScoringChecked}
+          onCheckedChange={(e) => {
+            setPointsScoringChecked(!!e.checked);
+            if (!e.checked) setFormPointsPerStage("");
+          }}
+        >
+          <Checkbox.HiddenInput />
+          <Checkbox.Control />
+          <Checkbox.Label>Points based scoring?</Checkbox.Label>
+        </Checkbox.Root>
+        {pointsScoringChecked && (
+          <Field.Root>
+            <Field.Label>Points Per Player</Field.Label>
+            <Input
+              value={formPointsPerStage}
+              onChange={(e) => setFormPointsPerStage(e.target.value)}
+              placeholder="Ex: 5,3,2,1 will assign 1st: 5 / 2nd: 3 / 3rd: 2 / 4th: 1 / Remaining: 0"
+            />
+          </Field.Root>
+        )}
+      </>
+
+      {/* Include Scores from a Previous Round */}
       {rounds.length > 1 && (
         <>
           <Checkbox.Root
@@ -172,31 +198,6 @@ export default function RoundModal({
           )}
         </>
       )}
-
-      {/* Points Based Scoring */}
-      <>
-        <Checkbox.Root
-          checked={pointsScoringChecked}
-          onCheckedChange={(e) => {
-            setPointsScoringChecked(!!e.checked);
-            if (!e.checked) setFormPointsPerStage("");
-          }}
-        >
-          <Checkbox.HiddenInput />
-          <Checkbox.Control />
-          <Checkbox.Label>Points based scoring?</Checkbox.Label>
-        </Checkbox.Root>
-        {pointsScoringChecked && (
-          <Field.Root>
-            <Field.Label>Points Per Player</Field.Label>
-            <Input
-              value={formPointsPerStage}
-              onChange={(e) => setFormPointsPerStage(e.target.value)}
-              placeholder="Ex: 5,3,2,1 will assign 1st: 5 / 2nd: 3 / 3rd: 2 / 4th: 1 / Remaining: 0"
-            />
-          </Field.Root>
-        )}
-      </>
     </VStack>
   );
 
