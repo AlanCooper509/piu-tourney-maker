@@ -27,6 +27,7 @@ export default function CreateTourneyButton({
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [tourneyFormat, setFormTourneyFormat] = useState<string[]>([]);
   const [selectedGameId, setSelectedGameId] = useState<string[]>([]);
+  const [ddrToolsRoom, setDdrToolsRoom] = useState("");
 
   const { addTourneyAdminId } = useAdminTourneyContext();
 
@@ -174,6 +175,20 @@ export default function CreateTourneyButton({
           </Select.Positioner>
         </Select.Root>
       </Field.Root>
+
+      {/* ddr.tools Event Link */}
+      <Field.Root>
+        <Field.Label>ddr.tools Event Link (optional)</Field.Label>
+        <Input
+          value={ddrToolsRoom}
+          onChange={(e) => setDdrToolsRoom(e.target.value)}
+          placeholder="https://ddr.tools/e/my-event"
+        />
+        <Field.HelperText>
+          Lets this tourney pull results from a ddr.tools event room. Can be
+          set or changed later from Edit Tourney Details.
+        </Field.HelperText>
+      </Field.Root>
     </VStack>
   );
 
@@ -183,6 +198,7 @@ export default function CreateTourneyButton({
     setEndDate(null);
     setFormTourneyFormat([]);
     setSelectedGameId([]);
+    setDdrToolsRoom("");
   }
 
   return (
@@ -201,6 +217,7 @@ export default function CreateTourneyButton({
           eventId,
           tourneyFormat,
           gameId,
+          ddrToolsRoom,
           resetForm,
           setTourneys,
           addTourneyAdminId,

@@ -5,15 +5,19 @@ import {
   Text,
   IconButton,
   HStack,
+  Heading,
 } from "@chakra-ui/react";
 
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../../context/admin/AdminTourneyContext";
-import EditableTourneyName from "./EditableTourneyName";
+import EditTourneyDetails from "./EditTourneyDetails";
 import GenerateBracketButton from "./GenerateBracketButton/GenerateBracketButton";
 import GenerateSingleStreamBracketButton from "./GenerateSingleStreamBracket/GenerateSingleStreamBracketButton";
 import PullFromDdrToolsButton from "./PullFromDdrToolsButton/PullFromDdrToolsButton";
-import { handleUpdateTourneyName } from "../../handlers/handleUpdateTourneyName";
+import { handleUpdateTourneyDetails } from "../../handlers/handleUpdateTourneyDetails";
+import getSupabaseTable from "../../hooks/getSupabaseTable";
+
+import type { TourneyDetailsUpdate } from "../../handlers/handleUpdateTourneyDetails";
 import { isBracketFormat } from "../../helpers/isBracketFormat";
 import { StatusElement } from "../StatusElement";
 import { toaster } from "../ui/toaster";
@@ -21,6 +25,7 @@ import { handleStartTourney } from "../../handlers/handleStartTourney";
 
 import type { Round } from "../../types/Round";
 import type { PlayerTourney } from "../../types/PlayerTourney";
+import type { Game } from "../../types/Game";
 
 interface TourneyDetailsProps {
   players: PlayerTourney[] | null;
@@ -39,16 +44,18 @@ export function TourneyDetails({
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(
     tourney?.id ?? undefined,
   );
+  const { data: gamesData } = getSupabaseTable<Game>("games");
+  const gameName = gamesData.find((g) => g.id === tourney?.game_id)?.name;
   // const navigate = useNavigate(); // for StreamHelper, currently disabled
   const [updatingName, setUpdatingName] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
 
-  // Rename tourney logic
-  const onRenameTourney = async (newName: string) => {
+  // Edit tourney details logic
+  const onSaveTourneyDetails = async (details: TourneyDetailsUpdate) => {
     if (!tourney) return;
     try {
       setUpdatingName(true);
-      const updatedTourney = await handleUpdateTourneyName(tourney.id, newName);
+      const updatedTourney = await handleUpdateTourneyDetails(tourney.id, details);
       setTourney(updatedTourney); // Update local tourney state
     } catch (error) {
       console.error(error);
@@ -107,13 +114,6 @@ export function TourneyDetails({
       <title>
         {tourney && tourney.name ? tourney.name : "Tournament Details"}
       </title>
-      {!loadingTourneyAdminStatus && isTourneyAdmin && (
-        <EditableTourneyName
-          tourneyName={tourney?.name ?? ""}
-          onRename={onRenameTourney}
-          isLoading={updatingName}
-        />
-      )}
       <Box>
         <VStack style={{ gap: "0px" }}>
           {loading && <Text>Loading tournament...</Text>}
@@ -158,9 +158,16 @@ export function TourneyDetails({
                       Stream Helper
                     </Button>
                   */}
-                  {tourney?.status === "In Progress" && (
+                  {tourney?.status === "In Progress" && tourney?.ddrtools_room && (
                     <PullFromDdrToolsButton rounds={rounds} />
                   )}
+                  <EditTourneyDetails
+                    tourneyName={tourney?.name ?? ""}
+                    ddrToolsRoom={tourney?.ddrtools_room ?? null}
+                    onSave={onSaveTourneyDetails}
+                    isLoading={updatingName}
+                  />
+
                   {tourney?.status === "Not Started" && (
                     <IconButton
                       colorPalette="green"
@@ -176,7 +183,8 @@ export function TourneyDetails({
                   )}
                 </HStack>
               )}
-              <Text>Type: {tourney.type}</Text>
+              <Heading>{gameName ?? ""}</Heading>
+              <Text color="fg.muted">Format: {tourney.type}</Text>
               <StatusElement element={tourney} />
             </>
           )}

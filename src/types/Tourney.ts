@@ -19,4 +19,5 @@ export interface Tourney {
   type?: TourneyType | null;       // enum type
   thumbnail_img?: string;          // text
   stream_round_id?: number | null; // bigint -> number
+  ddrtools_room?: string | null;   // text — ddr.tools event link or room name
 }

@@ -2,12 +2,13 @@ import { supabaseClient } from "../lib/supabaseClient";
 import type { TourneyType } from "../types/Tourney";
 
 export default async function handleAddNewTourney(
-  name: string, 
-  gameId: number, 
-  startDate: string, 
-  endDate: string, 
-  eventId: number, 
-  tourneyFormat: string[]
+  name: string,
+  gameId: number,
+  startDate: string,
+  endDate: string,
+  eventId: number,
+  tourneyFormat: string[],
+  ddrToolsRoom?: string | null,
 ) {
   // 1. Insert new tourney
   const { data, error } = await supabaseClient
@@ -20,6 +21,7 @@ export default async function handleAddNewTourney(
         end_date: endDate,
         event_id: eventId,
         type: tourneyFormat.length > 0 ? (tourneyFormat[0] as TourneyType) : null,
+        ddrtools_room: ddrToolsRoom || null,
       },
     ])
     .select()

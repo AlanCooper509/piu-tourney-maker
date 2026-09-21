@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IconButton } from "@chakra-ui/react";
 
 import DialogForm from "../../ui/DialogForm";
@@ -38,6 +38,10 @@ export default function PullFromDdrToolsButton({ rounds }: Props) {
   const [plan, setPlan] = useState<PullPlan | null>(null);
   const [room, setRoom] = useState<string | null>(null);
   const [advance, setAdvance] = useState(false);
+
+  useEffect(() => {
+    if (open) setLink(tourney?.ddrtools_room ?? "");
+  }, [open, tourney?.ddrtools_room]);
 
   function reset() {
     setLink("");

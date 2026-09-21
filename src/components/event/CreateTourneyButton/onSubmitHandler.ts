@@ -1,6 +1,7 @@
 import { toaster } from '../../ui/toaster';
 import { tourneyTypes, type Tourney, type TourneyType } from '../../../types/Tourney';
 import handleAddNewTourney from '../../../handlers/handleAddNewTourney';
+import { parseRoomName } from '../../../lib/ddrTools';
 
 interface OnSubmitHandlerProps {
   tourneyName: string;
@@ -9,24 +10,32 @@ interface OnSubmitHandlerProps {
   endDate: Date | null;
   eventId: number;
   tourneyFormat: string[];
+  ddrToolsRoom: string;
   resetForm: () => void;
   setTourneys: React.Dispatch<React.SetStateAction<Tourney[]>>;
   addTourneyAdminId: (id: number) => void;
 }
 
-export default async function onSubmitHandler({ 
-  tourneyName, 
+export default async function onSubmitHandler({
+  tourneyName,
   gameId,
-  startDate, 
-  endDate, 
-  eventId, 
-  tourneyFormat, 
-  resetForm, 
-  setTourneys, 
-  addTourneyAdminId 
+  startDate,
+  endDate,
+  eventId,
+  tourneyFormat,
+  ddrToolsRoom,
+  resetForm,
+  setTourneys,
+  addTourneyAdminId
 }: OnSubmitHandlerProps): Promise<boolean> {
   if (!isValidTourneyName(tourneyName)) {
     sendToast("Error", "Enter a tourney name!", "error");
+    return false; // Prevent form submission
+  }
+
+  const trimmedDdrToolsRoom = ddrToolsRoom.trim();
+  if (trimmedDdrToolsRoom && !parseRoomName(trimmedDdrToolsRoom)) {
+    sendToast("Error", "That doesn't look like a ddr.tools event link or room name", "error");
     return false; // Prevent form submission
   }
 
@@ -59,12 +68,13 @@ export default async function onSubmitHandler({
   let data = null;
   try {
     const response = await handleAddNewTourney(
-      tourneyName.trim(), 
-      gameId, 
-      startDate.toISOString(), 
-      endDate.toISOString(), 
-      eventId, 
-      tourneyFormat
+      tourneyName.trim(),
+      gameId,
+      startDate.toISOString(),
+      endDate.toISOString(),
+      eventId,
+      tourneyFormat,
+      trimmedDdrToolsRoom || null,
     );
     if (!response) {
       sendToast("Error", "Failed to create tourney: No data returned", "error");
