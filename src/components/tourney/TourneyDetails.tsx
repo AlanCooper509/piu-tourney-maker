@@ -15,6 +15,8 @@ import GenerateBracketButton from "./GenerateBracketButton/GenerateBracketButton
 import GenerateSingleStreamBracketButton from "./GenerateSingleStreamBracket/GenerateSingleStreamBracketButton";
 import PullFromDdrToolsButton from "./PullFromDdrToolsButton/PullFromDdrToolsButton";
 import { handleUpdateTourneyDetails } from "../../handlers/handleUpdateTourneyDetails";
+import { handleDeleteRoundsInTourney } from "../../handlers/round/handleDeleteRoundsInTourney";
+import { handleDeleteRoundPoolsInTourney } from "../../handlers/round/handleDeleteRoundPoolsInTourney";
 import getSupabaseTable from "../../hooks/getSupabaseTable";
 
 import type { TourneyDetailsUpdate } from "../../handlers/handleUpdateTourneyDetails";
@@ -53,12 +55,18 @@ export function TourneyDetails({
   // Edit tourney details logic
   const onSaveTourneyDetails = async (details: TourneyDetailsUpdate) => {
     if (!tourney) return;
+    setUpdatingName(true);
     try {
-      setUpdatingName(true);
+      // A format change invalidates any rounds already built for the old one
+      // (same as Regenerate Bracket, which deletes-and-recreates) - db cascades
+      // take care of everything hanging off those rounds (stages, scores, etc).
+      const formatChanged = details.type !== undefined && details.type !== tourney.type;
+      if (formatChanged && rounds && rounds.length > 0) {
+        await handleDeleteRoundsInTourney(tourney.id);
+        await handleDeleteRoundPoolsInTourney(tourney.id);
+      }
       const updatedTourney = await handleUpdateTourneyDetails(tourney.id, details);
       setTourney(updatedTourney); // Update local tourney state
-    } catch (error) {
-      console.error(error);
     } finally {
       setUpdatingName(false);
     }
@@ -163,6 +171,9 @@ export function TourneyDetails({
                   )}
                   <EditTourneyDetails
                     tourneyName={tourney?.name ?? ""}
+                    tourneyType={tourney?.type ?? null}
+                    tourneyStatus={tourney?.status}
+                    rounds={rounds}
                     ddrToolsRoom={tourney?.ddrtools_room ?? null}
                     onSave={onSaveTourneyDetails}
                     isLoading={updatingName}
