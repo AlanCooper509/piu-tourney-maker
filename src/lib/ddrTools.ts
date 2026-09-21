@@ -137,7 +137,11 @@ export function drawingsForTourney(state: DdrToolsState, tourneyId: number) {
 export function drawnCharts(drawing: DdrToolsDrawing): DdrToolsChart[] {
   return Object.values(drawing.subDrawings)
     .flatMap((sub) => sub.charts)
-    .filter((c) => c.type === "DRAWN" && !drawing.bans?.[c.id])
+    .filter(
+      (c) =>
+        drawing.pocketPicks?.[c.id]?.pick ||
+        (c.type === "DRAWN" && !drawing.bans?.[c.id]),
+    )
     .map((c) => {
       const pick = drawing.pocketPicks?.[c.id]?.pick;
       return pick ? { ...pick, id: c.id, type: c.type } : c;
