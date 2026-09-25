@@ -76,7 +76,7 @@ export function HeroTitle() {
             _hover={{ color: "blue.400" }}
             transition="color 0.2s"
           >
-            {activeTitle || "PIU Tourney Maker"}
+            {activeTitle || "Blame The Pads"}
           </Heading>
         </Link>
       </Flex>

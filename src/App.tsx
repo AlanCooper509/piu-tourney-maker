@@ -71,7 +71,7 @@ function AppRoutes() {
 
       <Box w="100%" py={100}>
         <Text textAlign="center" fontSize="lg" mb={5}>
-          PIU Tourney Maker 2026 ©
+          Blame The Pads 2026 ©
         </Text>
         <Button
           size="sm"
