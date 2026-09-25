@@ -11,7 +11,7 @@ export function HeroTitle() {
   // on the event page itself it stays the default, linking back home.
   const isTourneySubRoute = location.pathname.startsWith("/tourney/");
   const activeBanner = isTourneySubRoute ? event?.hero_img : "https://preview.redd.it/pump-it-up-phoenix-2024-v0-wingd1wryw0d1.jpeg?auto=webp&s=00bf42c49d7b475464de9f65df97374e4ebbfd49";
-  const activeTitle = isTourneySubRoute ? event?.name : "Pump It Up Tourney Maker";
+  const activeTitle = isTourneySubRoute ? event?.name : "Blame The Pads";
   const heroLinkTo = isTourneySubRoute && event ? `/event/${event.id}` : "/";
 
   return (
