@@ -772,6 +772,7 @@ function RoundPage() {
                 width={["100%", "100%", "100%", "50%"]}
                 display="flex"
                 justifyContent="center"
+                alignItems="flex-start"
               >
                 <PlayersList
                   round={round}
@@ -791,6 +792,7 @@ function RoundPage() {
                 width={["100%", "100%", "100%", "50%"]}
                 display="flex"
                 justifyContent="center"
+                alignItems="flex-start"
               >
                 <StagesList
                   round={round}

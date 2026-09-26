@@ -14,6 +14,7 @@ import type { ChartQuery } from "../../types/ChartQuery";
 import type { Round } from "../../types/Round";
 import type { Stage } from "../../types/Stage";
 import { getStageChart } from "../../helpers/getStageChart";
+import { getPoolChart } from "../../helpers/getPoolChart";
 
 interface StageRowProps {
   stage: Stage;
@@ -36,6 +37,19 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
     setIsOpen(!getStageChart(stage));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage.chart_id, stage.chart_name]);
+
+  const isAdminView = !loadingTourneyAdminStatus && isTourneyAdmin;
+  const onlyPoolChart = stage.chart_pools?.length === 1 ? getPoolChart(stage.chart_pools[0]) : null;
+  const singleChart = stageChart ?? onlyPoolChart;
+
+  // a one-chart pool has nothing to reveal, so viewers just see the chart
+  if (!isAdminView && stage.chart_pools?.length === 1 && singleChart) {
+    return (
+      <Box mb={2} w="full">
+        <ChartRow chart={singleChart} />
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -66,11 +80,33 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
                 </HStack>
 
                 {!loadingTourneyAdminStatus && isTourneyAdmin && (
-                  <DeleteStageButton
-                    round={round}
-                    stage={stage}
-                    setStages={setStages}
-                  />                  
+                  <HStack gap={0}>
+                    {stageChart &&
+                      stage.chart_pools &&
+                      stage.chart_pools.length !== 0 && (
+                        <Button
+                          asChild
+                          variant="surface"
+                          borderWidth="2"
+                          size="sm"
+                          px={2}
+                          mx={1}
+                          colorPalette="purple"
+                        >
+                          <Link
+                            href={`/tourney/${round?.tourney_id}/round/${round?.id}/stage/${stage.id}/roll`}
+                            color="purple.fg"
+                          >
+                            Open Animation <IoArrowForward />
+                          </Link>
+                        </Button>
+                      )}
+                    <DeleteStageButton
+                      round={round}
+                      stage={stage}
+                      setStages={setStages}
+                    />
+                  </HStack>
                 )}
               </HStack>
             </Box>
@@ -82,36 +118,14 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
             )}
 
             {/* Admin Buttons */}
-            {!loadingTourneyAdminStatus && isTourneyAdmin && (
-              <HStack alignContent="center" justify="center" mt={2}>
-                {!stageChart &&
-                  stage.chart_pools &&
-                  stage.chart_pools.length !== 0 && (
-                    <RollChartButton stageId={stage.id} onClick={onRollChart} />
-                  )}
-
-                {stageChart &&
-                  stage.chart_pools &&
-                  stage.chart_pools.length !== 0 && (
-                    <Button
-                      asChild
-                      variant="surface"
-                      borderWidth="2"
-                      size="sm"
-                      px={2}
-                      mx={1}
-                      colorPalette="purple"
-                    >
-                      <Link
-                        href={`/tourney/${round?.tourney_id}/round/${round?.id}/stage/${stage.id}/roll`}
-                        color="purple.fg"
-                      >
-                        Open Animation <IoArrowForward />
-                      </Link>
-                    </Button>
-                  )}
-              </HStack>
-            )}
+            {!loadingTourneyAdminStatus && isTourneyAdmin &&
+              !stageChart &&
+              stage.chart_pools &&
+              stage.chart_pools.length !== 0 && (
+                <HStack alignContent="center" justify="center" mt={2}>
+                  <RollChartButton stageId={stage.id} onClick={onRollChart} />
+                </HStack>
+              )}
           </Box>
         </Collapsible.Trigger>
 

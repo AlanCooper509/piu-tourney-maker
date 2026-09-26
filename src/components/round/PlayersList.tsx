@@ -208,7 +208,7 @@ export function PlayersList({
   const collection = usePlayerCollection({ players, tourneyPlayers, searchTerm: newName });
 
   return (
-    <Box w="full" minW={{ base: "100%", sm: "xs" }} maxW="md">
+    <Box w="full" minW={{ base: "100%", sm: "xs" }} maxW="md" bg="gray.950" p={3} borderRadius="lg">
       <HStack mb={2} justifyContent="center">
         <Heading mb={2}>Players</Heading>
         {!loadingTourneyAdminStatus && isTourneyAdmin &&

@@ -67,8 +67,10 @@ export default function PlayerRoundStats({
         textAlign="left"
         borderWidth={isOpen ? "1px" : "0px"}
         borderStyle="solid"
-        borderColor="gray.400"
+        borderColor="gray.600"
         borderRadius="md"
+        bg="gray.800"
+        overflow="hidden"
         mb={isOpen ? 2 : 0}
       >
         <Collapsible.Trigger
@@ -77,7 +79,15 @@ export default function PlayerRoundStats({
           cursor="pointer"
           w="full"
         >
-          <HStack w="full" align="center" justify="space-between" px={2} py={1}>
+          <HStack
+            w="full"
+            align="center"
+            justify="space-between"
+            px={2}
+            py={1}
+            _hover={{ bg: "gray.700" }}
+            transition="background 0.2s"
+          >
             <IoChevronForward
               style={{
                 transform: isOpen ? 'rotate(90deg)' : 'rotate(0)',

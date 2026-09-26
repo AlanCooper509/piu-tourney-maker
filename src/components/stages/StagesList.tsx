@@ -109,7 +109,7 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
 
   const sortedStages = stages?.slice().sort((a, b) => a.id - b.id) ?? [];
   return (
-    <Box w={"md"}>
+    <Box w="full" minW={{ base: "100%", sm: "xs" }} maxW="md" bg="gray.950" p={3} borderRadius="lg">
       <HStack mb={2} justifyContent="center" alignItems="center">
         <Heading mb={2}>Stages</Heading>
         {/* Add Stage Button */}

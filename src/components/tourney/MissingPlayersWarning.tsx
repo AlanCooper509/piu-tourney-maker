@@ -16,7 +16,7 @@ export default function MissingPlayersWarning({ missingPlayers }: MissingPlayers
 
   return (
     <Collapsible.Root open={isOpen} onOpenChange={(details) => setIsOpen(details.open)}>
-      <Card.Root variant="outline" size="sm" borderWidth={1} borderColor="orange.700" w="md" mx="auto">
+      <Card.Root variant="outline" size="sm" borderWidth={1} borderColor="orange.700" w="full" maxW="md" mx="auto">
         <Card.Body>
           <Collapsible.Trigger asChild cursor="pointer" width="100%">
             <HStack justifyContent="space-between" gap={2}>
