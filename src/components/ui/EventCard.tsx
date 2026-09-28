@@ -92,7 +92,8 @@ const EventCard: React.FC<EventCardProps> = ({
                   <Heading
                     as="h3"
                     fontSize={{ base: "xl", sm: "2xl", xl: "3xl" }}
-                    _hover={{ textDecoration: "underline", color: "blue.300" }}
+                    color="cyan.solid"
+                    _hover={{ textDecoration: "underline", color: "cyan.focusRing" }}
                     transition="color 0.2s"
                     textAlign={"left"}
                   >

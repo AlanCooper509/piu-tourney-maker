@@ -72,8 +72,8 @@ export function HeroTitle() {
             fontSize={{ base: "2xl", md: "4xl" }}
             fontWeight="bold"
             letterSpacing="tight"
-            color="white"
-            _hover={{ color: "blue.400" }}
+            color="cyan.solid"
+            _hover={{ color: "cyan.focusRing" }}
             transition="color 0.2s"
           >
             {activeTitle || "Blame The Pads"}
