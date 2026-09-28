@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Box, Button, Collapsible, Text, HStack, Link, Separator, Span } from "@chakra-ui/react";
 import { IoArrowForward, IoChevronForward } from "react-icons/io5";
+import { Link as RouterLink } from "react-router-dom";
 
 import { ChartRow } from "../charts/ChartRow";
 import DeleteStageButton from "./DeleteStageButton";
@@ -93,11 +94,10 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
                           mx={1}
                           colorPalette="purple"
                         >
-                          <Link
-                            href={`/tourney/${round?.tourney_id}/round/${round?.id}/stage/${stage.id}/roll`}
-                            color="purple.fg"
-                          >
-                            Open Animation <IoArrowForward />
+                          <Link asChild color="purple.fg">
+                            <RouterLink to={`/tourney/${round?.tourney_id}/round/${round?.id}/stage/${stage.id}/roll`}>
+                              Open Animation <IoArrowForward />
+                            </RouterLink>
                           </Link>
                         </Button>
                       )}

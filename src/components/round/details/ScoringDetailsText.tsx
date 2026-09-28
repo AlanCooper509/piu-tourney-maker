@@ -1,4 +1,5 @@
 import { Link, Text } from "@chakra-ui/react";
+import { Link as RouterLink } from "react-router-dom";
 
 interface ScoringDetailsTextProps {
   pointsPerStage?: string | null;
@@ -20,12 +21,14 @@ export default function ScoringDetailsText({ pointsPerStage, tourneyId, carryOve
         <Text fontSize="sm" color="fg.muted">
           (includes scores from{" "}
           <Link
-            href={`/tourney/${tourneyId}/round/${carryOverRoundId}`}
+            asChild
             color="cyan.solid"
             fontWeight="bold"
             _hover={{ color: "cyan.focusRing" }}
           >
-            {carryOverRoundName}
+            <RouterLink to={`/tourney/${tourneyId}/round/${carryOverRoundId}`}>
+              {carryOverRoundName}
+            </RouterLink>
           </Link>
           )
         </Text>

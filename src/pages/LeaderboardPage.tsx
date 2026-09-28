@@ -1,15 +1,15 @@
-import { Box, VStack, HStack, Link, Text, useBreakpointValue, Button, Spacer, Tag, IconButton, Container, Separator } from "@chakra-ui/react";
+import { Box, VStack, HStack, Link, Text, useBreakpointValue, Button, Spacer, Tag, Container, Separator } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useParams } from "react-router-dom";
+import { Link as RouterLink, useParams } from "react-router-dom";
 import { supabaseClient } from "../lib/supabaseClient";
-import { IoReturnDownBack } from "react-icons/io5";
+import { IoChevronForward } from "react-icons/io5";
 
 import getSupabaseTable from "../hooks/getSupabaseTable";
+import { useSyncEventForTourney } from "../hooks/useSyncEventForTourney";
 import { calculateCombinedRoundRankings } from "../helpers/calculateCombinedRoundRankings";
 import { getScoresForPlayer } from "../helpers/getScoresForPlayer";
-import { resolveAdvancementDestination } from "../helpers/resolveAdvancementDestination";
-import RoundLink from "../components/tourney/RoundLink";
+import { resolveAdvancementRule } from "../helpers/resolveAdvancementDestination";
 import { deleteScoreFromStages, upsertScoreInStages } from "../helpers/state/stages";
 import { deletePlayerFromRound, upsertPlayerInRound } from "../helpers/state/playerRounds";
 import { deletePlayerTourney, upsertPlayerTourney } from "../helpers/state/playerTourney";
@@ -21,6 +21,9 @@ import type { RoundAdvancement } from "../types/RoundAdvancement";
 import type { Score } from "../types/Score";
 import type { ChartPool } from "../types/ChartPool";
 import type { PlayerTourney } from "../types/PlayerTourney";
+import type { Tourney } from "../types/Tourney";
+import type { Chart } from "../types/Chart";
+import { chartBadgeColor, chartBadgeLabel } from "../helpers/chartSnapshot";
 import { keyframes } from "@emotion/react";
 
 const refinedPulse = keyframes`
@@ -46,10 +49,15 @@ const refinedPulse = keyframes`
 // --------------------
 interface Song {
   name: string;
-  level: number | null;
-  type: string | null;
+  badgeLabel: string | number;
+  badgeColor: string;
   score: number | null;
   points: number;
+}
+
+function songBadge(chart: Chart | null) {
+  if (!chart) return { badgeLabel: 0, badgeColor: "gray" };
+  return { badgeLabel: chartBadgeLabel(chart, chart.level), badgeColor: chartBadgeColor(chart) };
 }
 
 interface Player {
@@ -99,7 +107,8 @@ function PlayerRow({
   const getBgGradient = () => {
     if (isEliminated) return undefined;
     if (index === 0) return "linear-gradient({colors.yellow.300}, {colors.yellow.600})";
-    if (index === 1) return "linear-gradient({colors.gray.300}, {colors.gray.700})";
+    // lighter end kept at gray.400: at gray.300 the white text on top was hard to read
+    if (index === 1) return "linear-gradient({colors.gray.400}, {colors.gray.600})";
     if (index === 2) return "linear-gradient({colors.yellow.700}, {colors.yellow.900})";
     return undefined;
   };
@@ -123,7 +132,7 @@ function PlayerRow({
         onClick={() => toggleExpand(player.name)}
         _hover={{ transform: "scale(1.02)", shadow: "md" }}
         borderRadius="md"
-        textShadow={index === 0 ? "0px 2px 4px rgba(0,0,0,0.5)" : undefined}
+        textShadow={index <= 2 && !isEliminated ? "0px 2px 4px rgba(0,0,0,0.5)" : undefined}
         overflow="visible"
         animation={updatedPlayer === player.name ? `${refinedPulse} 2s infinite` : undefined}
         zIndex={updatedPlayer === player.name ? 10 : 1} // Bring to front while pulsing
@@ -218,8 +227,8 @@ function SongRow({
   return (
     <Box borderBottom={isLast ? "none" : "1px solid gray"} py={3}>
       <HStack justify="space-between">
-        <Tag.Root colorPalette={song.type?.startsWith("D") ? "green" : song.type?.startsWith("S") ? "red" : song.type?.startsWith("C") ? "yellow" : "blue"}>
-          <Tag.Label>{song.level}</Tag.Label>
+        <Tag.Root colorPalette={song.badgeColor}>
+          <Tag.Label>{song.badgeLabel}</Tag.Label>
         </Tag.Root>
         <Text truncate fontSize={songFontSize} textAlign="left">{song.name}</Text>
         <Spacer/>
@@ -250,8 +259,8 @@ function LeaderboardHeader({
   headerFontSize: string | undefined;
 }) {
   return (
-    <HStack py={4} px={6} bgGradient="linear(to-r, teal.400, green.400)" borderTopRadius="2xl">
-      <Text fontSize={headerFontSize} color="white" textShadow="0px 2px 6px rgba(0,0,0,0.5)">
+    <HStack py={4} px={6} bg="gray.800" borderTopRadius="2xl">
+      <Text fontSize={headerFontSize} color="white">
         {round ? round.points_per_stage ? "Leaderboard (Points)" : "Leaderboard (Cumulative)" : "Leaderboard"}
       </Text>
       <Spacer />
@@ -276,8 +285,10 @@ function LeaderboardHeader({
 // --------------------
 function Leaderboard() {
   const { tourneyId, roundId } = useParams<{ tourneyId: string; roundId: string }>();
-  if (!tourneyId || !roundId) return <div>Invalid Tourney or Round ID</div>;
   const activeRoundId = Number(roundId);
+  // -1 (not undefined) when an id is missing: getSupabaseTable drops an undefined filter and would fetch the whole table
+  const roundFilterValue = roundId ?? -1;
+  const tourneyFilterValue = tourneyId ?? -1;
 
   const [round, setRound] = useState<Round | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -291,12 +302,15 @@ function Leaderboard() {
 
   const carryOverRoundId = round?.carry_over_round_id ?? null;
 
-  const { data: rounds } = getSupabaseTable<Round>('rounds', { column: 'id', value: roundId });
+  const { data: rounds } = getSupabaseTable<Round>('rounds', { column: 'id', value: roundFilterValue });
   const { data: carryOverRounds } = getSupabaseTable<Round>('rounds', { column: 'id', value: carryOverRoundId ?? -1 });
-  const { data: roundAdvancements } = getSupabaseTable<RoundAdvancement>('round_advancements', { column: 'round_id', value: roundId });
-  const { data: playersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: roundId }, "*, player_tourneys(player_name, seed)");
-  const { data: stagesData, refetch: refetchStages } = getSupabaseTable<Stage>("stages", { column: "round_id", value: roundId }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
-  const { data: tourneyPlayersData } = getSupabaseTable<PlayerTourney>("player_tourneys", { column: "tourney_id", value: tourneyId });
+  const { data: roundAdvancements } = getSupabaseTable<RoundAdvancement>('round_advancements', { column: 'round_id', value: roundFilterValue });
+  const { data: playersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: roundFilterValue }, "*, player_tourneys(player_name, seed)");
+  const { data: stagesData, refetch: refetchStages } = getSupabaseTable<Stage>("stages", { column: "round_id", value: roundFilterValue }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
+  const { data: tourneyPlayersData } = getSupabaseTable<PlayerTourney>("player_tourneys", { column: "tourney_id", value: tourneyFilterValue });
+  const { data: tourneysData } = getSupabaseTable<Tourney>("tourneys", { column: "id", value: tourneyFilterValue });
+  const tourneyName = tourneysData?.[0]?.name;
+  useSyncEventForTourney(tourneysData?.[0]?.event_id);
   const { data: carryOverPlayersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: carryOverRoundId ?? -1 }, "*, player_tourneys(player_name, seed)");
   const { data: carryOverStagesData, refetch: refetchCarryOverStages } = getSupabaseTable<Stage>("stages", { column: "round_id", value: carryOverRoundId ?? -1 }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
 
@@ -321,6 +335,13 @@ function Leaderboard() {
   // --------------------
   // Real-time subscriptions for highlighting updated players
   // --------------------
+  // Handlers read current state through this ref rather than closing over it, so the channels
+  // only resubscribe when the round changes instead of on every incoming score.
+  const latest = useRef({ s, cs, p, cp, tourneyPlayers, refetchStages, refetchCarryOverStages });
+  useEffect(() => {
+    latest.current = { s, cs, p, cp, tourneyPlayers, refetchStages, refetchCarryOverStages };
+  });
+
   useEffect(() => {
     // ---- SCORES ----
     const scoresChannel = supabaseClient
@@ -332,6 +353,7 @@ function Leaderboard() {
             return;
           }
 
+          const { s, cs, p, cp } = latest.current;
           const incoming = payload.new as Score;
           const stage = s.find(st => st.id === incoming.stage_id);
           const carryOverStage = cs.find(st => st.id === incoming.stage_id);
@@ -367,6 +389,7 @@ function Leaderboard() {
             return;
           }
 
+          const { tourneyPlayers } = latest.current;
           const incoming = payload.new as PlayerRound;
           if (incoming.round_id === activeRoundId) {
             setP(prev => upsertPlayerInRound(prev, incoming, tourneyPlayers ?? []));
@@ -385,6 +408,7 @@ function Leaderboard() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'stages' },
         payload => {
+          const { s, cs, refetchStages, refetchCarryOverStages } = latest.current;
           if (payload.eventType === 'DELETE') {
             if (s.find(stage => stage.id === payload.old.id)) refetchStages();
             if (cs.find(stage => stage.id === payload.old.id)) refetchCarryOverStages();
@@ -405,6 +429,7 @@ function Leaderboard() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'chart_pools' },
         payload => {
+          const { s, cs, refetchStages, refetchCarryOverStages } = latest.current;
           const incoming = payload.new as ChartPool | null;
           const stage = s.find(st => st.id === incoming?.stage_id);
           const carryOverStage = cs.find(st => st.id === incoming?.stage_id);
@@ -414,24 +439,25 @@ function Leaderboard() {
       )
       .subscribe();
 
-  const playerTourneyChannel = supabaseClient
-    .channel('tourney-players-changes')
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'player_tourneys' },
-      (payload) => {
-        if (payload.eventType === 'DELETE') {
-          setTourneyPlayers(prev => deletePlayerTourney(prev, payload.old.id));
-          return;
+    const playerTourneyChannel = supabaseClient
+      .channel('tourney-players-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'player_tourneys' },
+        (payload) => {
+          if (payload.eventType === 'DELETE') {
+            setTourneyPlayers(prev => deletePlayerTourney(prev, payload.old.id));
+            return;
+          }
+
+          const incoming = payload.new as PlayerTourney;
+          if (incoming.tourney_id !== Number(tourneyId)) return;
+
+          setTourneyPlayers(prev => upsertPlayerTourney(prev, incoming));
         }
+      )
+      .subscribe();
 
-        const incoming = payload.new as PlayerTourney;
-        if (incoming.tourney_id !== Number(tourneyId)) return;
-
-        setTourneyPlayers(prev => upsertPlayerTourney(prev, incoming));
-      }
-    )
-    .subscribe();
     return () => {
       supabaseClient.removeChannel(scoresChannel);
       supabaseClient.removeChannel(playerRoundsChannel);
@@ -439,7 +465,7 @@ function Leaderboard() {
       supabaseClient.removeChannel(chartPoolsChannel);
       supabaseClient.removeChannel(playerTourneyChannel);
     };
-  }, [activeRoundId, carryOverRoundId, s, cs, playersData]);
+  }, [activeRoundId, carryOverRoundId, tourneyId]);
 
   // --------------------
   // Build leaderboard
@@ -473,8 +499,7 @@ function Leaderboard() {
               return {
                 name: entry.chart?.name_en ?? "",
                 score: entry.score?.score ?? null,
-                level: entry.chart?.level ?? 0,
-                type: entry.chart?.type ?? "??",
+                ...songBadge(entry.chart),
                 points
               };
             })
@@ -490,8 +515,7 @@ function Leaderboard() {
           return {
             name: entry.chart?.name_en ?? "",
             score: entry.score?.score ?? null,
-            level: entry.chart?.level ?? 0,
-            type: entry.chart?.type ?? "??",
+            ...songBadge(entry.chart),
             points
           };
         }),
@@ -509,7 +533,8 @@ function Leaderboard() {
   // --------------------
   const toggleExpand = (playerName: string) => setExpandedPlayers(prev => {
     const newSet = new Set(prev);
-    newSet.has(playerName) ? newSet.delete(playerName) : newSet.add(playerName);
+    if (newSet.has(playerName)) newSet.delete(playerName);
+    else newSet.add(playerName);
     return newSet;
   });
   const toggleAll = () => setExpandedPlayers(prev => prev.size > 0 ? new Set() : new Set(players.map(p => p.name)));
@@ -523,33 +548,42 @@ function Leaderboard() {
   const songFontSize = useBreakpointValue({ base: "sm", md: "md", lg: "lg" });
   const bottomPadding = useBreakpointValue({ base: `${window.innerHeight * 0.15}px`, md: "3rem", lg: "3rem" });
 
+  if (!tourneyId || !roundId) return <div>Invalid Tourney or Round ID</div>;
+
   return (
     <Container maxW="8xl">
       <VStack w="100%" align="center" mt={12} pb={bottomPadding}>
-        <Box fontWeight="bold" textShadow="0px 2px 4px rgba(0,0,0,0.4)">
-          <HStack>
-            <Link href={`/tourney/${tourneyId}/round/${roundId}`}>
-              <IconButton variant="outline" colorPalette="cyan" borderWidth="2px" size="sm" px={2}>
-                <IoReturnDownBack />
-              </IconButton>
+        {/* Breadcrumb back to the tourney / round, then the round as the page title */}
+        <VStack w={cardWidth} align="start" gap={1} mb={2}>
+          <HStack gap={1.5} fontSize="sm" color="fg.muted" wrap="wrap">
+            <Link asChild color="fg.muted" _hover={{ color: "fg" }}>
+              <RouterLink to={`/tourney/${tourneyId}`}>{tourneyName ?? "Tourney"}</RouterLink>
             </Link>
-            <RoundLink tourneyId={tourneyId} roundId={roundId} roundName={round?.name ?? ""} fontSize="4xl" />
+            <IoChevronForward />
+            <Link asChild color="fg.muted" _hover={{ color: "fg" }}>
+              <RouterLink to={`/tourney/${tourneyId}/round/${roundId}`}>{round?.name ?? "Round"}</RouterLink>
+            </Link>
+            <IoChevronForward />
+            <Text color="fg">Leaderboard</Text>
           </HStack>
-        </Box>
+          <Text fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold" color="white" lineHeight="1.2">
+            {round?.name}
+          </Text>
+        </VStack>
 
-        <Box w={cardWidth} borderRadius="2xl" shadow="xl" bgGradient="linear(to-b, gray.900, gray.800)">
+        <Box w={cardWidth} borderRadius="2xl" shadow="xl" bg="gray.900">
           <LeaderboardHeader round={round} expandedPlayers={expandedPlayers} toggleAll={toggleAll} headerFontSize={headerFontSize} />
 
           <AnimatePresence mode="popLayout">
             {players.map((player, index) => {
               const rank = index + 1;
-              const destination = resolveAdvancementDestination(rank, roundAdvancements ?? []);
+              const advancements = roundAdvancements ?? [];
+              const rule = resolveAdvancementRule(rank, advancements);
               // no advancement rules at all usually means the final round, where nobody is "eliminated"
-              const isEliminated = !!roundAdvancements?.length && destination == null;
-              const prevDestination = index > 0
-                ? resolveAdvancementDestination(rank - 1, roundAdvancements ?? [])
-                : undefined;
-              const showSeparator = index > 0 && destination !== prevDestination;
+              const isEliminated = advancements.length > 0 && !rule;
+              const prevRule = index > 0 ? resolveAdvancementRule(rank - 1, advancements) : undefined;
+              // a line between rank groups that advance to different places
+              const startsGroup = index > 0 && rule?.id !== prevRule?.id;
               return (
                 <motion.div
                   key={player.name} // Essential for tracking movement
@@ -562,8 +596,8 @@ function Leaderboard() {
                     opacity: { duration: 0.2 }
                   }}
                 >
-                  {showSeparator && (
-                    <Separator borderWidth="5px" my={2} borderColor="black" />
+                  {startsGroup && (
+                    <Separator my={3} borderColor="border.emphasized" />
                   )}
 
                   <PlayerRow

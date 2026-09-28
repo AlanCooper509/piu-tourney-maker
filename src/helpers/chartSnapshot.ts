@@ -139,6 +139,23 @@ export function smxDiffClassColor(label: string | null | undefined): string | nu
   return SMX_DIFF_CLASS_COLOR[stripPlusMarker(label).toLowerCase()] ?? null;
 }
 
+/** Badge color palette for a chart: its SMX difficulty class if it has one, otherwise its PIU type. */
+export function chartBadgeColor(chart: Chart | SnapshotChart): string {
+  const smxColor = smxDiffClassColor(chartTypeLabel(chart));
+  if (smxColor) return smxColor;
+  return piuTypeColor(chart.type);
+}
+
+function piuTypeColor(type: ChartType | null): string {
+  switch (type) {
+    case "Single": return "red";
+    case "Double": return "green";
+    case "UCS": return "purple";
+    case "Co-Op": return "yellow";
+    case null: return "black";
+  }
+}
+
 /** Single-letter abbreviation for an SMX diffClass, unchanged if unrecognized. */
 export function smxDiffClassAbbr(diffClass: string): string {
   return SMX_DIFF_CLASS_ABBR[diffClass.toLowerCase()] ?? diffClass;

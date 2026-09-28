@@ -1,4 +1,5 @@
-import { HStack, IconButton, Link } from "@chakra-ui/react";
+import { HStack, IconButton } from "@chakra-ui/react";
+import { Link as RouterLink } from "react-router-dom";
 import { MdOutlineLeaderboard } from "react-icons/md";
 
 interface LeaderboardLinkButtonProps {
@@ -9,11 +10,11 @@ interface LeaderboardLinkButtonProps {
 export default function LeaderboardLinkButton({ tourneyId, roundId }: LeaderboardLinkButtonProps) {
   return (
     <HStack>
-      <Link href={`/tourney/${tourneyId}/round/${roundId}/leaderboard`}>
+      <RouterLink to={`/tourney/${tourneyId}/round/${roundId}/leaderboard`}>
         <IconButton variant="outline" colorPalette="cyan" borderWidth="2px" size="sm" px={2}>
           Leaderboard: <MdOutlineLeaderboard />
         </IconButton>
-      </Link>
+      </RouterLink>
     </HStack>
   );
 }
