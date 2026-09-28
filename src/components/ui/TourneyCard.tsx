@@ -14,6 +14,7 @@ import type { Tourney } from "../../types/Tourney";
 import type { Event } from "../../types/Event";
 import { StatusElement } from "../StatusElement";
 import { getTourneyThumbnail } from "../../helpers/getTourneyThumbnail";
+import { tourneyPath } from "../../helpers/paths";
 
 interface TourneyCardProps {
   row: Tourney;
@@ -63,7 +64,7 @@ const TourneyCard: React.FC<TourneyCardProps> = ({
       }}
     >
       <LinkOverlay asChild>
-        <Link to={`/tourney/${row.id}`}>
+        <Link to={tourneyPath(row.id, row.event_id)}>
           <HStack align="center" gap={4} w="100%">
             {/* Image Section */}
             <Box

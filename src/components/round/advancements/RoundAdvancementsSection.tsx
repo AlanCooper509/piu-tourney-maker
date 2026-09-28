@@ -93,7 +93,7 @@ export default function RoundAdvancementsSection({
                       transition: 'transform 0.2s ease',
                     }}
                   />
-                  <Heading>Advancements</Heading>
+                  <Heading color="gray.200">Advancements</Heading>
                 </HStack>
               </Collapsible.Trigger>
               {addRuleButton}
@@ -103,7 +103,7 @@ export default function RoundAdvancementsSection({
         ) : (
           <>
             <HStack mb={isTourneyAdmin ? 2 : 1} justifyContent="center">
-              <Heading>Advancements</Heading>
+              <Heading color="gray.200">Advancements</Heading>
               {addRuleButton}
             </HStack>
             {list}

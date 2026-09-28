@@ -128,7 +128,7 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
       h="fit-content"
     >
       <HStack mb={3} justifyContent="center" alignItems="center" px={1}>
-        <Heading size="md">Players</Heading>
+        <Heading size="md" color="gray.200">Players</Heading>
         {!loadingTourneyAdminStatus && isTourneyAdmin && (
           <>
             <AddPlayer

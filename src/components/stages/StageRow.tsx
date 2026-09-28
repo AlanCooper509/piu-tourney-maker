@@ -16,6 +16,7 @@ import type { Round } from "../../types/Round";
 import type { Stage } from "../../types/Stage";
 import { getStageChart } from "../../helpers/getStageChart";
 import { getPoolChart } from "../../helpers/getPoolChart";
+import { stageRollPath } from "../../helpers/paths";
 
 interface StageRowProps {
   stage: Stage;
@@ -95,7 +96,7 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
                           colorPalette="purple"
                         >
                           <Link asChild color="purple.fg">
-                            <RouterLink to={`/tourney/${round?.tourney_id}/round/${round?.id}/stage/${stage.id}/roll`}>
+                            <RouterLink to={stageRollPath(round?.tourney_id ?? "", round?.id ?? "", stage.id, tourney?.event_id)}>
                               Open Animation <IoArrowForward />
                             </RouterLink>
                           </Link>

@@ -111,7 +111,7 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
   return (
     <Box w="full" minW={{ base: "100%", sm: "xs" }} maxW="md" bg="gray.950" p={3} borderRadius="lg">
       <HStack mb={2} justifyContent="center" alignItems="center">
-        <Heading mb={2}>Stages</Heading>
+        <Heading mb={2} color="gray.200">Stages</Heading>
         {/* Add Stage Button */}
         {!loadingTourneyAdminStatus && isTourneyAdmin &&
           <AddStageButton round={round} setStages={setStages} />

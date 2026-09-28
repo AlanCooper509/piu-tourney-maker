@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useState, useMemo, useRef } from "react";
 import { VStack, StackSeparator, Separator, Box, Stack } from "@chakra-ui/react"
 import { useParams } from "react-router-dom";
 import { supabaseClient } from "../lib/supabaseClient";
@@ -31,10 +31,14 @@ import type { PlayerRound } from "../types/PlayerRound";
 import { deletePlayerFromRound, upsertPlayerInRound } from "../helpers/state/playerRounds";
 
 function TourneyPage() {
-  const { tourneyId } = useParams();
+  const { tourneyId, eventId } = useParams();
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
 
   const { tourney, setTourney } = useCurrentTourney();
+  // drop a previously visited tourney before paint, so its name never flashes on this page
+  useLayoutEffect(() => {
+    if (tourney && String(tourney.id) !== tourneyId) setTourney(null);
+  }, [tourney, tourneyId, setTourney]);
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
   const [players, setPlayers] = useState<PlayerTourney[]>([]);
   const tourneyPlayersRef = useRef<PlayerTourney[]>([]);
@@ -77,7 +81,11 @@ function TourneyPage() {
     { column: "tourney_id", value: tourneyId },
     "*, pickban_ruleset_steps(*)"
   );
-  useSyncEventForTourney(tourney?.event_id);
+
+  // the URL's event (if any) shows immediately; the loaded tourney's own event wins if they differ
+  useSyncEventForTourney(
+    tourney && String(tourney.id) === tourneyId ? tourney.event_id : eventId ? Number(eventId) : undefined
+  );
 
   // Seed Initial Data From Database Fetches
   useEffect(() => {

@@ -25,22 +25,22 @@ import "./App.css";
 // pointed at it composites cleanly with nothing but the overlay itself.
 const STREAM_VIEWER_PATH = "/tourney/:tourneyId/StreamViewer";
 
+// Each tourney page is routed both as /tourney/... (the original form, kept so existing links
+// keep working) and as /event/:eventId/tourney/..., which lets a page know its event up front.
+const tourneyRoutes = [
+  { path: "tourney/:tourneyId", element: <TourneyPage /> },
+  { path: "tourney/:tourneyId/round/:roundId", element: <RoundPage /> },
+  { path: "tourney/:tourneyId/round/:roundId/leaderboard", element: <LeaderboardPage /> },
+  { path: "tourney/:tourneyId/round/:roundId/stage/:stageId/roll", element: <ChartRollPage /> },
+];
+
 const appRoutes = (
   <Routes>
     <Route path="/" element={<HomePage />} />
-    <Route path="/tourney/:tourneyId" element={<TourneyPage />} />
-    <Route
-      path="/tourney/:tourneyId/round/:roundId"
-      element={<RoundPage />}
-    />
-    <Route
-      path="/tourney/:tourneyId/round/:roundId/leaderboard"
-      element={<LeaderboardPage />}
-    />
-    <Route
-      path="/tourney/:tourneyId/round/:roundId/stage/:stageId/roll"
-      element={<ChartRollPage />}
-    />
+    {tourneyRoutes.flatMap(({ path, element }) => [
+      <Route key={path} path={`/${path}`} element={element} />,
+      <Route key={`event-${path}`} path={`/event/:eventId/${path}`} element={element} />,
+    ])}
     <Route path="/login" element={<LoginPage />} />
     <Route path="/event/:eventId" element={<EventPage />} />
     <Route

@@ -127,7 +127,7 @@ return (
     <>
       <Box>
         <HStack mb={2} justifyContent="center" alignItems="center">
-          <Heading mb={2}>Players</Heading>
+          <Heading mb={2} color="gray.200">Players</Heading>
           {!loadingTourneyAdminStatus && isTourneyAdmin &&
             <>
               <AddPlayer

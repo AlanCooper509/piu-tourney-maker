@@ -1,6 +1,9 @@
 import { Stack, Text } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
+import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
+import { roundPath } from "../../../helpers/paths";
+
 import type { Round } from "../../../types/Round";
 
 interface NextRoundIndicatorProps {
@@ -16,9 +19,10 @@ export function NextRoundIndicator({
   nextRound,
   centered = false,
 }: NextRoundIndicatorProps) {
+  const navigate = useNavigate();
+  const { tourney } = useCurrentTourney();
   if (!nextRound) return null;
 
-  const navigate = useNavigate();
   const textAlign = centered ? "center" : { base: "center", sm: "left" };
 
   return (
@@ -41,7 +45,7 @@ export function NextRoundIndicator({
         textAlign={textAlign}
         truncate={!centered}
         minW={0}
-        onClick={() => navigate(`/tourney/${tourneyId}/round/${nextRound.id}`)}
+        onClick={() => navigate(roundPath(tourneyId, nextRound.id, tourney?.event_id))}
       >
         {nextRound.name}
       </Text>

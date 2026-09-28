@@ -103,7 +103,7 @@ export function PlayersH2H({ round, players, setPlayers, stages, tourneyPlayers,
 
   return (
     <Box w="full" maxW="4xl" mx="auto" px={4} pt={2} pb={6}>
-      <Heading textAlign="center" mb={6}>Head-to-Head</Heading>
+      <Heading textAlign="center" mb={6} color="gray.200">Head-to-Head</Heading>
       <Flex
         position="relative"
         direction={{ base: "column", md: "row" }}

@@ -22,7 +22,7 @@ export default function RulesetContainer({
 }: RulesetContainerProps) {
   return (
     <Box w={{ base: "100%", md: "700px" }} h="fit-content">
-      <Heading mb={2}>Active Ruleset</Heading>
+      <Heading mb={2} color="gray.200">Active Ruleset</Heading>
       <ChartRulesCard
         chartDrawConfig={activeConfig}
         setChartdrawConfigs={setChartdrawConfigs}

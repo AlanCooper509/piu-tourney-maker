@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   createListCollection,
-  Heading,
   HStack,
   Portal,
   Select,
@@ -21,6 +20,7 @@ import { handleAddRoundToTourney } from "../../../handlers/round/handleRoundRow"
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import { useCurrentEvent } from "../../../context/CurrentEventContext";
 import PageBreadcrumb from "../../ui/PageBreadcrumb";
+import { roundPath, tourneyPath } from "../../../helpers/paths";
 import type { BreadcrumbItem } from "../../ui/PageBreadcrumb";
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 import { toaster } from "../../ui/toaster";
@@ -45,7 +45,9 @@ export default function TourneyHeaderText({
   const { tourney } = useCurrentTourney();
   const { event } = useCurrentEvent();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
-  const currentSelectValue = currentRoundId && `/tourney/${tourney?.id}/round/${currentRoundId}`;
+  const tourneyIdForPaths = tourney?.id ?? "";
+  const eventIdForPaths = tourney?.event_id;
+  const currentSelectValue = currentRoundId && roundPath(tourneyIdForPaths, currentRoundId, eventIdForPaths);
 
   // values for Select dropdown
   const roundOptions = createListCollection({
@@ -53,7 +55,7 @@ export default function TourneyHeaderText({
       const pool = roundPools?.find(p => p.id === round.round_pool_id);
       return {
         label: round.name,
-        value: `/tourney/${tourney?.id}/round/${round.id}`,
+        value: roundPath(tourneyIdForPaths, round.id, eventIdForPaths),
         poolName: pool?.name,
         status: round.status,
       };
@@ -64,7 +66,7 @@ export default function TourneyHeaderText({
   const currentRound = rounds.find(r => r.id === currentRoundId);
   const breadcrumbItems: BreadcrumbItem[] = [
     ...(event ? [{ label: event.name, to: `/event/${event.id}` }] : []),
-    { label: tourney?.name ?? "Tourney", to: currentRound ? `/tourney/${tourney?.id}` : undefined },
+    { label: tourney?.name ?? "Tourney", to: currentRound ? tourneyPath(tourneyIdForPaths, eventIdForPaths) : undefined },
     ...(currentRound ? [{ label: currentRound.name }] : []),
   ];
 
@@ -118,13 +120,8 @@ export default function TourneyHeaderText({
   const showNextRoundButton = !showAddRoundButton;
 
   return (
-    <Stack align="center" justify="center" direction="column" gap={6}>
-      <Stack align="center" gap={1}>
-        <PageBreadcrumb items={breadcrumbItems} justify="center" />
-        <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]} color="white">
-          {tourney?.name}
-        </Heading>
-      </Stack>
+    <Stack align="center" justify="center" direction="column" gap={2}>
+      <PageBreadcrumb items={breadcrumbItems} justify="center" />
 
       <HStack w={"full"} align="center" justify="center"> 
         {/* Previous Round Navigation */}
@@ -133,7 +130,7 @@ export default function TourneyHeaderText({
           colorPalette="blue"
           variant="outline"
           visibility={prevRoundInList ? "visible" : "hidden"}
-          onClick={() => navigate(`/tourney/${tourney?.id}/round/${prevRoundInList?.id}`)}
+          onClick={() => prevRoundInList && navigate(roundPath(tourneyIdForPaths, prevRoundInList.id, eventIdForPaths))}
         >
           <IoChevronBack />
         </Button>
@@ -228,7 +225,7 @@ export default function TourneyHeaderText({
           variant="outline"
           visibility={nextRoundInList ? "visible" : "hidden"}
           display={showNextRoundButton ? "inline-block" : "none"}
-          onClick={() => navigate(`/tourney/${tourney?.id}/round/${nextRoundInList?.id}`)}
+          onClick={() => nextRoundInList && navigate(roundPath(tourneyIdForPaths, nextRoundInList.id, eventIdForPaths))}
         >
           <IoChevronForward />
         </Button>

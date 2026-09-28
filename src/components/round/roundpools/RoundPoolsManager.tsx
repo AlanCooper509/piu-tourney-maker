@@ -83,7 +83,7 @@ export default function RoundPoolsManager({
                   transition: 'transform 0.2s ease',
                 }}
               />
-              <Heading size="md">Round Pools ({sortedPools.length})</Heading>
+              <Heading size="md" color="gray.200">Round Pools ({sortedPools.length})</Heading>
             </HStack>
           </Collapsible.Trigger>
           <RoundPoolModal

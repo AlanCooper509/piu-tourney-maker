@@ -8,6 +8,7 @@ import getSupabaseTable from "../hooks/getSupabaseTable";
 import { useSyncEventForTourney } from "../hooks/useSyncEventForTourney";
 import { useCurrentEvent } from "../context/CurrentEventContext";
 import PageBreadcrumb from "../components/ui/PageBreadcrumb";
+import { roundPath, tourneyPath } from "../helpers/paths";
 import { calculateCombinedRoundRankings } from "../helpers/calculateCombinedRoundRankings";
 import { getScoresForPlayer } from "../helpers/getScoresForPlayer";
 import { resolveAdvancementRule } from "../helpers/resolveAdvancementDestination";
@@ -285,7 +286,7 @@ function LeaderboardHeader({
 // Leaderboard Component
 // --------------------
 function Leaderboard() {
-  const { tourneyId, roundId } = useParams<{ tourneyId: string; roundId: string }>();
+  const { tourneyId, roundId, eventId: urlEventId } = useParams<{ tourneyId: string; roundId: string; eventId?: string }>();
   const activeRoundId = Number(roundId);
   // -1 (not undefined) when an id is missing: getSupabaseTable drops an undefined filter and would fetch the whole table
   const roundFilterValue = roundId ?? -1;
@@ -311,7 +312,9 @@ function Leaderboard() {
   const { data: tourneyPlayersData } = getSupabaseTable<PlayerTourney>("player_tourneys", { column: "tourney_id", value: tourneyFilterValue });
   const { data: tourneysData } = getSupabaseTable<Tourney>("tourneys", { column: "id", value: tourneyFilterValue });
   const tourneyName = tourneysData?.[0]?.name;
-  useSyncEventForTourney(tourneysData?.[0]?.event_id);
+  // the URL's event (if any) shows immediately; the loaded tourney's own event wins if they differ
+  const eventId = tourneysData?.[0]?.event_id ?? (urlEventId ? Number(urlEventId) : undefined);
+  useSyncEventForTourney(eventId);
   const { event } = useCurrentEvent();
   const { data: carryOverPlayersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: carryOverRoundId ?? -1 }, "*, player_tourneys(player_name, seed)");
   const { data: carryOverStagesData, refetch: refetchCarryOverStages } = getSupabaseTable<Stage>("stages", { column: "round_id", value: carryOverRoundId ?? -1 }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
@@ -560,8 +563,8 @@ function Leaderboard() {
           <PageBreadcrumb
             items={[
               ...(event ? [{ label: event.name, to: `/event/${event.id}` }] : []),
-              { label: tourneyName ?? "Tourney", to: `/tourney/${tourneyId}` },
-              { label: round?.name ?? "Round", to: `/tourney/${tourneyId}/round/${roundId}` },
+              { label: tourneyName ?? "Tourney", to: tourneyPath(tourneyId, eventId) },
+              { label: round?.name ?? "Round", to: roundPath(tourneyId, roundId, eventId) },
               { label: "Leaderboard" },
             ]}
           />

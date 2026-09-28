@@ -17,6 +17,7 @@ import type { ChartdrawConfigWithSpecs } from "../../../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps } from "../../../types/Pickban";
 import type { PlayerRound } from "../../../types/PlayerRound";
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
+import { roundPath } from "../../../helpers/paths";
 import { StatusElement } from "../../StatusElement";
 
 interface RoundsListProps {
@@ -40,7 +41,7 @@ export default function RoundsList({
 
   const renderRoundCard = (round: Round) => {
     const currentRoundPlayers = playerRounds.filter((pr) => pr.round_id === round.id);
-    const roundUrl = `/tourney/${tourney?.id}/round/${round.id}`;
+    const roundUrl = roundPath(round.tourney_id, round.id, tourney?.event_id);
 
     return (
       <LinkBox

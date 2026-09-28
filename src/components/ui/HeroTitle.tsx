@@ -1,6 +1,7 @@
 import { Box, Heading, Image, Flex } from "@chakra-ui/react";
 import { Link, useLocation } from "react-router-dom";
 import { useCurrentEvent } from "../../context/CurrentEventContext";
+import { isTourneyPath } from "../../helpers/paths";
 
 export function HeroTitle() {
   const location = useLocation();
@@ -9,7 +10,7 @@ export function HeroTitle() {
   // EventPage already renders the event's own hero via SpotlightEventItem,
   // so this bar only takes on the event's identity for tourney sub-pages —
   // on the event page itself it stays the default, linking back home.
-  const isTourneySubRoute = location.pathname.startsWith("/tourney/");
+  const isTourneySubRoute = isTourneyPath(location.pathname);
   const activeBanner = isTourneySubRoute ? event?.hero_img : "https://preview.redd.it/pump-it-up-phoenix-2024-v0-wingd1wryw0d1.jpeg?auto=webp&s=00bf42c49d7b475464de9f65df97374e4ebbfd49";
   const activeTitle = isTourneySubRoute ? event?.name : "Blame The Pads";
   const heroLinkTo = isTourneySubRoute && event ? `/event/${event.id}` : "/";

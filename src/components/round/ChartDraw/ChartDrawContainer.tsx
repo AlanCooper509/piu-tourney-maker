@@ -43,7 +43,7 @@ export default function ChartDrawContainer({ round, activeConfig, chartdrawEntri
 
   return (
     <Box w={{ base: "90%", md: "750px" }} h="fit-content">
-      <Heading mb={2}>Chart Draw</Heading>
+      <Heading mb={2} color="gray.200">Chart Draw</Heading>
       <Card.Root variant="outline" size="sm">
         <Card.Body>
           <VStack align="center">

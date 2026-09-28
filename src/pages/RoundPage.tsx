@@ -1,6 +1,6 @@
 import { Flex, Box, Container, Separator, VStack } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { supabaseClient } from "../lib/supabaseClient";
 import getSupabaseTable from "../hooks/getSupabaseTable";
@@ -39,15 +39,23 @@ import type { PickbanRulesetSteps, PickbanRulesetWithSteps } from "../types/Pick
 import type { ChartdrawEntry, ChartdrawEntryWithDetails } from "../types/ChartDrawEntry";
 
 function RoundPage() {
-  const { tourneyId, roundId } = useParams<{
+  const { tourneyId, roundId, eventId } = useParams<{
     tourneyId: string;
     roundId: string;
+    eventId?: string;
   }>();
   if (!tourneyId) return <div>Invalid Tourney ID</div>;
   if (!roundId) return <div>Invalid Round ID</div>;
 
   const { tourney, setTourney } = useCurrentTourney();
-  useSyncEventForTourney(tourney?.event_id);
+  // drop a previously visited tourney before paint, so its name never flashes on this page
+  useLayoutEffect(() => {
+    if (tourney && String(tourney.id) !== tourneyId) setTourney(null);
+  }, [tourney, tourneyId, setTourney]);
+  // the URL's event (if any) shows immediately; the loaded tourney's own event wins if they differ
+  useSyncEventForTourney(
+    tourney && String(tourney.id) === tourneyId ? tourney.event_id : eventId ? Number(eventId) : undefined
+  );
 
   const [tourneyRounds, setTourneyRounds] = useState<Round[]>([]);
   const [roundAdvancements, setRoundAdvancements] = useState<RoundAdvancement[]>([]);

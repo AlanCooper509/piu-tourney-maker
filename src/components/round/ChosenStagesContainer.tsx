@@ -264,7 +264,7 @@ export default function ChosenStagesContainer({
   return (
     <Box w={{ base: "90%", md: "750px" }} h="fit-content">
       <HStack justify={showAdminLock ? "space-between" : "center"} align="center" mb={2}>
-        <Heading size="md" textAlign={showAdminLock ? "left" : "center"} width={showAdminLock ? "auto" : "100%"}>Match Results</Heading>
+        <Heading size="md" color="gray.200" textAlign={showAdminLock ? "left" : "center"} width={showAdminLock ? "auto" : "100%"}>Match Results</Heading>
 
         {showAdminLock && (
           <HStack

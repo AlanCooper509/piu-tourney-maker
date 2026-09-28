@@ -51,7 +51,7 @@ export default function ChartRulesList({
         px={1}
         minHeight={!loadingTourneyAdminStatus && isTourneyAdmin ? "36px" : "24px"}
       >
-        <Heading size="md">Rulesets</Heading>
+        <Heading size="md" color="gray.200">Rulesets</Heading>
         {!loadingTourneyAdminStatus && isTourneyAdmin && (
           <RulesetPopover setChartdrawConfigs={setChartdrawConfigs} />
         )}
