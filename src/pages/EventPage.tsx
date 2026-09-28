@@ -1,6 +1,9 @@
 import { useParams } from "react-router-dom";
-import { Box, Heading, Text, VStack, Container, Spinner, Center, Flex } from "@chakra-ui/react";
-import { useEffect } from "react";
+import { Box, Heading, Text, VStack, HStack, Container, Spinner, Center, Flex, Collapsible } from "@chakra-ui/react";
+import { useEffect, useMemo, useState } from "react";
+import { IoChevronForward } from "react-icons/io5";
+
+import type { ReactNode } from "react";
 
 import type { Event } from "../types/Event";
 import type { Tourney } from "../types/Tourney";
@@ -13,6 +16,33 @@ import { SpotlightEventItem } from "../components/home/SpotlightEventItem";
 import CreateTourneyButton from "../components/event/CreateTourneyButton/CreateTourneyButton";
 import { useIsAdminForEvent } from "../context/admin/AdminEventContext";
 import { useCurrentEvent } from "../context/CurrentEventContext";
+
+function GameGroup({ gameName, count, children }: { gameName: string; count: number; children: ReactNode }) {
+  const [isOpen, setIsOpen] = useState(true);
+
+  return (
+    <Collapsible.Root open={isOpen} onOpenChange={(details) => setIsOpen(details.open)}>
+      <Collapsible.Trigger asChild>
+        <HStack justify="center" cursor="pointer" mb={4}>
+          <IoChevronForward
+            style={{
+              transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+              transition: "transform 0.2s ease",
+            }}
+          />
+          <Heading size="xl">{gameName}</Heading>
+          <Text color="fg.muted">({count})</Text>
+        </HStack>
+      </Collapsible.Trigger>
+      <Collapsible.Content>
+        {/* padding rather than margin, so it's part of the height the collapse animates */}
+        <VStack gap={4} align="stretch" pb={8}>
+          {children}
+        </VStack>
+      </Collapsible.Content>
+    </Collapsible.Root>
+  );
+}
 
 function EventPage() {
   const { eventId } = useParams();
@@ -51,6 +81,21 @@ function EventPage() {
       setTourneys([]);
     }
   }, [tourneysData, setTourneys]);
+
+  // groups appear in the order of their earliest tourney, since tourneys are already sorted by start date
+  const tourneysByGame = useMemo(() => {
+    const groups = new Map<number, Tourney[]>();
+    for (const tourney of tourneys) {
+      const group = groups.get(tourney.game_id) ?? [];
+      group.push(tourney);
+      groups.set(tourney.game_id, group);
+    }
+    return [...groups].map(([gameId, gameTourneys]) => ({
+      gameId,
+      gameName: queriedGameData?.find((g) => g.id === gameId)?.name ?? "Other",
+      gameTourneys,
+    }));
+  }, [tourneys, queriedGameData]);
 
   if (eventLoading) {
     return (
@@ -120,17 +165,30 @@ function EventPage() {
             </Box>
           )}
 
-          <VStack gap={4} align="stretch">
-            {tourneys.map((tourney) => (
-              <TourneyCard
-                key={`event-page-${tourney.id}`}
-                row={tourney}
-                event={event}
-                keyPrefix="event-page"
-                isNested={false}
-                adminTourneyIds={isEventAdmin ? [tourney.id] : []}
-              />
-            ))}
+          <VStack gap={0} align="stretch">
+            {tourneysByGame.map(({ gameId, gameName, gameTourneys }) => {
+              const cards = gameTourneys.map((tourney) => (
+                <TourneyCard
+                  key={`event-page-${tourney.id}`}
+                  row={tourney}
+                  event={event}
+                  keyPrefix="event-page"
+                  isNested={false}
+                  adminTourneyIds={isEventAdmin ? [tourney.id] : []}
+                />
+              ));
+
+              // a single game needs no grouping, so it renders as the plain list
+              return tourneysByGame.length > 1 ? (
+                <GameGroup key={`event-page-game-${gameId}`} gameName={gameName} count={gameTourneys.length}>
+                  {cards}
+                </GameGroup>
+              ) : (
+                <VStack key={`event-page-game-${gameId}`} gap={4} align="stretch">
+                  {cards}
+                </VStack>
+              );
+            })}
           </VStack>
         </VStack>
       </Container>

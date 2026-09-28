@@ -544,7 +544,8 @@ function Leaderboard() {
             {players.map((player, index) => {
               const rank = index + 1;
               const destination = resolveAdvancementDestination(rank, roundAdvancements ?? []);
-              const isEliminated = destination == null;
+              // no advancement rules at all usually means the final round, where nobody is "eliminated"
+              const isEliminated = !!roundAdvancements?.length && destination == null;
               const prevDestination = index > 0
                 ? resolveAdvancementDestination(rank - 1, roundAdvancements ?? [])
                 : undefined;

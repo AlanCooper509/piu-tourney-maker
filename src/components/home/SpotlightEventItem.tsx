@@ -9,6 +9,9 @@ interface Props {
   showButton?: boolean;
 }
 
+// tight shadow for crisp edges plus a wide soft one, so text holds up on bright and busy banners alike
+const HERO_TEXT_SHADOW = "0 1px 2px rgba(0,0,0,0.9), 0 2px 12px rgba(0,0,0,0.75)";
+
 const formatEventDateRange = (startStr: string, endStr?: string) => {
   const optionsShort: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
   const optionsWithYear: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" };
@@ -45,7 +48,7 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
         <Box
           position="absolute"
           inset={0}
-          bg="rgba(0,0,0,0.30)"
+          bg="rgba(0,0,0,0.40)"
           backdropFilter="brightness(0.85) contrast(1.1)"
         />
 
@@ -64,6 +67,7 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
           ml={{ base: 0, lg: 14 }}
           lineHeight="1.2"
           minH={{ base: "120px", lg: "auto" }}
+          textShadow={HERO_TEXT_SHADOW}
         >
           {event.name}
         </Heading>
@@ -83,6 +87,7 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
             lg: "rgba(0, 0, 0, 0.0)"        // no effect for desktop (can experiment with opacity later)
           }}
           borderRadius={{ base: "2xl", lg: "none" }}
+          textShadow={HERO_TEXT_SHADOW}
         >
           <HStack align="center" gap={1}>
             <Box as={IoMdCalendar} boxSize={{ base: "25px", lg: "30px" }} />
@@ -125,6 +130,7 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
                 size="md"
                 borderRadius="lg"
                 mt={2}
+                textShadow="none"
                 _hover={{ transform: "scale(1.05)", transition: "0.2s" }}
               >
                  View Event
