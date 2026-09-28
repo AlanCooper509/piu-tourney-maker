@@ -41,14 +41,21 @@ export default function StageRow({ stage, round, setStages, onChooseChart, onRol
   }, [stage.chart_id, stage.chart_name]);
 
   const isAdminView = !loadingTourneyAdminStatus && isTourneyAdmin;
-  const onlyPoolChart = stage.chart_pools?.length === 1 ? getPoolChart(stage.chart_pools[0]) : null;
+  const poolSize = stage.chart_pools?.length ?? 0;
+  const onlyPoolChart = poolSize === 1 ? getPoolChart(stage.chart_pools![0]) : null;
   const singleChart = stageChart ?? onlyPoolChart;
 
-  // a one-chart pool has nothing to reveal, so viewers just see the chart
-  if (!isAdminView && stage.chart_pools?.length === 1 && singleChart) {
+  // an empty or one-chart pool has nothing to reveal, so viewers just see the chart (or that there isn't one yet)
+  if (!isAdminView && poolSize <= 1) {
     return (
       <Box mb={2} w="full">
-        <ChartRow chart={singleChart} />
+        {singleChart ? (
+          <ChartRow chart={singleChart} />
+        ) : (
+          <Text fontSize="sm" color="fg.muted" fontStyle="italic" textAlign="center" py={2}>
+            No chart chosen yet
+          </Text>
+        )}
       </Box>
     );
   }

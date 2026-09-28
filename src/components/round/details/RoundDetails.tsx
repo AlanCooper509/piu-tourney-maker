@@ -1,4 +1,4 @@
-import { Box, Heading, HStack, Separator, Text, VStack } from "@chakra-ui/react";
+import { Box, HStack, Separator, Text, VStack } from "@chakra-ui/react";
 
 import StartRoundButton from "../StartRoundButton";
 import SkipRoundButton from "../SkipRoundButton/SkipRoundButton";
@@ -119,9 +119,6 @@ export function RoundDetails({
           {!loading && !error && !round && <Text>Round ID not found.</Text>}
           {!loading && !error && round && (
             <>
-              <Heading fontSize={["xl", "2xl"]} color="white" textAlign="center" mb={2}>
-                {round.name}
-              </Heading>
               {!loadingTourneyAdminStatus && isTourneyAdmin && (
                 <Box my={2}>
                   <HStack gap={2}>

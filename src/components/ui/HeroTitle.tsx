@@ -21,10 +21,10 @@ export function HeroTitle() {
       w="100%"
       bg="gray.800"
       borderBottom="1px solid"
-      borderColor="gray.700"
+      borderColor="gray.800"
       py={6}
       px={4}
-      mb={6}
+      mb={1}
       position="relative"
       overflow="hidden"
     >

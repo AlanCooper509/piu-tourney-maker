@@ -696,7 +696,7 @@ function RoundPage() {
   }, [activeRoundId, carryOverRoundId, tourneyId]);
 
   return (
-    <Box mt={8}>
+    <Box mt={4}>
       <Toaster />
       <TourneyHeaderText
         rounds={tourneyRounds}
@@ -705,7 +705,7 @@ function RoundPage() {
         roundPools={roundPools}
       />
 
-      <Separator mt={2} mb={4} />
+      <Separator mt={4} mb={4} />
       <RoundDetails
         round={round}
         setRound={setRound}
@@ -735,7 +735,7 @@ function RoundPage() {
 
       {isBracketFormat(tourney?.type) ? (
         <>
-          <Separator mt={"24px"} mb={"24px"} />
+          <Separator mt={4} mb={6} />
           <VStack gap={4}>
             <PlayersH2H
               round={round}
@@ -772,7 +772,7 @@ function RoundPage() {
         </>
       ) : (
         <>
-          <Separator mt={"24px"} mb={"24px"} />
+          <Separator mt={4} mb={6} />
           <Container maxW="4xl">
             <Flex direction={["column", "column", "column", "row"]} gap={4}>
               <Box

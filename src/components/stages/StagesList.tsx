@@ -110,8 +110,8 @@ export function StagesList({ round, stages, setStages, loading, error }: StageLi
   const sortedStages = stages?.slice().sort((a, b) => a.id - b.id) ?? [];
   return (
     <Box w="full" minW={{ base: "100%", sm: "xs" }} maxW="md" bg="gray.950" p={3} borderRadius="lg">
-      <HStack mb={2} justifyContent="center" alignItems="center">
-        <Heading mb={2} color="gray.200">Stages</Heading>
+      <HStack mb={4} justifyContent={!loadingTourneyAdminStatus && isTourneyAdmin ? "space-between" : "center"} alignItems="center">
+        <Heading color="gray.200">Stages</Heading>
         {/* Add Stage Button */}
         {!loadingTourneyAdminStatus && isTourneyAdmin &&
           <AddStageButton round={round} setStages={setStages} />

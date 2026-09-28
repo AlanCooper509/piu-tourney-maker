@@ -128,9 +128,6 @@ export function TourneyDetails({
           {error && <Text color="red">Error: {error.message}</Text>}
           {!loading && !error && tourney && (
             <>
-              <Heading fontSize={["2xl", "3xl"]} color="white" textAlign="center" mb={2}>
-                {tourney.name}
-              </Heading>
               {!loadingTourneyAdminStatus && isTourneyAdmin && (
                 <HStack mb={4}>
                   {tourney?.status === "Not Started" && (

@@ -80,11 +80,11 @@ export default function RoundAdvancementsSection({
 
   return (
     <>
-      <Separator mt={"24px"} mb={"24px"} />
+      <Separator mt={4} mb={4} />
       <Box w="100%" maxW={{ base: "100%", md: "md" }} mx="auto">
         {isCollapsible ? (
           <Collapsible.Root open={isOpen} onOpenChange={(details) => setIsOpen(details.open)}>
-            <HStack mb={isTourneyAdmin ? 2 : 1} justifyContent="center" gap={2}>
+            <HStack mb={isTourneyAdmin ? 2 : 1} justifyContent={isAdmin ? "space-between" : "center"} gap={2}>
               <Collapsible.Trigger asChild cursor="pointer">
                 <HStack gap={2}>
                   <IoChevronForward
@@ -102,7 +102,7 @@ export default function RoundAdvancementsSection({
           </Collapsible.Root>
         ) : (
           <>
-            <HStack mb={isTourneyAdmin ? 2 : 1} justifyContent="center">
+            <HStack mb={isTourneyAdmin ? 2 : 1} justifyContent={isAdmin ? "space-between" : "center"}>
               <Heading color="gray.200">Advancements</Heading>
               {addRuleButton}
             </HStack>

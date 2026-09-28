@@ -46,7 +46,7 @@ export default function ChartRulesList({
     >
       <HStack
         mb={3}
-        justifyContent="center"
+        justifyContent={!loadingTourneyAdminStatus && isTourneyAdmin ? "space-between" : "center"}
         alignItems="center"
         px={1}
         minHeight={!loadingTourneyAdminStatus && isTourneyAdmin ? "36px" : "24px"}

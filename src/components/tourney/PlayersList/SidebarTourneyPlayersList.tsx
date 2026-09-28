@@ -127,10 +127,10 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
       minW={{ md: "180px", lg: "300px" }}
       h="fit-content"
     >
-      <HStack mb={3} justifyContent="center" alignItems="center" px={1}>
+      <HStack mb={3} justifyContent={!loadingTourneyAdminStatus && isTourneyAdmin ? "space-between" : "center"} alignItems="center" px={1}>
         <Heading size="md" color="gray.200">Players</Heading>
         {!loadingTourneyAdminStatus && isTourneyAdmin && (
-          <>
+          <HStack gap={2}>
             <AddPlayer
               onAdd={onAddPlayer}
               newName={newName}
@@ -142,7 +142,7 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
               existingPlayerNames={existingPlayerNames}
               loading={addingPlayer}
             />
-          </>
+          </HStack>
         )}
       </HStack>
 

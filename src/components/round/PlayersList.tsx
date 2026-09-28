@@ -209,8 +209,8 @@ export function PlayersList({
 
   return (
     <Box w="full" minW={{ base: "100%", sm: "xs" }} maxW="md" bg="gray.950" p={3} borderRadius="lg">
-      <HStack mb={2} justifyContent="center">
-        <Heading mb={2} color="gray.200">Players</Heading>
+      <HStack mb={4} justifyContent={!loadingTourneyAdminStatus && isTourneyAdmin ? "space-between" : "center"}>
+        <Heading color="gray.200">Players</Heading>
         {!loadingTourneyAdminStatus && isTourneyAdmin &&
           <AddPlayer
             onAdd={onAddPlayer}
