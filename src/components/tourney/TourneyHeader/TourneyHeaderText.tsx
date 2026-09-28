@@ -4,7 +4,6 @@ import {
   createListCollection,
   Heading,
   HStack,
-  Link,
   Portal,
   Select,
   Span,
@@ -20,6 +19,9 @@ import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import RoundModal from "../../round/details/RoundModal";
 import { handleAddRoundToTourney } from "../../../handlers/round/handleRoundRow";
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
+import { useCurrentEvent } from "../../../context/CurrentEventContext";
+import PageBreadcrumb from "../../ui/PageBreadcrumb";
+import type { BreadcrumbItem } from "../../ui/PageBreadcrumb";
 import { useIsAdminForTourney } from "../../../context/admin/AdminTourneyContext";
 import { toaster } from "../../ui/toaster";
 
@@ -41,6 +43,7 @@ export default function TourneyHeaderText({
 }: TourneyHeaderTextProps) {
   const navigate = useNavigate();
   const { tourney } = useCurrentTourney();
+  const { event } = useCurrentEvent();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney( tourney?.id ?? undefined );
   const currentSelectValue = currentRoundId && `/tourney/${tourney?.id}/round/${currentRoundId}`;
 
@@ -56,6 +59,14 @@ export default function TourneyHeaderText({
       };
     }),
   });
+
+  // Event › Tourney on the tourney page, Event › Tourney › Round on a round page
+  const currentRound = rounds.find(r => r.id === currentRoundId);
+  const breadcrumbItems: BreadcrumbItem[] = [
+    ...(event ? [{ label: event.name, to: `/event/${event.id}` }] : []),
+    { label: tourney?.name ?? "Tourney", to: currentRound ? `/tourney/${tourney?.id}` : undefined },
+    ...(currentRound ? [{ label: currentRound.name }] : []),
+  ];
 
   // setup for previous and next round navigation
   const currentRoundIndex = rounds.findIndex(r => r.id === currentRoundId) ?? null;
@@ -108,18 +119,12 @@ export default function TourneyHeaderText({
 
   return (
     <Stack align="center" justify="center" direction="column" gap={6}>
-      <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]}>
-        <Link
-          onClick={() => navigate(`/tourney/${tourney?.id}`)}
-          color="cyan.solid"
-          variant="underline"
-          cursor="pointer"
-          _hover={{ color: "cyan.focusRing" }}
-          _focus={{ color: "cyan.solid", boxShadow: "none" }}
-        >
+      <Stack align="center" gap={1}>
+        <PageBreadcrumb items={breadcrumbItems} justify="center" />
+        <Heading fontSize={["3xl", "3xl", "3xl", "4xl"]} color="white">
           {tourney?.name}
-        </Link>
-      </Heading>
+        </Heading>
+      </Stack>
 
       <HStack w={"full"} align="center" justify="center"> 
         {/* Previous Round Navigation */}

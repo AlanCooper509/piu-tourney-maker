@@ -1,12 +1,13 @@
-import { Box, VStack, HStack, Link, Text, useBreakpointValue, Button, Spacer, Tag, Container, Separator } from "@chakra-ui/react";
+import { Box, VStack, HStack, Text, useBreakpointValue, Button, Spacer, Tag, Container, Separator } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link as RouterLink, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { supabaseClient } from "../lib/supabaseClient";
-import { IoChevronForward } from "react-icons/io5";
 
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import { useSyncEventForTourney } from "../hooks/useSyncEventForTourney";
+import { useCurrentEvent } from "../context/CurrentEventContext";
+import PageBreadcrumb from "../components/ui/PageBreadcrumb";
 import { calculateCombinedRoundRankings } from "../helpers/calculateCombinedRoundRankings";
 import { getScoresForPlayer } from "../helpers/getScoresForPlayer";
 import { resolveAdvancementRule } from "../helpers/resolveAdvancementDestination";
@@ -311,6 +312,7 @@ function Leaderboard() {
   const { data: tourneysData } = getSupabaseTable<Tourney>("tourneys", { column: "id", value: tourneyFilterValue });
   const tourneyName = tourneysData?.[0]?.name;
   useSyncEventForTourney(tourneysData?.[0]?.event_id);
+  const { event } = useCurrentEvent();
   const { data: carryOverPlayersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: carryOverRoundId ?? -1 }, "*, player_tourneys(player_name, seed)");
   const { data: carryOverStagesData, refetch: refetchCarryOverStages } = getSupabaseTable<Stage>("stages", { column: "round_id", value: carryOverRoundId ?? -1 }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
 
@@ -554,19 +556,16 @@ function Leaderboard() {
     <Container maxW="8xl">
       <VStack w="100%" align="center" mt={12} pb={bottomPadding}>
         {/* Breadcrumb back to the tourney / round, then the round as the page title */}
-        <VStack w={cardWidth} align="start" gap={1} mb={2}>
-          <HStack gap={1.5} fontSize="sm" color="fg.muted" wrap="wrap">
-            <Link asChild color="fg.muted" _hover={{ color: "fg" }}>
-              <RouterLink to={`/tourney/${tourneyId}`}>{tourneyName ?? "Tourney"}</RouterLink>
-            </Link>
-            <IoChevronForward />
-            <Link asChild color="fg.muted" _hover={{ color: "fg" }}>
-              <RouterLink to={`/tourney/${tourneyId}/round/${roundId}`}>{round?.name ?? "Round"}</RouterLink>
-            </Link>
-            <IoChevronForward />
-            <Text color="fg">Leaderboard</Text>
-          </HStack>
-          <Text fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold" color="white" lineHeight="1.2">
+        <VStack w={cardWidth} align="start" gap={3} mb={2}>
+          <PageBreadcrumb
+            items={[
+              ...(event ? [{ label: event.name, to: `/event/${event.id}` }] : []),
+              { label: tourneyName ?? "Tourney", to: `/tourney/${tourneyId}` },
+              { label: round?.name ?? "Round", to: `/tourney/${tourneyId}/round/${roundId}` },
+              { label: "Leaderboard" },
+            ]}
+          />
+          <Text fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold" color="white" lineHeight="1.2" alignSelf="center" textAlign="center">
             {round?.name}
           </Text>
         </VStack>
