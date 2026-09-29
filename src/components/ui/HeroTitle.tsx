@@ -2,6 +2,7 @@ import { Box, Heading, Image, Flex } from "@chakra-ui/react";
 import { Link, useLocation } from "react-router-dom";
 import { useCurrentEvent } from "../../context/CurrentEventContext";
 import { isTourneyPath } from "../../helpers/paths";
+import ProfileMenu from "./ProfileMenu/ProfileMenu";
 
 export function HeroTitle() {
   const location = useLocation();
@@ -55,6 +56,11 @@ export function HeroTitle() {
           />
         </Box>
       )}
+
+      {/* Profile Menu in the top-right corner (if logged in) */}
+      <Flex position="absolute" top={0} bottom={0} right={4} align="center" zIndex={2}>
+        <ProfileMenu />
+      </Flex>
 
       {/* Hero Content */}
       <Flex

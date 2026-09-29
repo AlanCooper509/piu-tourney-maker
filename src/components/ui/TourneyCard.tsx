@@ -10,6 +10,7 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
+import { IoPeople } from "react-icons/io5";
 import type { Tourney } from "../../types/Tourney";
 import type { Event } from "../../types/Event";
 import { StatusElement } from "../StatusElement";
@@ -22,6 +23,7 @@ interface TourneyCardProps {
   keyPrefix: string;
   isNested?: boolean;
   adminTourneyIds: number[];
+  organizerNames?: string[];
 }
 
 const TourneyCard: React.FC<TourneyCardProps> = ({
@@ -30,6 +32,7 @@ const TourneyCard: React.FC<TourneyCardProps> = ({
   keyPrefix,
   isNested = false,
   adminTourneyIds,
+  organizerNames,
 }) => {
   const isAdmin = adminTourneyIds.includes(row.id);
 
@@ -117,6 +120,24 @@ const TourneyCard: React.FC<TourneyCardProps> = ({
                   {row.end_date && ` - ${formatDate(row.end_date)}`}
                 </Text>
               </HStack>
+
+              {organizerNames && (
+                <HStack
+                  gap={1.5}
+                  w="100%"
+                  mt={3}
+                  pt={2}
+                  borderTopWidth="1px"
+                  borderColor="gray.700"
+                  fontSize="xs"
+                  color="gray.400"
+                >
+                  <IoPeople style={{ flexShrink: 0 }} />
+                  <Text textAlign="left" lineClamp={1}>
+                    Admins: {organizerNames.length > 0 ? organizerNames.join(", ") : "No tourney organizers"}
+                  </Text>
+                </HStack>
+              )}
             </Flex>
           </HStack>
         </Link>

@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 
 interface DialogFormProps {
   title: string;
-  trigger: ReactNode; // element that opens the dialog
+  trigger?: ReactNode; // element that opens the dialog; omit when opening it from elsewhere via `open`
   formBody: ReactNode;  // form fields
   showSubmit?: boolean;
   isDestructive?: boolean;
@@ -23,9 +23,11 @@ interface DialogFormProps {
 export default function DialogForm({ title, trigger, formBody, showSubmit = true, isDestructive = false, loading = false, open, setOpen, onSubmit, onCancel }: DialogFormProps) {
   return (
     <Dialog.Root open={open} onOpenChange={(details) => setOpen(details.open)} closeOnInteractOutside={false} modal={false}>
-      <Dialog.Trigger asChild>
-        {trigger}
-      </Dialog.Trigger>
+      {trigger && (
+        <Dialog.Trigger asChild>
+          {trigger}
+        </Dialog.Trigger>
+      )}
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner pointerEvents="none">
