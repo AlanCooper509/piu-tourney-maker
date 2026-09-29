@@ -1,4 +1,5 @@
 import handleCheckTourneyStatus from '../../handleCheckTourneyStatus';
+import handleUpdateRoundStatus from '../handleUpdateRoundStatus';
 import { calculateCombinedRoundRankings } from '../../../helpers/calculateCombinedRoundRankings';
 import getStagesInRound from '../../../helpers/getstagesInRound';
 import getPlayersInRound from '../../../helpers/getPlayersInRound';
@@ -25,7 +26,16 @@ export default async function handleEndRound({ tourneyId, round, tourneyType }: 
 
   try {
     const { data: tourneyData } = await handleCheckTourneyStatus(undefined, tourneyId);
-    if (!tourneyData || !tourneyData.tourneys || tourneyData.tourneys.status !== 'In Progress') {
+    const tourneyStatus = tourneyData?.tourneys?.status;
+
+    // A finished tourney's results have already propagated; ending a round here is a TO closing
+    // out a spot-fix (e.g. a hotfixed score), so re-running advancements would re-seed later rounds
+    if (tourneyStatus === 'Complete') {
+      const updatedRound = await handleUpdateRoundStatus(round.id, 'Complete');
+      return { updatedRound, advancementsSkipped: true };
+    }
+
+    if (tourneyStatus !== 'In Progress') {
       throw new Error('Tournament is not in progress. Cannot make modifications.');
     }
 
@@ -51,12 +61,13 @@ export default async function handleEndRound({ tourneyId, round, tourneyType }: 
       sortOrder: index + 1 // 1-based indexing (Rank 1 = sort_order 1)
     }));
 
-    return await executeRoundTransition({
+    const { updatedRound } = await executeRoundTransition({
       tourneyId,
       round,
       tourneyType,
       rankedPlayers
     });
+    return { updatedRound, advancementsSkipped: false };
   } catch (error) {
     console.error('Failed to end round:', error);
     throw error;

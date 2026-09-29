@@ -113,8 +113,8 @@ export async function handlePullRoundResults(
   }
 
   // 3. a round with scores on it is underway, matching what entering a score
-  //    by hand does
-  const nextStatus = scoreRows.length ? "In Progress" : "Ready";
+  //    by hand does; a "Complete" round stays complete, same as hand-entered score fixes
+  const nextStatus = round.status === "Complete" ? "Complete" : scoreRows.length ? "In Progress" : "Ready";
   if (round.status !== nextStatus) {
     const { error: statusError } = await supabaseClient
       .from("rounds")
@@ -138,12 +138,16 @@ export async function handlePullRoundResults(
     } else if (unmapped.length) {
       advanceSkipped = `${unmapped.length} player(s) in the draw have no entry in this round`;
     } else {
-      await handleEndRound({
+      const { advancementsSkipped } = await handleEndRound({
         tourneyId,
         round: { ...round, status: nextStatus },
         tourneyType,
       });
-      advanced = true;
+      if (advancementsSkipped) {
+        advanceSkipped = "the tournament is already complete";
+      } else {
+        advanced = true;
+      }
     }
   }
 

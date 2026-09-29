@@ -28,11 +28,13 @@ export default function EndRoundButton({ round, setRound }: StartRoundButtonProp
     try {
       if (!tourney) return;
       setIsEnding(true);
-      const { updatedRound } = await handleEndRound({ tourneyId: tourney.id, tourneyType: tourney.type ?? null, round });
+      const { updatedRound, advancementsSkipped } = await handleEndRound({ tourneyId: tourney.id, tourneyType: tourney.type ?? null, round });
       setRound({ ...updatedRound[0] });
       toaster.create({
         title: "Round Ended",
-        description: `Round "${round.name}" has now concluded.`,
+        description: advancementsSkipped
+          ? `Round "${round.name}" is complete again. The tournament is already complete, so no players were advanced.`
+          : `Round "${round.name}" has now concluded.`,
         type: "success",
         closable: true,
       });

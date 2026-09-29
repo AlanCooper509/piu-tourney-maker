@@ -47,8 +47,9 @@ export async function handleAddScoreToStage(
     throw insertError;
   }
 
-  // 3. Update the round to "In Progress" if it isn't already there
-  if (currentStatus !== "In Progress") {
+  // 3. Update the round to "In Progress" if it isn't already there. A "Complete" round stays
+  //    complete: scores edited after the fact are TO spot-fixes, not the round resuming
+  if (currentStatus !== "In Progress" && currentStatus !== "Complete") {
     const { error: roundUpdateError } = await supabaseClient
       .from("rounds")
       .update({ status: "In Progress" })
