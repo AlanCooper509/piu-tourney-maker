@@ -108,6 +108,8 @@ export default function EventTourneysList({
 
       {!loading && tourneys.length === 0 && (
         <Box
+          w={{ base: "90%", md: "60%" }}
+          mx="auto"
           p={10}
           textAlign="center"
           bg="gray.900"
