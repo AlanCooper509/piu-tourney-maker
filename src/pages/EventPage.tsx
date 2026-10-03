@@ -35,7 +35,7 @@ function EventPage() {
   // refetch when tourneys change, since creating a tourney also makes its creator a tourney admin
   const { organizers, loading: organizersLoading, addOrganizer } = useEventOrganizers(
     Number(eventId),
-    visibleAdminTourneyIds.length > 0,
+    isEventAdmin || visibleAdminTourneyIds.length > 0,
     tourneys.map((t) => t.id).join(",")
   );
 
