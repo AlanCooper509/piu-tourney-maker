@@ -1,4 +1,4 @@
-import { Field, IconButton, Text, Input, VStack, Select, createListCollection } from "@chakra-ui/react";
+import { Checkbox, Field, IconButton, Text, Input, VStack, Select, createListCollection } from "@chakra-ui/react";
 import { IoAddCircleSharp } from "react-icons/io5";
 
 import onSubmitHandler from "./onSubmitHandler";
@@ -28,6 +28,7 @@ export default function CreateTourneyButton({
   const [tourneyFormat, setFormTourneyFormat] = useState<string[]>([]);
   const [selectedGameId, setSelectedGameId] = useState<string[]>([]);
   const [ddrToolsRoom, setDdrToolsRoom] = useState("");
+  const [linkDdrToolsChecked, setLinkDdrToolsChecked] = useState(false);
 
   const { addTourneyAdminId } = useAdminTourneyContext();
 
@@ -44,30 +45,6 @@ export default function CreateTourneyButton({
       value: game.id.toString(),
     })),
   });
-
-  const onStartDateChange = (val: Date | null) => {
-    setStartDate(val);
-
-    if (val && endDate) {
-      const start = Array.isArray(val) ? val[0] : val;
-      const end = Array.isArray(endDate) ? endDate[0] : endDate;
-      if (end && start && end < start) {
-        setEndDate(start);
-      }
-    }
-  };
-
-  const onEndDateChange = (val: Date | null) => {
-    setEndDate(val);
-
-    if (val && startDate) {
-      const end = Array.isArray(val) ? val[0] : val;
-      const start = Array.isArray(startDate) ? startDate[0] : startDate;
-      if (end && start && start > end) {
-        setStartDate(end);
-      }
-    }
-  };
 
   const button = (
     <IconButton
@@ -134,14 +111,14 @@ export default function CreateTourneyButton({
       <DateTimeInput
         label="Tourney Start"
         value={startDate}
-        onChange={onStartDateChange}
+        onChange={setStartDate}
       />
 
       {/* End DateTimeInput component */}
       <DateTimeInput
         label="Tourney End"
         value={endDate}
-        onChange={onEndDateChange}
+        onChange={setEndDate}
       />
 
       {/* Tourney Type Selector */}
@@ -177,18 +154,33 @@ export default function CreateTourneyButton({
       </Field.Root>
 
       {/* ddr.tools Event Link */}
-      <Field.Root>
-        <Field.Label>ddr.tools Event Link (optional)</Field.Label>
-        <Input
-          value={ddrToolsRoom}
-          onChange={(e) => setDdrToolsRoom(e.target.value)}
-          placeholder="https://ddr.tools/e/my-event"
-        />
-        <Field.HelperText>
-          Lets this tourney pull results from a ddr.tools event room. Can be
-          set or changed later from Edit Tourney Details.
-        </Field.HelperText>
-      </Field.Root>
+      <>
+        <Checkbox.Root
+          checked={linkDdrToolsChecked}
+          onCheckedChange={(e) => {
+            setLinkDdrToolsChecked(!!e.checked);
+            if (!e.checked) setDdrToolsRoom("");
+          }}
+        >
+          <Checkbox.HiddenInput />
+          <Checkbox.Control />
+          <Checkbox.Label>Link to an existing ddr.tools event?</Checkbox.Label>
+        </Checkbox.Root>
+        {linkDdrToolsChecked && (
+          <Field.Root>
+            <Field.Label>ddr.tools Event Link</Field.Label>
+            <Input
+              value={ddrToolsRoom}
+              onChange={(e) => setDdrToolsRoom(e.target.value)}
+              placeholder="https://ddr.tools/e/my-event"
+            />
+            <Field.HelperText>
+              Lets this tourney pull results from a ddr.tools event room. Can be
+              set or changed later from Edit Tourney Details.
+            </Field.HelperText>
+          </Field.Root>
+        )}
+      </>
     </VStack>
   );
 
@@ -199,6 +191,7 @@ export default function CreateTourneyButton({
     setFormTourneyFormat([]);
     setSelectedGameId([]);
     setDdrToolsRoom("");
+    setLinkDdrToolsChecked(false);
   }
 
   return (
