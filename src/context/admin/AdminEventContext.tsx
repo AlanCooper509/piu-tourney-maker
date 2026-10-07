@@ -22,6 +22,12 @@ export function AdminEventProvider({ children }: { children: ReactNode }) {
   );
 }
 
+export function useAdminEventContext() {
+  const context = useContext(AdminEventContext);
+  if (!context) throw new Error("useAdminEventContext must be used within AdminEventProvider");
+  return context;
+}
+
 export function useIsAdminForEvent(eventId: number) {
   const context = useContext(AdminEventContext);
   if (!context) throw new Error("useIsAdminForEvent must be used within AdminEventProvider");

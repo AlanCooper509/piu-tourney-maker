@@ -13,7 +13,7 @@ import "swiper/css/pagination";
 
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import { useHomeEvents } from "../hooks/useHomeEvents";
-import { getAdminTourneyIds } from "../hooks/AdminTourneyHelpers";
+import { useAdminTourneyContext } from "../context/admin/AdminTourneyContext";
 import { SpotlightEventItem } from "../components/home/SpotlightEventItem";
 
 import type { Event } from "../types/Event";
@@ -36,7 +36,7 @@ const staggerContainer = {
 function HomePage() {
   const { data: events, loading, error } = getSupabaseTable<Event>("events");
   const { data: tourneys } = getSupabaseTable<Tourney>("tourneys");
-  const { adminTourneyIds } = getAdminTourneyIds();
+  const { adminTourneyIds } = useAdminTourneyContext();
   const { filteredEvents, sortedSpotlightEvents, eventTourneyMap } = useHomeEvents(events, tourneys);
 
   if (loading) return <Text fontSize="xl" mt={8}>Loading...</Text>;
