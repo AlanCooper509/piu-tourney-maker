@@ -10,7 +10,7 @@ import RoundPage from "./pages/RoundPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import ChartRollPage from "./pages/ChartRollPage.tsx";
 import StreamHelper from "./pages/StreamHelper.tsx";
-import StreamViewer from "./pages/StreamViewer.tsx";
+import StreamSource from "./pages/StreamSource.tsx";
 import { HeroTitle } from "./components/ui/HeroTitle";
 import { CurrentTourneyProvider } from "./context/CurrentTourneyContext.tsx";
 import { CurrentEventProvider } from "./context/CurrentEventContext.tsx";
@@ -19,11 +19,11 @@ import { AdminEventProvider } from "./context/admin/AdminEventContext.tsx";
 
 import "./App.css";
 
-// Matched against the current path to detect the OBS-facing Stream Viewer
-// route, which must render as bare, transparent content with none of the
+// Matched against the current path to detect the OBS-facing stream source
+// routes, which must render as bare, transparent content with none of the
 // app chrome below (header, footer, page background) so a Browser Source
 // pointed at it composites cleanly with nothing but the overlay itself.
-const STREAM_VIEWER_PATH = "/tourney/:tourneyId/StreamViewer";
+const STREAM_SOURCE_PATH = "/tourney/:tourneyId/source/*";
 
 // Each tourney page is routed both as /tourney/... (the original form, kept so existing links
 // keep working) and as /event/:eventId/tourney/..., which lets a page know its event up front.
@@ -32,6 +32,7 @@ const tourneyRoutes = [
   { path: "tourney/:tourneyId/round/:roundId", element: <RoundPage /> },
   { path: "tourney/:tourneyId/round/:roundId/leaderboard", element: <LeaderboardPage /> },
   { path: "tourney/:tourneyId/round/:roundId/stage/:stageId/roll", element: <ChartRollPage /> },
+  { path: "tourney/:tourneyId/StreamHelper", element: <StreamHelper /> },
 ];
 
 const appRoutes = (
@@ -43,30 +44,26 @@ const appRoutes = (
     ])}
     <Route path="/login" element={<LoginPage />} />
     <Route path="/event/:eventId" element={<EventPage />} />
-    <Route
-      path="/tourney/:tourneyId/StreamHelper"
-      element={<StreamHelper />}
-    />
-    <Route path={STREAM_VIEWER_PATH} element={<StreamViewer />} />
+    <Route path={STREAM_SOURCE_PATH} element={<StreamSource />} />
   </Routes>
 );
 
 function AppRoutes() {
   const location = useLocation();
-  const isStreamViewer = Boolean(
-    matchPath(STREAM_VIEWER_PATH, location.pathname),
+  const isStreamSource = Boolean(
+    matchPath(STREAM_SOURCE_PATH, location.pathname),
   );
 
-  if (isStreamViewer) {
+  if (isStreamSource) {
     return appRoutes;
   }
 
   return (
     <Box bg="gray.900" color="white" minH="100vh" className="dark">
-      {/* HeroTitle Card on all pages except Stream Viewer */}
+      {/* HeroTitle Card on all pages except stream sources */}
       <HeroTitle />
       {appRoutes}
-      {/* Footer on all pages except Stream Viewer */}
+      {/* Footer on all pages except stream sources */}
       <Separator mt={8} mb={8} />
 
       <Box w="100%" py={100}>

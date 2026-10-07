@@ -24,14 +24,19 @@ interface StreamRoundRowProps {
   round: Round;
   players: PlayerRound[];
   streamRoundId: number | null;
+  // Lanes per heat until the user picks one (e.g. 2 for Double Elimination).
+  defaultHeatCapacity?: 2 | 4;
 }
 
 export function StreamRoundRow({
   round,
   players,
   streamRoundId,
+  defaultHeatCapacity = 4,
 }: StreamRoundRowProps) {
-  const [heatCapacity, setHeatCapacity] = useState<2 | 4>(4);
+  // null until picked, so the default can follow the tourney once it loads.
+  const [pickedHeatCapacity, setHeatCapacity] = useState<2 | 4 | null>(null);
+  const heatCapacity = pickedHeatCapacity ?? defaultHeatCapacity;
   const [targetHeatCount, setTargetHeatCount] = useState(1);
 
   const isFinished = round.status === "Complete";

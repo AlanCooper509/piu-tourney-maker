@@ -18,55 +18,9 @@ export function useRoundStreamData(
   const [roundPools, setRoundPools] = useState<RoundPool[]>([]);
   const [playerRounds, setPlayerRounds] = useState<PlayerRound[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
-
-  async function fetchPlayerRounds() {
-    const { data: playerTourneys, error: playerTourneysError } =
-      await supabaseClient
-        .from("player_tourneys")
-        .select("id")
-        .eq("tourney_id", tourneyId);
-
-    if (playerTourneysError) {
-      console.error(
-        "Error fetching player tourneys:",
-        playerTourneysError,
-      );
-      return;
-    }
-
-    if (!playerTourneys || playerTourneys.length === 0) {
-      setPlayerRounds([]);
-      return;
-    }
-
-    const playerTourneyIds = playerTourneys.map(
-      (pt) => pt.id,
-    );
-
-    const { data, error } = await supabaseClient
-      .from("player_rounds")
-      .select(`
-        *,
-        player_tourneys(
-          player_name,
-          seed,
-          player_img
-        )
-      `)
-      .in("player_tourney_id", playerTourneyIds);
-
-    if (error) {
-      console.error(
-        "Error fetching player rounds:",
-        error,
-      );
-      return;
-    }
-
-    if (data) {
-      setPlayerRounds(data as PlayerRound[]);
-    }
-  }
+  // Stages of the round the current one carries over from (e.g. a Waterfall
+  // redemption round), so stream rankings can match the leaderboard's.
+  const [carryOverStages, setCarryOverStages] = useState<Stage[]>([]);
 
   useEffect(() => {
     async function fetchTourney() {
@@ -119,6 +73,55 @@ export function useRoundStreamData(
   }, [tourneyId, channelIdPrefix]);
 
   useEffect(() => {
+    async function fetchPlayerRounds() {
+      const { data: playerTourneys, error: playerTourneysError } =
+        await supabaseClient
+          .from("player_tourneys")
+          .select("id")
+          .eq("tourney_id", tourneyId);
+
+      if (playerTourneysError) {
+        console.error(
+          "Error fetching player tourneys:",
+          playerTourneysError,
+        );
+        return;
+      }
+
+      if (!playerTourneys || playerTourneys.length === 0) {
+        setPlayerRounds([]);
+        return;
+      }
+
+      const playerTourneyIds = playerTourneys.map(
+        (pt) => pt.id,
+      );
+
+      const { data, error } = await supabaseClient
+        .from("player_rounds")
+        .select(`
+          *,
+          player_tourneys(
+            player_name,
+            seed,
+            player_img
+          )
+        `)
+        .in("player_tourney_id", playerTourneyIds);
+
+      if (error) {
+        console.error(
+          "Error fetching player rounds:",
+          error,
+        );
+        return;
+      }
+
+      if (data) {
+        setPlayerRounds(data as PlayerRound[]);
+      }
+    }
+
     async function fetchRoundsAndPlayers() {
       const {
         data: roundsData,
@@ -345,11 +348,14 @@ export function useRoundStreamData(
     );
   }, [rounds]);
 
+  const carryOverRoundId = currentRound?.carry_over_round_id ?? null;
+
   useEffect(() => {
     const currentRoundId = currentRound?.id;
 
     if (!currentRoundId) {
       setStages([]);
+      setCarryOverStages([]);
       return;
     }
 
@@ -359,6 +365,17 @@ export function useRoundStreamData(
         setStages(data as Stage[]);
       } catch (error) {
         console.error("Error fetching stages:", error);
+      }
+
+      if (!carryOverRoundId) {
+        setCarryOverStages([]);
+        return;
+      }
+      try {
+        const carryOverData = await getStagesInRound(carryOverRoundId);
+        setCarryOverStages(carryOverData as Stage[]);
+      } catch (error) {
+        console.error("Error fetching carry-over stages:", error);
       }
     }
 
@@ -401,7 +418,7 @@ export function useRoundStreamData(
       supabaseClient.removeChannel(scoresChannel);
       supabaseClient.removeChannel(stagesChannel);
     };
-  }, [currentRound?.id, channelIdPrefix]);
+  }, [currentRound?.id, carryOverRoundId, channelIdPrefix]);
 
   return {
     tourney,
@@ -411,6 +428,7 @@ export function useRoundStreamData(
     currentRound,
     playerRounds,
     stages,
+    carryOverStages,
     setRounds,
   };
 }

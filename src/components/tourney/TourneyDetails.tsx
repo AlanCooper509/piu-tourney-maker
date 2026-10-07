@@ -14,6 +14,7 @@ import EditTourneyDetails from "./EditTourneyDetails";
 import GenerateBracketButton from "./GenerateBracketButton/GenerateBracketButton";
 import GenerateSingleStreamBracketButton from "./GenerateSingleStreamBracket/GenerateSingleStreamBracketButton";
 import PullFromDdrToolsButton from "./PullFromDdrToolsButton/PullFromDdrToolsButton";
+import StreamHelperLinkButton from "./StreamHelperLinkButton";
 import { handleUpdateTourneyDetails } from "../../handlers/handleUpdateTourneyDetails";
 import { handleDeleteRoundsInTourney } from "../../handlers/round/handleDeleteRoundsInTourney";
 import { handleDeleteRoundPoolsInTourney } from "../../handlers/round/handleDeleteRoundPoolsInTourney";
@@ -48,7 +49,6 @@ export function TourneyDetails({
   );
   const { data: gamesData } = getSupabaseTable<Game>("games");
   const gameName = gamesData.find((g) => g.id === tourney?.game_id)?.name;
-  // const navigate = useNavigate(); // for StreamHelper, currently disabled
   const [updatingName, setUpdatingName] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
 
@@ -153,19 +153,7 @@ export function TourneyDetails({
                       )}
                     </>
                   )}
-                  {/*
-                    <Button
-                      colorPalette="purple"
-                      variant="outline"
-                      borderWidth={2}
-                      size="sm"
-                      onClick={() =>
-                        navigate(`/tourney/${tourney.id}/StreamHelper`)
-                      }
-                    >
-                      Stream Helper
-                    </Button>
-                  */}
+                  <StreamHelperLinkButton tourney={tourney} />
                   {tourney?.status === "In Progress" && tourney?.ddrtools_room && (
                     <PullFromDdrToolsButton rounds={rounds} />
                   )}

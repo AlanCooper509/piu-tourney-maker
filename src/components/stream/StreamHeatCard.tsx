@@ -15,6 +15,7 @@ import {
   useFilter,
   useListCollection,
 } from "@chakra-ui/react";
+import { BroadcastLabel } from "./BroadcastLabel";
 import { PlayerAvatar } from "../PlayerAvatar";
 import type { PlayerRound } from "../../types/PlayerRound";
 import type { Round, StreamState } from "../../types/Round";
@@ -105,7 +106,12 @@ export function StreamHeatCard({
 
   // Broadcast status helpers
   const isLiveHeat = isActiveStreamRound && Number(activeStreamState?.heat) === Number(heatNum);
-  const currentActiveLanes = activeStreamState?.lanes ?? [];
+  // Memoized so the `?? []` fallback isn't a fresh array (and a changed
+  // dependency for currentPairValue below) on every render.
+  const currentActiveLanes = useMemo(
+    () => activeStreamState?.lanes ?? [],
+    [activeStreamState?.lanes],
+  );
   const isFlipped = activeStreamState?.reverse_order ?? false;
 
   // Determine current active lane key array for Chakra Select ([value])
@@ -187,9 +193,7 @@ export function StreamHeatCard({
               onClick={(e) => e.stopPropagation()}
             >
               <Flex align="center" gap={1.5}>
-                <Text fontSize="xs" opacity={0.7} fontWeight="bold" whiteSpace="nowrap">
-                  Broadcast:
-                </Text>
+                <BroadcastLabel withColon fontSize="xs" opacity={0.7} fontWeight="bold" />
 
                 {heatCapacity === 4 ? (
                   <Select.Root

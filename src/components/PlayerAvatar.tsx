@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Image, Box, type BoxProps } from "@chakra-ui/react";
+import { Image, type BoxProps } from "@chakra-ui/react";
 
 interface PlayerAvatarProps extends Omit<BoxProps, "as" | "src"> {
   src: string | null | undefined;
@@ -8,10 +8,10 @@ interface PlayerAvatarProps extends Omit<BoxProps, "as" | "src"> {
 }
 
 /**
- * Renders a player's profile picture at a fixed square size, falling back
- * to a grey placeholder box whenever there's no picture set OR the URL
- * fails to actually load (deleted file, bad URL, host throttling, etc.) —
- * so a broken link never shows a broken-image icon on stream.
+ * Renders a player's profile picture at a fixed square size, or nothing at all
+ * when there's no picture set OR the URL fails to load (deleted file, bad URL,
+ * host throttling, etc.), so the name stands alone instead of beside an empty
+ * box or a broken-image icon.
  */
 export function PlayerAvatar({ src, alt, size, ...rest }: PlayerAvatarProps) {
   const [failed, setFailed] = useState(false);
@@ -22,11 +22,7 @@ export function PlayerAvatar({ src, alt, size, ...rest }: PlayerAvatarProps) {
     setFailed(false);
   }, [src]);
 
-  if (!src || failed) {
-    return (
-      <Box flexShrink={0} width={size} height={size} bg="gray.500" {...rest} />
-    );
-  }
+  if (!src || failed) return null;
 
   return (
     <Image
