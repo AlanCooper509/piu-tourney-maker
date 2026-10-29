@@ -1,79 +1,34 @@
-import { Box, Heading, Image, Flex } from "@chakra-ui/react";
-import { Link, useLocation } from "react-router-dom";
-import { useCurrentEvent } from "../../context/CurrentEventContext";
-import { isTourneyPath } from "../../helpers/paths";
+import { Box, Flex, Heading } from "@chakra-ui/react";
+import { Link } from "react-router-dom";
 import ProfileMenu from "./ProfileMenu/ProfileMenu";
 
+// Exported so page-specific heroes (e.g. TourneyHeroBanner) can fall back to
+// the same image as a last resort instead of duplicating the literal URL.
+export const DEFAULT_BANNER = "https://pbs.twimg.com/media/HHI5IPebQAAJnjf?format=webp&name=large";
+
+// Deliberately just a slim, basic bar — a big photo-hero here never
+// actually said anything about which page you were on, since it looked
+// the same everywhere. Pages that benefit from their own "you are here"
+// graphic (e.g. TourneyPage via TourneyHeroBanner) carry that themselves,
+// right below this constant, site-wide landmark.
 export function HeroTitle() {
-  const location = useLocation();
-  const { event } = useCurrentEvent();
-
-  // EventPage already renders the event's own hero via SpotlightEventItem,
-  // so this bar only takes on the event's identity for tourney sub-pages —
-  // on the event page itself it stays the default, linking back home.
-  const isTourneySubRoute = isTourneyPath(location.pathname);
-  const activeBanner = isTourneySubRoute ? event?.hero_img : "https://preview.redd.it/pump-it-up-phoenix-2024-v0-wingd1wryw0d1.jpeg?auto=webp&s=00bf42c49d7b475464de9f65df97374e4ebbfd49";
-  const activeTitle = isTourneySubRoute ? event?.name : "Blame The Pads";
-  const heroLinkTo = isTourneySubRoute && event ? `/event/${event.id}` : "/";
-
   return (
     <Box
       as="header"
       w="100%"
       bg="gray.800"
       borderBottom="1px solid"
-      borderColor="gray.800"
-      py={6}
+      borderColor="gray.700"
+      py={3}
       px={4}
-      mb={1}
       position="relative"
-      overflow="hidden"
     >
-      {/* Background Banner Image with Gradient Overlay */}
-      {activeBanner && (
-        <Box
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          zIndex={0}
-        >
-          <Image
-            src={activeBanner}
-            alt="Hero Banner"
-            w="100%"
-            h="100%"
-            objectFit="cover"
-            opacity={0.3}
-          />
-          <Box
-            position="absolute"
-            inset={0}
-            bgGradient="to-b"
-            gradientFrom="transparent"
-            gradientTo="gray.900"
-          />
-        </Box>
-      )}
-
-      {/* Profile Menu in the top-right corner (if logged in) */}
-      <Flex position="absolute" top={0} bottom={0} right={4} align="center" zIndex={2}>
-        <ProfileMenu />
-      </Flex>
-
-      {/* Hero Content */}
-      <Flex
-        direction="column"
-        align="center"
-        justify="center"
-        position="relative"
-        zIndex={1}
-        maxW="1200px"
-        mx="auto"
-        textAlign="center"
-      >
-        <Link to={heroLinkTo}>
+      {/* Title centered on the bar itself (not just the space left over
+          after ProfileMenu) — ProfileMenu sits absolutely in its own
+          corner instead of sharing a flex row with it, same trick the
+          original hero used before this bar was slimmed down. */}
+      <Flex justify="center" maxW="1200px" mx="auto">
+        <Link to="/">
           <Heading
             as="h1"
             fontSize={{ base: "2xl", md: "4xl" }}
@@ -83,9 +38,13 @@ export function HeroTitle() {
             _hover={{ color: "cyan.focusRing" }}
             transition="color 0.2s"
           >
-            {activeTitle || "Blame The Pads"}
+            Blame The Pads
           </Heading>
         </Link>
+      </Flex>
+
+      <Flex position="absolute" top={0} bottom={0} right={4} align="center">
+        <ProfileMenu />
       </Flex>
     </Box>
   );

@@ -42,7 +42,11 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
         bgRepeat="no-repeat"
         bgSize="cover"
         overflow="hidden"
-        borderRadius="2xl"
+        // Rounded corners read as intentional inside the HomePage carousel
+        // (showButton=true), but on a standalone full-width hero (EventPage,
+        // TourneyPage, RoundPage — showButton=false) they instead read as
+        // an accident, since nothing else on the page is "card"-shaped.
+        borderRadius={showButton ? "2xl" : "none"}
       >
         {/* Shared Overlay */}
         <Box
@@ -86,7 +90,11 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
             base: "rgba(26, 32, 44, 0.60)", // gray.800 equivalent with alpha
             lg: "rgba(0, 0, 0, 0.0)"        // no effect for desktop (can experiment with opacity later)
           }}
-          borderRadius={{ base: "2xl", lg: "none" }}
+          // Same reasoning as the outer Flex's borderRadius: rounded only
+          // makes sense inside the HomePage carousel (showButton=true) —
+          // on a standalone hero this mobile info panel should match the
+          // image's now-square corners instead of rounding on its own.
+          borderRadius={showButton ? { base: "2xl", lg: "none" } : "none"}
           textShadow={HERO_TEXT_SHADOW}
         >
           <HStack align="center" gap={1}>
