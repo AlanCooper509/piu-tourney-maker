@@ -2,11 +2,6 @@ import { Box, Flex, Heading } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import ProfileMenu from "./ProfileMenu/ProfileMenu";
 
-// Deliberately just a slim, basic bar — a big photo-hero here never
-// actually said anything about which page you were on, since it looked
-// the same everywhere. Pages that benefit from their own "you are here"
-// graphic (e.g. TourneyPage via TourneyHeroBanner) carry that themselves,
-// right below this constant, site-wide landmark.
 export function HeroTitle() {
   return (
     <Box
@@ -19,10 +14,6 @@ export function HeroTitle() {
       px={4}
       position="relative"
     >
-      {/* Title centered on the bar itself (not just the space left over
-          after ProfileMenu) — ProfileMenu sits absolutely in its own
-          corner instead of sharing a flex row with it, same trick the
-          original hero used before this bar was slimmed down. */}
       <Flex justify="center" maxW="1200px" mx="auto">
         <Link to="/">
           <Heading
