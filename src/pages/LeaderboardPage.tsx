@@ -1,7 +1,7 @@
 import { Box, VStack, HStack, Text, useBreakpointValue, Button, Spacer, Tag, Container, Separator } from "@chakra-ui/react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { supabaseClient } from "../lib/supabaseClient";
 
 import getSupabaseTable from "../hooks/getSupabaseTable";
@@ -294,7 +294,10 @@ function Leaderboard() {
   const roundFilterValue = roundId ?? -1;
   const tourneyFilterValue = tourneyId ?? -1;
 
-  const [round, setRound] = useState<Round | null>(null);
+  // RoundPage's leaderboard link passes its already-loaded round along, so the page renders it right away
+  const { state: navState } = useLocation();
+  const passedRound = (navState as { round?: Round | null } | null)?.round;
+  const [round, setRound] = useState<Round | null>(passedRound?.id === activeRoundId ? passedRound : null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [tourneyPlayers, setTourneyPlayers] = useState<PlayerTourney[]>([]);
   const [updatedPlayer, setUpdatedPlayer] = useState<string | null>(null);
@@ -313,15 +316,16 @@ function Leaderboard() {
   const { data: stagesData, refetch: refetchStages } = getSupabaseTable<Stage>("stages", { column: "round_id", value: roundFilterValue }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
   const { data: tourneyPlayersData } = getSupabaseTable<PlayerTourney>("player_tourneys", { column: "tourney_id", value: tourneyFilterValue });
   const { data: tourneysData } = getSupabaseTable<Tourney>("tourneys", { column: "id", value: tourneyFilterValue });
-  const tourneyName = tourneysData?.[0]?.name;
   const { tourney: contextTourney } = useCurrentTourney();
-  // banner uses the tourney already in context (e.g. coming from RoundPage) until this page's own fetch lands
+  // banner + breadcrumb use the tourney already in context (e.g. coming from RoundPage) until this page's own fetch lands
   const bannerTourney = tourneysData?.[0]
     ?? (contextTourney && String(contextTourney.id) === tourneyId ? contextTourney : null);
   // the URL's event (if any) shows immediately; the loaded tourney's own event wins if they differ
   const eventId = tourneysData?.[0]?.event_id ?? (urlEventId ? Number(urlEventId) : undefined);
   useSyncEventForTourney(eventId);
   const { event } = useCurrentEvent();
+  // context can still hold a previously visited event until the sync hook catches up
+  const parentEvent = event && eventId != null && event.id === eventId ? event : null;
   const { data: carryOverPlayersData } = getSupabaseTable<PlayerRound>("player_rounds", { column: "round_id", value: carryOverRoundId ?? -1 }, "*, player_tourneys(player_name, seed)");
   const { data: carryOverStagesData, refetch: refetchCarryOverStages } = getSupabaseTable<Stage>("stages", { column: "round_id", value: carryOverRoundId ?? -1 }, "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)");
 
@@ -565,19 +569,19 @@ function Leaderboard() {
     <Box mt={4}>
       <TourneyHeroBanner tourney={bannerTourney} />
       <Container maxW="8xl">
-        <VStack w="100%" align="center" mt={6} pb={bottomPadding}>
-          {/* Breadcrumb back to the tourney / round, then the round as the page title */}
-          <VStack w={cardWidth} align="start" gap={3} mb={2}>
+        <VStack w="100%" align="center" pb={bottomPadding}>
+          <VStack w={cardWidth} align="center" gap={3} mb={2} visibility={round ? "visible" : "hidden"}>
             <PageBreadcrumb
+              justify="center"
               items={[
-                ...(event ? [{ label: event.name, to: `/event/${event.id}` }] : []),
-                { label: tourneyName ?? "Tourney", to: tourneyPath(tourneyId, eventId) },
+                ...(parentEvent ? [{ label: parentEvent.name, to: `/event/${parentEvent.id}` }] : []),
+                { label: bannerTourney?.name ?? "Tourney", to: tourneyPath(tourneyId, eventId) },
                 { label: round?.name ?? "Round", to: roundPath(tourneyId, roundId, eventId) },
                 { label: "Leaderboard" },
               ]}
             />
             <Text fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold" color="white" lineHeight="1.2" alignSelf="center" textAlign="center">
-              {round?.name}
+              {round?.name ?? " "}
             </Text>
           </VStack>
   

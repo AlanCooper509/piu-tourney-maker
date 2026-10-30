@@ -9,7 +9,7 @@ import LeaderboardPage from "./pages/LeaderboardPage.tsx";
 import RoundPage from "./pages/RoundPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import ChartRollPage from "./pages/ChartRollPage.tsx";
-import StreamHelper from "./pages/StreamHelper.tsx";
+import StreamHelperPage from "./pages/StreamHelperPage.tsx";
 import StreamSource from "./pages/StreamSource.tsx";
 import { HeroTitle } from "./components/ui/HeroTitle";
 import { CurrentTourneyProvider } from "./context/CurrentTourneyContext.tsx";
@@ -32,7 +32,7 @@ const tourneyRoutes = [
   { path: "tourney/:tourneyId/round/:roundId", element: <RoundPage /> },
   { path: "tourney/:tourneyId/round/:roundId/leaderboard", element: <LeaderboardPage /> },
   { path: "tourney/:tourneyId/round/:roundId/stage/:stageId/roll", element: <ChartRollPage /> },
-  { path: "tourney/:tourneyId/StreamHelper", element: <StreamHelper /> },
+  { path: "tourney/:tourneyId/StreamHelper", element: <StreamHelperPage /> },
 ];
 
 const appRoutes = (

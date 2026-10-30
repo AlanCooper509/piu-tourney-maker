@@ -228,6 +228,11 @@ function RoundPage() {
     }
   }, [queriedStagesInRound]);
 
+  const playersOrStagesPending =
+    loadingPlayersInRound || loadingStagesInRound ||
+    (queriedPlayersInRound.length > 0 && players.length === 0) ||
+    (queriedStagesInRound.length > 0 && stages.length === 0);
+
   // Sync carry-over round players/stages when their queried data changes
   useEffect(() => {
     if (!carryOverRoundId) return;
@@ -717,6 +722,7 @@ function RoundPage() {
         roundAdvancements={roundAdvancements}
         players={players}
         stages={stages}
+        loadingPlayersOrStages={playersOrStagesPending}
         loading={loadingRounds}
         error={errorRounds}
         tourneyId={Number(tourneyId)}

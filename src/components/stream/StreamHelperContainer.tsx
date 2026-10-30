@@ -75,12 +75,13 @@ export function StreamHelperContainer({
   const defaultHeatCapacity = tourney?.type === "Double Elimination" ? 2 : 4;
 
   return (
-    <Container maxW="container.md" pt={8} pb={10}>
+    <Container maxW="container.md" pb={10}>
       <TourneyHeaderText
         rounds={sortedRounds}
         setRounds={setRounds}
         currentRoundId={NaN}
         roundPools={roundPools}
+        currentPageLabel="Stream Helper"
       />
 
       <Separator mt={2} mb={4} />

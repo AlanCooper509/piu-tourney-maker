@@ -33,13 +33,15 @@ interface TourneyHeaderTextProps {
   setRounds: React.Dispatch<React.SetStateAction<Round[]>>;
   currentRoundId: number;
   roundPools: RoundPool[] | null;
+  currentPageLabel?: string;
 }
 
 export default function TourneyHeaderText({
   rounds,
   setRounds,
   currentRoundId,
-  roundPools
+  roundPools,
+  currentPageLabel
 }: TourneyHeaderTextProps) {
   const navigate = useNavigate();
   const { tourney } = useCurrentTourney();
@@ -62,12 +64,14 @@ export default function TourneyHeaderText({
     }),
   });
 
-  // Event › Tourney on the tourney page, Event › Tourney › Round on a round page
+  // Event › Tourney on the tourney page, Event › Tourney › Round on a round page,
+  // Event › Tourney › <currentPageLabel> on other tourney-level pages
   const currentRound = rounds.find(r => r.id === currentRoundId);
+  const lastCrumb = currentRound?.name ?? currentPageLabel;
   const breadcrumbItems: BreadcrumbItem[] = [
     ...(event ? [{ label: event.name, to: `/event/${event.id}` }] : []),
-    { label: tourney?.name ?? "Tourney", to: currentRound ? tourneyPath(tourneyIdForPaths, eventIdForPaths) : undefined },
-    ...(currentRound ? [{ label: currentRound.name }] : []),
+    { label: tourney?.name ?? "Tourney", to: lastCrumb ? tourneyPath(tourneyIdForPaths, eventIdForPaths) : undefined },
+    ...(lastCrumb ? [{ label: lastCrumb }] : []),
   ];
 
   // setup for previous and next round navigation
