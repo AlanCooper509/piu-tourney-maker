@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Box, Card, Center, Heading, HStack, IconButton, SegmentGroup, Text } from "@chakra-ui/react";
+import { Box, Card, Center, Collapsible, Heading, HStack, IconButton, SegmentGroup, Text } from "@chakra-ui/react";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperClass } from "swiper/types";
@@ -33,6 +33,7 @@ export default function BracketCarousel({
   const swiperRef = useRef<SwiperClass | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [highlightedRoundId, setHighlightedRoundId] = useState<number | null>(null);
+  const [isOpen, setIsOpen] = useState(true);
   const lastIndexBySide = useRef<{ winners?: number; losers?: number }>({});
   const { tourney } = useCurrentTourney();
   const { isTourneyAdmin, loadingTourneyAdminStatus } = useIsAdminForTourney(tourney?.id ?? undefined);
@@ -105,16 +106,44 @@ export default function BracketCarousel({
   const activeSide = phases[activeIndex]?.isLosers ? "losers" : "winners";
 
   // same header layout as the Players / Rulesets columns beside it (heading left for admins, centered otherwise)
+  // Swiper measured 0 width while collapsed, so re-measure on reopen (now, and once the open animation ends)
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) return;
+    requestAnimationFrame(() => swiperRef.current?.update());
+    window.setTimeout(() => swiperRef.current?.update(), 300);
+  };
+
   const header = (
     <HStack
-      mb={3}
+      mb={isOpen ? 3 : 0}
       justifyContent={showsAdminControls ? "flex-start" : "center"}
       alignItems="center"
       px={1}
       minHeight={showsAdminControls ? "36px" : "24px"}
     >
-      <Heading size="md" color="gray.200">Bracket</Heading>
+      {/* same chevron toggle as the Players / Rulesets / Round Pools sections */}
+      <Collapsible.Trigger asChild cursor="pointer">
+        <HStack gap={2}>
+          <IoChevronForward
+            style={{
+              transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+              transition: "transform 0.2s ease",
+            }}
+          />
+          <Heading size="md" color="gray.200">Bracket</Heading>
+        </HStack>
+      </Collapsible.Trigger>
     </HStack>
+  );
+
+  const collapsibleSection = (body: React.ReactNode) => (
+    <Box w="100%" maxW="md" mx="auto" position="relative">
+      <Collapsible.Root open={isOpen} onOpenChange={(details) => handleOpenChange(details.open)}>
+        {header}
+        <Collapsible.Content>{body}</Collapsible.Content>
+      </Collapsible.Root>
+    </Box>
   );
 
   const sideToggle = hasLosersSide && (
@@ -179,21 +208,17 @@ export default function BracketCarousel({
   );
 
   if (loadingAdvancements || phases.length === 0) {
-    return (
-      <Box w="100%" maxW="md">
-        {header}
-        <Center py={10} w="100%">
-          <Text color="fg.muted" fontStyle="italic">
-            {loadingAdvancements ? "Loading bracket..." : "No bracket rounds yet."}
-          </Text>
-        </Center>
-      </Box>
+    return collapsibleSection(
+      <Center py={10} w="100%">
+        <Text color="fg.muted" fontStyle="italic">
+          {loadingAdvancements ? "Loading bracket..." : "No bracket rounds yet."}
+        </Text>
+      </Center>
     );
   }
 
-  return (
-    <Box w="100%" maxW="md" position="relative">
-      {header}
+  return collapsibleSection(
+    <>
       {/* same card style as the Players list and Rulesets cards, so all three columns start at the same line */}
       <Card.Root variant="outline" size="sm" mb={1}>
         <Card.Body gap={3}>
@@ -224,6 +249,6 @@ export default function BracketCarousel({
           </SwiperSlide>
         ))}
       </Swiper>
-    </Box>
+    </>
   );
 }

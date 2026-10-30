@@ -1,4 +1,5 @@
-import { Box, Center, Heading, HStack, Text, VStack, Card } from '@chakra-ui/react';
+import { Box, Center, Collapsible, Heading, HStack, Text, VStack, Card } from '@chakra-ui/react';
+import { IoChevronForward } from 'react-icons/io5';
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 
 import AddPlayer from '../../players/AddPlayer';
@@ -24,6 +25,8 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
   const [addingPlayer, setAddingPlayer] = useState(false);
   const [newName, setNewName] = useState("");
   
+  // starts collapsed when the columns stack (below Chakra's lg breakpoint, 1024px), open on desktop
+  const [isOpen, setIsOpen] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -42,7 +45,7 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
       }
     }, 50);
     return () => clearTimeout(timer);
-  }, [players]);
+  }, [players, isOpen]); // re-measure on open; while collapsed the list has no height to measure
 
   const onAddPlayer = async (name: string, seed: number | null) => {
     if (!tourney) return;    
@@ -123,92 +126,111 @@ export function SidebarTourneyPlayersList({ players, setPlayers, loading, error 
 
   return (
     <Box 
-      w={{ base: "90%", lg: "300px" }}
-      minW={{ md: "180px", lg: "300px" }}
+      w={{ base: "100%", lg: "300px", xl: "340px" }} // 340 only from xl: at lg (1024) three columns have no room for it
+      maxW={{ base: "md", lg: "300px", xl: "340px" }} // stacked below lg: same width as the Bracket / Rulesets columns, centered
+      mx={{ base: "auto", lg: 0 }}
+      minW={{ md: "180px", lg: "300px", xl: "340px" }}
       h="fit-content"
     >
-      <HStack mb={3} justifyContent={!loadingTourneyAdminStatus && isTourneyAdmin ? "space-between" : "center"} alignItems="center" px={1}>
-        <Heading size="md" color="gray.200">Players</Heading>
-        {!loadingTourneyAdminStatus && isTourneyAdmin && (
-          <HStack gap={2}>
-            <AddPlayer
-              onAdd={onAddPlayer}
-              newName={newName}
-              setNewName={setNewName}
-              loading={addingPlayer}
-            />
-            <BulkAddPlayers
-              onBulkAdd={onBulkAddPlayers}
-              existingPlayerNames={existingPlayerNames}
-              loading={addingPlayer}
-            />
-          </HStack>
-        )}
-      </HStack>
+      <Collapsible.Root open={isOpen} onOpenChange={(details) => setIsOpen(details.open)}>
+        <HStack mb={isOpen ? 3 : 0} justifyContent={!loadingTourneyAdminStatus && isTourneyAdmin ? "space-between" : "center"} alignItems="center" px={1}>
+          {/* same chevron toggle as the Round Pools section */}
+          <Collapsible.Trigger asChild cursor="pointer">
+            <HStack gap={2}>
+              <IoChevronForward
+                style={{
+                  transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease',
+                }}
+              />
+              <Heading size="md" color="gray.200" whiteSpace="nowrap">
+                  Players ({sortedPlayers.length})
+                </Heading>
+            </HStack>
+          </Collapsible.Trigger>
+          {!loadingTourneyAdminStatus && isTourneyAdmin && (
+            <HStack gap={2}>
+              <AddPlayer
+                onAdd={onAddPlayer}
+                newName={newName}
+                setNewName={setNewName}
+                loading={addingPlayer}
+              />
+              <BulkAddPlayers
+                onBulkAdd={onBulkAddPlayers}
+                existingPlayerNames={existingPlayerNames}
+                loading={addingPlayer}
+              />
+            </HStack>
+          )}
+        </HStack>
 
-      {loading && <Text fontSize="sm" color="gray.400" mb={2} px={1}>Loading players...</Text>}
-      {error && <Text fontSize="sm" color="red.400" mb={2} px={1}>Error: {error.message}</Text>}
+        <Collapsible.Content>
+          {loading && <Text fontSize="sm" color="gray.400" mb={2} px={1}>Loading players...</Text>}
+          {error && <Text fontSize="sm" color="red.400" mb={2} px={1}>Error: {error.message}</Text>}
 
-      {!loading && !error && sortedPlayers.length ? (
-        <Card.Root variant="outline" size="sm">
-          <Card.Body p={1.5} position="relative" overflow="hidden">
-            <VStack 
-              ref={scrollContainerRef}
-              onScroll={checkScroll}
-              align="stretch" 
-              gap={0}
-              maxH={{ base: "25vh", md: "400px" }}
-              overflowY="auto"
-            >
-              {sortedPlayers.map((p, index) => (
-                <Box 
-                  key={p.id} 
-                  p={1.5} 
-                  borderRadius="sm"
-                  borderTopWidth={index > 0 ? "1px" : "0px"}
-                  borderColor="border.subtle"
-                  _hover={{ bg: "whiteAlpha.50" }}
-                  transition="background 0.2s"
+          {!loading && !error && sortedPlayers.length ? (
+            <Card.Root variant="outline" size="sm">
+              <Card.Body p={1.5} position="relative" overflow="hidden">
+                <VStack 
+                  ref={scrollContainerRef}
+                  onScroll={checkScroll}
+                  align="stretch" 
+                  gap={0}
+                  maxH={{ base: "25vh", md: "400px" }}
+                  overflowY="auto"
                 >
-                  <EditablePlayerRow
-                    player={p}
-                    updatePlayer={updatePlayer}
-                    removePlayer={(id) => setPlayers(prev => (prev ? prev.filter(p => p.id !== id) : []))}
-                  />
-                </Box>
-              ))}
-            </VStack>
+                  {sortedPlayers.map((p, index) => (
+                    <Box 
+                      key={p.id} 
+                      p={1.5} 
+                      borderRadius="sm"
+                      borderTopWidth={index > 0 ? "1px" : "0px"}
+                      borderColor="border.subtle"
+                      _hover={{ bg: "whiteAlpha.50" }}
+                      transition="background 0.2s"
+                    >
+                      <EditablePlayerRow
+                        player={p}
+                        updatePlayer={updatePlayer}
+                        removePlayer={(id) => setPlayers(prev => (prev ? prev.filter(p => p.id !== id) : []))}
+                      />
+                    </Box>
+                  ))}
+                </VStack>
 
-            {showScrollIndicator && (
-              <Box
-                position="absolute"
-                bottom={0}
-                left={0}
-                right={0}
-                h="30px"
-                bgGradient="to-t"
-                gradientFrom="bg.panel"
-                gradientTo="transparent"
-                pointerEvents="none"
-                display="flex"
-                alignItems="flex-end"
-                justifyContent="center"
-                pb={1}
-              >
-                <Text fontSize="2xs" color="gray.500" fontWeight="bold" letterSpacing="widest">
-                  MORE PLAYERS
-                </Text>
-              </Box>
-            )}
-          </Card.Body>
-        </Card.Root>
-      ) : (
-        !loading && !error && (
-          <Center w="100%" py={4}>
-            <Text fontSize="sm" color="gray.500" fontStyle="italic">No players yet.</Text>
-          </Center>
-        )
-      )}
+                {showScrollIndicator && (
+                  <Box
+                    position="absolute"
+                    bottom={0}
+                    left={0}
+                    right={0}
+                    h="30px"
+                    bgGradient="to-t"
+                    gradientFrom="bg.panel"
+                    gradientTo="transparent"
+                    pointerEvents="none"
+                    display="flex"
+                    alignItems="flex-end"
+                    justifyContent="center"
+                    pb={1}
+                  >
+                    <Text fontSize="2xs" color="gray.500" fontWeight="bold" letterSpacing="widest">
+                      MORE PLAYERS
+                    </Text>
+                  </Box>
+                )}
+              </Card.Body>
+            </Card.Root>
+          ) : (
+            !loading && !error && (
+              <Center w="100%" py={4}>
+                <Text fontSize="sm" color="gray.500" fontStyle="italic">No players yet.</Text>
+              </Center>
+            )
+          )}
+        </Collapsible.Content>
+      </Collapsible.Root>
     </Box>
   );
 }

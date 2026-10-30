@@ -129,7 +129,7 @@ export function TourneyDetails({
           {!loading && !error && tourney && (
             <>
               {!loadingTourneyAdminStatus && isTourneyAdmin && (
-                <HStack mb={4}>
+                <HStack mb={4} wrap="wrap" justify="center">
                   {tourney?.status === "Not Started" && (
                     <>
                       {isBracketFormat(tourney.type) ? (

@@ -434,17 +434,25 @@ function TourneyPage() {
         </Box>
         {isBracketFormat(tourney?.type) ? (
           <Stack
+            // fixed width (capped at Players 300/340 + Bracket 448 + Rulesets 360 + gaps) so collapsing a column
+            // can't resize the row; the bracket fills what's left
+            w="100%"
+            maxW={{ lg: "1140px", xl: "1180px" }}
+            mx="auto"
             direction={{ base: "column", lg: "row" }}
             alignItems={{ base: "stretch", lg: "start" }}
             justifyContent="center"
-            gap={4}
+            // stacked: 8px like the page's other dividers, so each section sits centered between its lines
+            gap={{ base: 2, lg: 4 }}
           >
+            {/* plain Separator children (not Stack's separator prop, whose hidden separators also drop the desktop gap) */}
             <SidebarTourneyPlayersList
               players={players}
               setPlayers={setPlayers}
               loading={loadingPlayers}
               error={errorPlayers}
             />
+            <Separator hideFrom="lg" />
             <Box flex="1" minW={0}>
               <BracketCarousel
                 roundPools={roundPools || []}
@@ -454,6 +462,7 @@ function TourneyPage() {
                 loadingAdvancements={loadingRoundAdvancements}
               />
             </Box>
+            <Separator hideFrom="lg" />
             <ChartRulesList
               chartdrawConfigs={chartdrawConfigs || []}
               setChartdrawConfigs={setChartdrawConfigs}
