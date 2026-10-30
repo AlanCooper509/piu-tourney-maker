@@ -35,6 +35,13 @@ export default function BracketCarousel({
     [rounds, roundPools, playerRounds, roundAdvancements],
   );
 
+  // open on the first phase still in play (falls back to the first phase once everything is Complete);
+  // only read on mount, since Swiper ignores later initialSlide changes
+  const initialSlide = Math.max(
+    0,
+    phases.findIndex((phase) => phase.matches.some((m) => m.round.status !== "Complete")),
+  );
+
   const handleSwitchToPool = (poolId: number) => {
     const idx = phases.findIndex((p) => p.pool.id === poolId);
     if (idx >= 0) swiperRef.current?.slideTo(idx);
@@ -51,32 +58,20 @@ export default function BracketCarousel({
   if (phases.length === 0) {
     return (
       <Center py={10} w="100%">
-        <Text color="fg.muted" fontStyle="italic">No rounds match the current criteria.</Text>
+        <Text color="fg.muted" fontStyle="italic">No bracket rounds yet.</Text>
       </Center>
     );
   }
 
   return (
-    // One constant maxW instead of a {base, md} breakpoint switch — that
-    // switch is what broke below the md breakpoint (768px); a flat cap
-    // naturally fits any viewport since maxW is only ever a ceiling, so a
-    // true phone width just shrinks to fit without needing its own case.
     <Box w="100%" maxW="md" position="relative">
       <Swiper
         autoHeight
-        // Phase data (players, advancements) streams in asynchronously
-        // after this mounts, so the DOM inside each slide keeps changing
-        // after Swiper's first height measurement. Without watching for
-        // that, autoHeight stayed stuck on a stale (too-short) height,
-        // clipping the last match card. `observer` re-runs that
-        // measurement via MutationObserver whenever the swiper's OWN
-        // content changes. Deliberately not `observeParents` — that
-        // widens the watch to the entire ancestor tree (the players
-        // sidebar, round pools manager, etc.), and unrelated sibling
-        // updates were triggering autoHeight recalculations at bad
-        // moments, landing on a wrong height and leaving a large blank
-        // gap instead of the actual content.
+        // slide content keeps changing after mount (players, advancements), so re-measure autoHeight on
+        // changes to the swiper's own content. Not observeParents: sibling updates re-measured at bad moments
+        // and left a big blank gap
         observer
+        initialSlide={initialSlide}
         onSwiper={(swiper) => {
           swiperRef.current = swiper;
           setActiveIndex(swiper.activeIndex);

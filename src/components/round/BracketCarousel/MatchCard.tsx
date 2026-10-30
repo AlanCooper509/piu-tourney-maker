@@ -1,5 +1,5 @@
 import { Box, HStack, LinkBox, LinkOverlay, Text } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 
 import { useCurrentTourney } from "../../../context/CurrentTourneyContext";
 import { roundPath } from "../../../helpers/paths";
@@ -23,7 +23,6 @@ function playersText(match: BracketMatch): string {
 
 export default function MatchCard({ match, isLosers = false }: MatchCardProps) {
   const { tourney } = useCurrentTourney();
-  const navigate = useNavigate();
   const { round } = match;
   const roundUrl = roundPath(round.tourney_id, round.id, tourney?.event_id);
   const players = playersText(match);
@@ -68,12 +67,6 @@ export default function MatchCard({ match, isLosers = false }: MatchCardProps) {
               right="50%"
               backgroundImage={`url(${player1Img})`}
               backgroundSize="cover"
-              // "top" rather than "center": with these cards being much
-              // wider than tall, "cover" crops down to a thin horizontal
-              // sliver through whatever's at the image's vertical center —
-              // often a shirt or wall, not a face. Biasing toward the top
-              // (where a headshot's face usually is) at least gives this a
-              // fighting chance of showing something recognizable.
               backgroundPosition="top center"
               opacity={0.5}
             />
@@ -91,8 +84,7 @@ export default function MatchCard({ match, isLosers = false }: MatchCardProps) {
               opacity={0.5}
             />
           )}
-          {/* Blurs whatever's behind it (the seam between the two player
-              images) so the split reads as a smooth blend, not a hard edge. */}
+          {/* blurs the seam between the two player images */}
           <Box
             position="absolute"
             top={0}
@@ -101,9 +93,7 @@ export default function MatchCard({ match, isLosers = false }: MatchCardProps) {
             w="10%"
             style={{ transform: "translateX(-50%)", backdropFilter: "blur(5px)" }}
           />
-          {/* Scrim so the text below stays legible over whatever the photos
-              look like — the images themselves still render at the
-              requested 50% opacity, this just sits above them. */}
+          {/* scrim keeps the text legible over the photos */}
           <Box position="absolute" inset={0} bg="blackAlpha.500" />
         </>
       )}
@@ -111,17 +101,10 @@ export default function MatchCard({ match, isLosers = false }: MatchCardProps) {
       <Box position="relative" h="100%" display="flex" flexDirection="column" justifyContent="center">
         <HStack justifyContent="space-between" align="center" mb={2} gap={4}>
           <Text fontWeight="bold" fontSize="md" minWidth={0} flex={1} textAlign="left">
-            <LinkOverlay
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(roundUrl);
-                window.scrollTo({ top: 0, behavior: "instant" });
-              }}
-              href={roundUrl}
-              color="fg"
-              _hover={{ color: accentColor }}
-            >
-              Match {match.matchIndex}
+            <LinkOverlay asChild color="fg" _hover={{ color: accentColor }}>
+              <RouterLink to={roundUrl} onClick={() => window.scrollTo({ top: 0, behavior: "instant" })}>
+                Match {match.matchIndex}
+              </RouterLink>
             </LinkOverlay>
           </Text>
 

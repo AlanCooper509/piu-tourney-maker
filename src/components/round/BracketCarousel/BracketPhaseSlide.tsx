@@ -41,20 +41,7 @@ export default function BracketPhaseSlide({
   canGoNextPhase,
 }: BracketPhaseSlideProps) {
   const { isLosers } = phase;
-  // Red specifically matches the trash/delete icon buttons used elsewhere
-  // (e.g. DeletablePlayerRow, DeleteRulesetDialog: colorPalette="red"
-  // variant="outline") for consistency with the rest of the site — their
-  // outline variant resolves to color: red.fg / borderColor: red.muted
-  // (per Chakra's button recipe), not red.solid, so those are the literal
-  // tokens used here too rather than a different red shade.
   const accentColor = isLosers ? "red.fg" : "cyan.solid";
-  // The switch button goes TO the other side, so it's colored to match that
-  // side's own styling: cyan.solid for Winners (the literal heading text
-  // color), or the same red.fg/red.muted trash-icon pair for Losers. The
-  // matching `colorPalette` is still set below (alongside these explicit
-  // color/borderColor overrides) purely so the button keeps the same
-  // colorPalette.subtle hover-background highlight every other outline
-  // button on the page gets from Chakra's button recipe.
   const switchColor = isLosers ? "cyan.solid" : "red.fg";
   const switchBorderColor = isLosers ? "cyan.solid" : "red.muted";
   const matchGroups = groupMatchesByDestination(phase.matches);
@@ -62,11 +49,6 @@ export default function BracketPhaseSlide({
   return (
     <Box px={4} py={2}>
       <HStack justifyContent="space-between" alignItems="center" mb={4} gap={2}>
-        {/* Phase (not match) navigation — same swipe-or-click pattern as
-            the round prev/next buttons elsewhere, just pinned to the
-            outermost edges of this row instead of overlaying the carousel,
-            so they stay at a fixed, predictable spot regardless of how
-            tall the match list below grows. */}
         <IconButton
           aria-label="Previous phase"
           size="sm"

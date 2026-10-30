@@ -19,7 +19,7 @@ import { useIsAdminForTourney } from "../context/admin/AdminTourneyContext";
 import { useSyncEventForTourney } from "../hooks/useSyncEventForTourney";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 import { isBracketFormat } from "../helpers/isBracketFormat";
-import { getRoundAdvancementsInTourney } from "../helpers/getRoundAdvancementsInTourney";
+import { getRoundAdvancementsForRounds } from "../helpers/getRoundAdvancementsInTourney";
 import { deleteRound, upsertRound } from "../helpers/state/rounds";
 import { deletePlayerTourney, upsertPlayerTourney } from "../helpers/state/playerTourney";
 
@@ -53,6 +53,7 @@ function TourneyPage() {
   const [pickbanRulesets, setPickbanRulesets] = useState<PickbanRulesetWithSteps[]>([]);
   const [roundAdvancements, setRoundAdvancements] = useState<RoundAdvancement[]>([]);
   const [loadingRoundAdvancements, setLoadingRoundAdvancements] = useState(true);
+  const loadedRoundAdvancementsOnce = useRef(false);
 
 
   // Initial Supabase Network Fetches
@@ -88,8 +89,7 @@ function TourneyPage() {
     "*, pickban_ruleset_steps(*)"
   );
 
-  // the URL's event (if any) shows immediately; the loaded tourney's own event wins if they differ —
-  // still needed even without the hero banner, since TourneyHeaderText's breadcrumb reads it too
+  // the URL's event (if any) shows immediately; the loaded tourney's own event wins if they differ
   useSyncEventForTourney(
     tourney && String(tourney.id) === tourneyId ? tourney.event_id : eventId ? Number(eventId) : undefined
   );
@@ -138,11 +138,18 @@ function TourneyPage() {
       setLoadingRoundAdvancements(false);
       return;
     }
-    setLoadingRoundAdvancements(true);
-    getRoundAdvancementsInTourney(Number(tourneyId))
-      .then(setRoundAdvancements)
+
+    if (!loadedRoundAdvancementsOnce.current) setLoadingRoundAdvancements(true);
+    let ignore = false; // drop a slower, older response that lands after a newer one
+    getRoundAdvancementsForRounds(roundsRef.current.map(r => r.id))
+      .then((data) => {
+        if (ignore) return;
+        setRoundAdvancements(data);
+        loadedRoundAdvancementsOnce.current = true;
+      })
       .catch(console.error)
-      .finally(() => setLoadingRoundAdvancements(false));
+      .finally(() => { if (!ignore) setLoadingRoundAdvancements(false); });
+    return () => { ignore = true; };
   }, [tourneyId, rounds.length]);
 
   useEffect(() => {
@@ -427,14 +434,6 @@ function TourneyPage() {
         {isBracketFormat(tourney?.type) ? (
           <Stack
             direction={{ base: "column", lg: "row" }}
-            // "center" on mobile (column direction) shrinks each child to
-            // its own content width instead of stretching it to the
-            // container — that left BracketCarousel's Swiper without a
-            // real viewport-constrained width to size against, so it
-            // inflated to whatever its widest content wanted to be and
-            // overflowed the screen. "stretch" fixes that; "start" still
-            // applies at the lg breakpoint where this Stack switches to a
-            // row and each column keeps its own intrinsic width.
             alignItems={{ base: "stretch", lg: "start" }}
             justifyContent="center"
             gap={4}
