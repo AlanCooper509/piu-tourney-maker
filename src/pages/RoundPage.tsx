@@ -45,8 +45,6 @@ function RoundPage() {
     roundId: string;
     eventId?: string;
   }>();
-  if (!tourneyId) return <div>Invalid Tourney ID</div>;
-  if (!roundId) return <div>Invalid Round ID</div>;
 
   const { tourney, setTourney } = useCurrentTourney();
   // drop a previously visited tourney before paint, so its name never flashes on this page
@@ -106,24 +104,24 @@ function RoundPage() {
   // Supabase queries to fetch data on initial page load
   const { data: tourneys } = getSupabaseTable<Tourney>(
     "tourneys",
-    { column: "id", value: tourneyId }
+    { column: "id", value: tourneyId ?? -1 }
   );
   const { data: queriedRoundsInTourney, loading: loadingRounds, error: errorRounds } = getSupabaseTable<Round>(
     "rounds",
-    { column: "tourney_id", value: tourneyId }
+    { column: "tourney_id", value: tourneyId ?? -1 }
   );
   const { data: queriedRoundPools } = getSupabaseTable<RoundPool>(
     "round_pools",
-    { column: "tourney_id", value: tourneyId }
+    { column: "tourney_id", value: tourneyId ?? -1 }
   );
   const { data: queriedPlayersInRound, loading: loadingPlayersInRound, error: errorPlayersInRound } = getSupabaseTable<PlayerRound>(
     "player_rounds",
-    { column: "round_id", value: roundId },
+    { column: "round_id", value: roundId ?? -1 },
     "*, player_tourneys(player_name, seed)"
   );
   const { data: queriedStagesInRound, loading: loadingStagesInRound, error: errorStagesInRound } = getSupabaseTable<Stage>(
     "stages",
-    { column: "round_id", value: roundId },
+    { column: "round_id", value: roundId ?? -1 },
     "*, chart_pools(*, charts(*)), charts:chart_id(*), scores(*)"
   );
   const { data: queriedCarryOverPlayers } = getSupabaseTable<PlayerRound>(
@@ -138,21 +136,21 @@ function RoundPage() {
   );
   const { data: queriedPlayersInTourney, loading: loadingPlayersInTourney, error: errorPlayersInTourney } = getSupabaseTable<PlayerTourney>(
     "player_tourneys",
-    { column: "tourney_id", value: tourneyId }
+    { column: "tourney_id", value: tourneyId ?? -1 }
   );
   const { data: queriedChartdrawConfigs } = getSupabaseTable<ChartdrawConfigWithSpecs>(
     'chartdraw_configs',
-    { column: "tourney_id", value: tourneyId },
+    { column: "tourney_id", value: tourneyId ?? -1 },
     "*, chartdraw_config_specs(*)"
   );
   const { data: queriedPickbanRulesets } = getSupabaseTable<PickbanRulesetWithSteps>(
     'pickban_rulesets',
-    { column: "tourney_id", value: tourneyId },
+    { column: "tourney_id", value: tourneyId ?? -1 },
     "*, pickban_ruleset_steps(*)"
   );
   const { data: queriedChartdrawEntries } = getSupabaseTable<ChartdrawEntryWithDetails>(
     'chartdraw_entries',
-    { column: "round_id", value: roundId },
+    { column: "round_id", value: roundId ?? -1 },
     "*, charts(*), player_rounds(*, player_tourneys(player_name))"
   );
 
@@ -700,6 +698,9 @@ function RoundPage() {
       supabaseClient.removeChannel(chartdrawEntriesChannel);
     };
   }, [activeRoundId, carryOverRoundId, tourneyId]);
+
+  if (!tourneyId) return <div>Invalid Tourney ID</div>;
+  if (!roundId) return <div>Invalid Round ID</div>;
 
   return (
     <Box mt={4}>

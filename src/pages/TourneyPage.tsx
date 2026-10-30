@@ -35,7 +35,6 @@ import { deletePlayerFromRound, upsertPlayerInRound } from "../helpers/state/pla
 
 function TourneyPage() {
   const { tourneyId, eventId } = useParams();
-  if (!tourneyId) return <div>Invalid Tourney ID</div>;
 
   const { tourney, setTourney } = useCurrentTourney();
   // drop a previously visited tourney before paint, so its name never flashes on this page
@@ -59,33 +58,33 @@ function TourneyPage() {
   // Initial Supabase Network Fetches
   const { data: tourneys, loading: loadingTourney, error: errorTourney } = getSupabaseTable<Tourney>(
     'tourneys',
-    { column: 'id', value: tourneyId }
+    { column: 'id', value: tourneyId ?? -1 }
   );
   const { data: queriedTourneyPlayers, loading: loadingPlayers, error: errorPlayers } = getSupabaseTable<PlayerTourney>(
     'player_tourneys',
-    { column: 'tourney_id', value: tourneyId }
+    { column: 'tourney_id', value: tourneyId ?? -1 }
   );
   const { data: queriedPlayersInRound, loading: loadingRoundPlayers } = getSupabaseTable<PlayerRound>(
     "player_rounds",
-    { column: "player_tourneys.tourney_id", value: tourneyId }, // Filter via the joined table
+    { column: "player_tourneys.tourney_id", value: tourneyId ?? -1 }, // Filter via the joined table
     "*, player_tourneys!inner(player_name, seed, tourney_id, player_img)"   // !inner makes it a hard filter
   );
   const { data: queriedRoundsInTourney } = getSupabaseTable<Round>(
     'rounds',
-    { column: 'tourney_id', value: tourneyId }
+    { column: 'tourney_id', value: tourneyId ?? -1 }
   );
   const { data: queriedRoundPools } = getSupabaseTable<RoundPool>(
     'round_pools',
-    { column: "tourney_id", value: tourneyId }
+    { column: "tourney_id", value: tourneyId ?? -1 }
   );
   const { data: queriedChartdrawConfigs } = getSupabaseTable<ChartdrawConfigWithSpecs>(
     'chartdraw_configs',
-    { column: "tourney_id", value: tourneyId },
+    { column: "tourney_id", value: tourneyId ?? -1 },
     "*, chartdraw_config_specs(*)"
   );
   const { data: queriedPickbanRulesets } = getSupabaseTable<PickbanRulesetWithSteps>(
     'pickban_rulesets',
-    { column: "tourney_id", value: tourneyId },
+    { column: "tourney_id", value: tourneyId ?? -1 },
     "*, pickban_ruleset_steps(*)"
   );
 
@@ -402,6 +401,8 @@ function TourneyPage() {
       supabaseClient.removeChannel(pickbanSequenceChannel);
     };
   }, [tourneyId]);
+
+  if (!tourneyId) return <div>Invalid Tourney ID</div>;
 
   return (
     <Box mt={4}>
