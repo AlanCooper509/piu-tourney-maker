@@ -22,11 +22,6 @@ export function stageRollPath(tourneyId: Id, roundId: Id, stageId: Id, eventId?:
   return `${roundPath(tourneyId, roundId, eventId)}/stage/${stageId}/roll`;
 }
 
-/** True for any tourney page, under either URL form. */
-export function isTourneyPath(pathname: string): boolean {
-  return /^\/(event\/[^/]+\/)?tourney\//.test(pathname);
-}
-
 export function streamHelperPath(tourneyId: Id, eventId?: Id | null): string {
   return `${tourneyPath(tourneyId, eventId)}/StreamHelper`;
 }
