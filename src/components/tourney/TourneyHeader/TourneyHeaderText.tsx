@@ -2,15 +2,13 @@ import {
   Box,
   Button,
   createListCollection,
-  Heading,
   HStack,
-  Link,
   Portal,
   Select,
   Span,
   Stack
 } from "@chakra-ui/react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { RiProgress5Fill } from "react-icons/ri";
 import { MdOutlinePlaylistAddCheck } from "react-icons/md";
 import { IoChevronForward, IoChevronBack } from "react-icons/io5";
@@ -35,13 +33,15 @@ interface TourneyHeaderTextProps {
   setRounds: React.Dispatch<React.SetStateAction<Round[]>>;
   currentRoundId: number;
   roundPools: RoundPool[] | null;
+  currentPageLabel?: string;
 }
 
 export default function TourneyHeaderText({
   rounds,
   setRounds,
   currentRoundId,
-  roundPools
+  roundPools,
+  currentPageLabel
 }: TourneyHeaderTextProps) {
   const navigate = useNavigate();
   const { tourney } = useCurrentTourney();
@@ -64,12 +64,14 @@ export default function TourneyHeaderText({
     }),
   });
 
-  // Event › Tourney on the tourney page, Event › Tourney › Round on a round page
+  // Event › Tourney on the tourney page, Event › Tourney › Round on a round page,
+  // Event › Tourney › <currentPageLabel> on other tourney-level pages
   const currentRound = rounds.find(r => r.id === currentRoundId);
+  const lastCrumb = currentRound?.name ?? currentPageLabel;
   const breadcrumbItems: BreadcrumbItem[] = [
     ...(event ? [{ label: event.name, to: `/event/${event.id}` }] : []),
-    { label: tourney?.name ?? "Tourney", to: currentRound ? tourneyPath(tourneyIdForPaths, eventIdForPaths) : undefined },
-    ...(currentRound ? [{ label: currentRound.name }] : []),
+    { label: tourney?.name ?? "Tourney", to: lastCrumb ? tourneyPath(tourneyIdForPaths, eventIdForPaths) : undefined },
+    ...(lastCrumb ? [{ label: lastCrumb }] : []),
   ];
 
   // setup for previous and next round navigation
@@ -125,18 +127,7 @@ export default function TourneyHeaderText({
     <Stack align="center" justify="center" direction="column" gap={2}>
       <PageBreadcrumb items={breadcrumbItems} justify="center" />
 
-      <Heading fontSize={["xl", "xl", "2xl"]} textAlign="center">
-        <Link
-          asChild
-          color="cyan.solid"
-          _hover={{ color: "cyan.focusRing" }}
-          _focus={{ color: "cyan.solid", boxShadow: "none" }}
-        >
-          <RouterLink to={tourneyPath(tourneyIdForPaths, eventIdForPaths)}>{tourney?.name}</RouterLink>
-        </Link>
-      </Heading>
-
-      <HStack w={"full"} align="center" justify="center"> 
+      <HStack w={"full"} align="center" justify="center">
         {/* Previous Round Navigation */}
         <Button
           size="sm"

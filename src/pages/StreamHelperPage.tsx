@@ -1,12 +1,13 @@
 import { useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { Center, Text } from "@chakra-ui/react";
+import { Box, Center, Text } from "@chakra-ui/react";
 
 import { useIsAdminForTourney } from "../context/admin/AdminTourneyContext";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
 import { useRoundStreamData } from "../hooks/useRoundStreamData";
 import { useSyncEventForTourney } from "../hooks/useSyncEventForTourney";
 import { StreamHelperContainer } from "../components/stream/StreamHelperContainer";
+import { TourneyHeroBanner } from "../components/tourney/TourneyHeader/TourneyHeroBanner";
 import { Toaster } from "../components/ui/toaster";
 
 export function StreamHelperPage() {
@@ -26,7 +27,10 @@ export function StreamHelperPage() {
   );
 
   // The header breadcrumb names the tourney from CurrentTourneyContext.
-  const { setTourney } = useCurrentTourney();
+  const { tourney: contextTourney, setTourney } = useCurrentTourney();
+  // banner uses the tourney already in context (e.g. coming from TourneyPage) until this page's own fetch lands
+  const bannerTourney = streamData.tourney
+    ?? (contextTourney && String(contextTourney.id) === tourneyId ? contextTourney : null);
   useEffect(() => {
     if (streamData.tourney) setTourney(streamData.tourney);
   }, [streamData.tourney, setTourney]);
@@ -50,7 +54,8 @@ export function StreamHelperPage() {
   }
 
   return (
-    <>
+    <Box mt={4}>
+      <TourneyHeroBanner tourney={bannerTourney} />
       <StreamHelperContainer
         tourney={streamData.tourney}
         sortedRounds={streamData.sortedRounds}
@@ -60,7 +65,7 @@ export function StreamHelperPage() {
         roundIdOverride={roundIdOverride}
       />
       <Toaster />
-    </>
+    </Box>
   );
 }
 

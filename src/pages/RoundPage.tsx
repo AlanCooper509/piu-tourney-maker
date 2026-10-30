@@ -10,6 +10,7 @@ import { PlayersH2H } from "../components/round/PlayersH2H";
 import { PlayersList } from "../components/round/PlayersList";
 import { StagesList } from "../components/stages/StagesList";
 import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeaderText";
+import { TourneyHeroBanner } from "../components/tourney/TourneyHeader/TourneyHeroBanner";
 import { Toaster } from "../components/ui/toaster";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
 import { useSyncEventForTourney } from "../hooks/useSyncEventForTourney";
@@ -226,6 +227,11 @@ function RoundPage() {
       setStages(sortedStages);
     }
   }, [queriedStagesInRound]);
+
+  const playersOrStagesPending =
+    loadingPlayersInRound || loadingStagesInRound ||
+    (queriedPlayersInRound.length > 0 && players.length === 0) ||
+    (queriedStagesInRound.length > 0 && stages.length === 0);
 
   // Sync carry-over round players/stages when their queried data changes
   useEffect(() => {
@@ -698,6 +704,7 @@ function RoundPage() {
   return (
     <Box mt={4}>
       <Toaster />
+      <TourneyHeroBanner tourney={tourney} />
       <TourneyHeaderText
         rounds={tourneyRounds}
         setRounds={setTourneyRounds}
@@ -715,6 +722,7 @@ function RoundPage() {
         roundAdvancements={roundAdvancements}
         players={players}
         stages={stages}
+        loadingPlayersOrStages={playersOrStagesPending}
         loading={loadingRounds}
         error={errorRounds}
         tourneyId={Number(tourneyId)}

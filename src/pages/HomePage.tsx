@@ -1,20 +1,22 @@
+import { useRef } from "react";
 import {
   Box,
   Text,
   VStack
 } from "@chakra-ui/react";
 import { Swiper, SwiperSlide } from "swiper/react";
+import type { Swiper as SwiperClass } from "swiper/types";
 import { motion } from "framer-motion";
-import { Autoplay, Navigation } from "swiper/modules";
+import { Autoplay } from "swiper/modules";
 import { Pagination } from "swiper/modules";
 import "swiper/css";
-import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import { useHomeEvents } from "../hooks/useHomeEvents";
 import { useAdminTourneyContext } from "../context/admin/AdminTourneyContext";
 import { SpotlightEventItem } from "../components/home/SpotlightEventItem";
+import { SpotlightNavButton } from "../components/home/SpotlightNavButton";
 
 import type { Event } from "../types/Event";
 import type { Tourney } from "../types/Tourney";
@@ -34,6 +36,7 @@ const staggerContainer = {
 };
 
 function HomePage() {
+  const swiperRef = useRef<SwiperClass | null>(null);
   const { data: events, loading, error } = getSupabaseTable<Event>("events");
   const { data: tourneys } = getSupabaseTable<Tourney>("tourneys");
   const { adminTourneyIds } = useAdminTourneyContext();
@@ -46,11 +49,15 @@ function HomePage() {
     <MotionBox initial="hidden" animate="visible" variants={staggerContainer} width="100%" p={4}>
       
       {/* Spotlight Hero Swiper */}
-      <MotionBox variants={fadeIn}>
+      <MotionBox variants={fadeIn} position="relative">
         <Swiper
-          modules={[Navigation, Pagination, Autoplay]}
-          navigation
+          modules={[Pagination, Autoplay]}
+          onSwiper={(swiper) => { swiperRef.current = swiper; }}
           pagination={{ clickable: true }}
+          style={{
+            "--swiper-pagination-color": "var(--chakra-colors-cyan-400)",
+            "--swiper-pagination-bullet-inactive-color": "var(--chakra-colors-gray-400)",
+          } as React.CSSProperties}
           spaceBetween={50}
           slidesPerView={1}
           autoplay={{ delay: 5000, disableOnInteraction: false }}
@@ -62,6 +69,9 @@ function HomePage() {
             </SwiperSlide>
           ))}
         </Swiper>
+
+        <SpotlightNavButton side="left" onClick={() => swiperRef.current?.slidePrev()} />
+        <SpotlightNavButton side="right" onClick={() => swiperRef.current?.slideNext()} />
       </MotionBox>
 
       {/* 2. Categorized Event Lists */}

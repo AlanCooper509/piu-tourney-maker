@@ -6,18 +6,20 @@ import { supabaseClient } from "../lib/supabaseClient";
 import getSupabaseTable from '../hooks/getSupabaseTable';
 
 import TourneyHeaderText from "../components/tourney/TourneyHeader/TourneyHeaderText";
+import { TourneyHeroBanner } from "../components/tourney/TourneyHeader/TourneyHeroBanner";
 import { TourneyDetails } from "../components/tourney/TourneyDetails";
 import { ColumnarTourneyPlayersList } from "../components/tourney/PlayersList/ColumnarTourneyPlayersList";
 import { Toaster } from "../components/ui/toaster";
 import ChartRulesList from "../components/rulesets/ChartRulesList";
 import { SidebarTourneyPlayersList } from "../components/tourney/PlayersList/SidebarTourneyPlayersList";
-import RoundsList from "../components/round/RoundsList/RoundsList";
+import BracketCarousel from "../components/round/BracketCarousel/BracketCarousel";
 import RoundPoolsManager from "../components/round/roundpools/RoundPoolsManager";
 import { useCurrentTourney } from "../context/CurrentTourneyContext";
 import { useIsAdminForTourney } from "../context/admin/AdminTourneyContext";
 import { useSyncEventForTourney } from "../hooks/useSyncEventForTourney";
 import { mergeAndFlattenRounds } from "../helpers/mergeAndFlattenRounds";
 import { isBracketFormat } from "../helpers/isBracketFormat";
+import { getRoundAdvancementsForRounds } from "../helpers/getRoundAdvancementsInTourney";
 import { deleteRound, upsertRound } from "../helpers/state/rounds";
 import { deletePlayerTourney, upsertPlayerTourney } from "../helpers/state/playerTourney";
 
@@ -28,6 +30,7 @@ import type { RoundPool } from "../types/RoundPool";
 import type { ChartdrawConfig, ChartdrawConfigSpec, ChartdrawConfigWithSpecs } from "../types/ChartDrawConfig";
 import type { PickbanRulesetWithSteps, PickbanRulesetSteps } from "../types/Pickban";
 import type { PlayerRound } from "../types/PlayerRound";
+import type { RoundAdvancement } from "../types/RoundAdvancement";
 import { deletePlayerFromRound, upsertPlayerInRound } from "../helpers/state/playerRounds";
 
 function TourneyPage() {
@@ -44,9 +47,13 @@ function TourneyPage() {
   const tourneyPlayersRef = useRef<PlayerTourney[]>([]);
   const [roundPlayers, setRoundPlayers] = useState<PlayerRound[]>([]);
   const [rounds, setRounds] = useState<Round[]>([]);
+  const roundsRef = useRef<Round[]>([]);
   const [roundPools, setRoundPools] = useState<RoundPool[]>([]);
   const [chartdrawConfigs, setChartdrawConfigs] = useState<ChartdrawConfigWithSpecs[]>([]);
   const [pickbanRulesets, setPickbanRulesets] = useState<PickbanRulesetWithSteps[]>([]);
+  const [roundAdvancements, setRoundAdvancements] = useState<RoundAdvancement[]>([]);
+  const [loadingRoundAdvancements, setLoadingRoundAdvancements] = useState(true);
+  const loadedRoundAdvancementsOnce = useRef(false);
 
 
   // Initial Supabase Network Fetches
@@ -61,7 +68,7 @@ function TourneyPage() {
   const { data: queriedPlayersInRound, loading: loadingRoundPlayers } = getSupabaseTable<PlayerRound>(
     "player_rounds",
     { column: "player_tourneys.tourney_id", value: tourneyId }, // Filter via the joined table
-    "*, player_tourneys!inner(player_name, seed, tourney_id)"   // !inner makes it a hard filter
+    "*, player_tourneys!inner(player_name, seed, tourney_id, player_img)"   // !inner makes it a hard filter
   );
   const { data: queriedRoundsInTourney } = getSupabaseTable<Round>(
     'rounds',
@@ -122,6 +129,30 @@ function TourneyPage() {
   }, [queriedRoundsInTourney]);
 
   useEffect(() => {
+    roundsRef.current = rounds;
+  }, [rounds]);
+
+  useEffect(() => {
+    if (!rounds.length) {
+      setRoundAdvancements([]);
+      setLoadingRoundAdvancements(false);
+      return;
+    }
+
+    if (!loadedRoundAdvancementsOnce.current) setLoadingRoundAdvancements(true);
+    let ignore = false; // drop a slower, older response that lands after a newer one
+    getRoundAdvancementsForRounds(roundsRef.current.map(r => r.id))
+      .then((data) => {
+        if (ignore) return;
+        setRoundAdvancements(data);
+        loadedRoundAdvancementsOnce.current = true;
+      })
+      .catch(console.error)
+      .finally(() => { if (!ignore) setLoadingRoundAdvancements(false); });
+    return () => { ignore = true; };
+  }, [tourneyId, rounds.length]);
+
+  useEffect(() => {
     if (queriedRoundPools) {
       const sorted = [...queriedRoundPools].sort((a, b) =>
         (a.sort_order ?? a.id) - (b.sort_order ?? b.id)
@@ -160,6 +191,28 @@ function TourneyPage() {
             const incoming = payload.new as Round;
             if (String(incoming.tourney_id) !== String(tourneyId)) return prev;
             return upsertRound(prev, incoming);
+          });
+        }
+      )
+      .subscribe();
+
+    const roundAdvancementsChannel = supabaseClient
+      .channel('tourney-page-round-advancements-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'round_advancements' },
+        (payload) => {
+          if (payload.eventType === 'DELETE') {
+            setRoundAdvancements(prev => prev.filter(a => a.id !== payload.old.id));
+            return;
+          }
+
+          const incoming = payload.new as RoundAdvancement;
+          if (!roundsRef.current.some(r => r.id === incoming.round_id)) return;
+          setRoundAdvancements(prev => {
+            const exists = prev.find(a => a.id === incoming.id);
+            if (exists) return prev.map(a => a.id === incoming.id ? incoming : a);
+            return [...prev, incoming];
           });
         }
       )
@@ -339,6 +392,7 @@ function TourneyPage() {
 
     return () => {
       supabaseClient.removeChannel(roundsChannel);
+      supabaseClient.removeChannel(roundAdvancementsChannel);
       supabaseClient.removeChannel(roundPoolsChannel);
       supabaseClient.removeChannel(playerTourneyChannel);
       supabaseClient.removeChannel(playerRoundsChannel);
@@ -352,6 +406,7 @@ function TourneyPage() {
   return (
     <Box mt={4}>
       <Toaster />
+      <TourneyHeroBanner tourney={tourney} />
       <TourneyHeaderText
         rounds={sortedRounds}
         setRounds={setRounds}
@@ -379,7 +434,7 @@ function TourneyPage() {
         {isBracketFormat(tourney?.type) ? (
           <Stack
             direction={{ base: "column", lg: "row" }}
-            alignItems={{ base: "center", lg: "start" }}
+            alignItems={{ base: "stretch", lg: "start" }}
             justifyContent="center"
             gap={4}
           >
@@ -389,13 +444,15 @@ function TourneyPage() {
               loading={loadingPlayers}
               error={errorPlayers}
             />
-            <RoundsList
-              chartdrawConfigs={chartdrawConfigs || []}
-              pickbanRulesets={pickbanRulesets || []}
-              roundPools={roundPools || []}
-              rounds={sortedRounds}
-              playerRounds={roundPlayers}
-            />
+            <Box flex="1" minW={0}>
+              <BracketCarousel
+                roundPools={roundPools || []}
+                rounds={sortedRounds}
+                playerRounds={roundPlayers}
+                roundAdvancements={roundAdvancements}
+                loadingAdvancements={loadingRoundAdvancements}
+              />
+            </Box>
             <ChartRulesList
               chartdrawConfigs={chartdrawConfigs || []}
               setChartdrawConfigs={setChartdrawConfigs}

@@ -32,6 +32,7 @@ interface RoundDetailsProps {
   roundAdvancements: RoundAdvancement[];
   players: PlayerRound[] | null;
   stages: Stage[] | null;
+  loadingPlayersOrStages?: boolean;
   loading: boolean;
   error: Error | null;
   tourneyId: number;
@@ -51,6 +52,7 @@ export function RoundDetails({
   roundAdvancements,
   players,
   stages,
+  loadingPlayersOrStages = false,
   loading,
   error,
   tourneyId,
@@ -72,10 +74,8 @@ export function RoundDetails({
     : [];
 
   const hasScores = !!stages?.some(stage => (stage.scores?.length ?? 0) > 0);
-  const showLeaderboardLink =
-    round?.status !== "Not Started" &&
-    !!players?.length &&
-    hasScores;
+  const showLeaderboardLink = !!round && round.status !== "Not Started";
+  const leaderboardLinkDisabled = !loadingPlayersOrStages && !(players?.length && hasScores);
 
   const linkedPickbanRuleset = pickbanRulesets.find(
     (ruleset) => ruleset.id === activeConfig?.pickban_ruleset_id
@@ -157,6 +157,8 @@ export function RoundDetails({
                       <LeaderboardLinkButton
                         tourneyId={tourneyId}
                         roundId={round?.id ?? 0}
+                        round={round}
+                        disabled={leaderboardLinkDisabled}
                       />
                     )}
                     {showSkipRoundButton && (

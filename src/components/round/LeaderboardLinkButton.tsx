@@ -5,21 +5,31 @@ import { MdOutlineLeaderboard } from "react-icons/md";
 import { useCurrentTourney } from "../../context/CurrentTourneyContext";
 import { leaderboardPath } from "../../helpers/paths";
 
+import type { Round } from "../../types/Round";
+
 interface LeaderboardLinkButtonProps {
   tourneyId: number;
   roundId: number;
+  round?: Round | null;
+  disabled?: boolean;
 }
 
-export default function LeaderboardLinkButton({ tourneyId, roundId }: LeaderboardLinkButtonProps) {
+export default function LeaderboardLinkButton({ tourneyId, roundId, round, disabled = false }: LeaderboardLinkButtonProps) {
   const { tourney } = useCurrentTourney();
+
+  const button = (
+    <IconButton variant="outline" colorPalette="cyan" borderWidth="2px" size="sm" px={2} disabled={disabled}>
+      Leaderboard: <MdOutlineLeaderboard />
+    </IconButton>
+  );
 
   return (
     <HStack>
-      <RouterLink to={leaderboardPath(tourneyId, roundId, tourney?.event_id)}>
-        <IconButton variant="outline" colorPalette="cyan" borderWidth="2px" size="sm" px={2}>
-          Leaderboard: <MdOutlineLeaderboard />
-        </IconButton>
-      </RouterLink>
+      {disabled ? button : (
+        <RouterLink to={leaderboardPath(tourneyId, roundId, tourney?.event_id)} state={{ round }}>
+          {button}
+        </RouterLink>
+      )}
     </HStack>
   );
 }
