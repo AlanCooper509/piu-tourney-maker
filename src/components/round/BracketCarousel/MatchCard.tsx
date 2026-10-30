@@ -15,7 +15,9 @@ interface MatchCardProps {
 function playersText(match: BracketMatch): string {
   const names = match.players.map((pr) => pr.player_tourneys?.player_name ?? "Unknown");
   if (names.length === 0) return "";
-  if (names.length === 1) return `${names[0]} (Bye)`;
+  if (names.length === 1) {
+    return match.round.status === "Complete" ? `${names[0]} (Bye)` : `${names[0]} vs. ??`;
+  }
   return names.join(" vs. ");
 }
 

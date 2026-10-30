@@ -18,13 +18,7 @@ export interface BracketPhase {
   matches: BracketMatch[];
   switchTargetPoolId?: number; // paired Losers pool (from a Winners phase) or paired Winners pool (from a Losers phase)
   switchLabel?: "Losers" | "Winners";
-}
-
-/** Heuristic, not a stored flag: bracket pool names are hand-authored,
- * literal strings ("Winners Round 1", "Losers Round 1", ...), so a
- * case-insensitive "loser" match reliably identifies the losers side. */
-export function isLosersPhase(phase: BracketPhase): boolean {
-  return /loser/i.test(phase.pool.name);
+  isLosers: boolean; // derived from advancements, not the pool name (TOs can rename pools)
 }
 
 /**
@@ -56,6 +50,42 @@ export function buildBracketPhases(
     else advancementsByRoundId.set(advancement.round_id, [advancement]);
   }
 
+  const winnerRuleFor = (roundId: number) =>
+    resolveAdvancementRule(1, advancementsByRoundId.get(roundId) ?? []);
+  // rank 2's destination, unless rank 2 just shares the winner's rule (then it isn't a drop-down)
+  const loserRuleFor = (roundId: number) => {
+    const rule = resolveAdvancementRule(2, advancementsByRoundId.get(roundId) ?? []);
+    return rule && rule !== winnerRuleFor(roundId) ? rule : undefined;
+  };
+
+  // every round reachable from the given rounds by following winner advancements only
+  const followWinners = (startRoundIds: number[]): Set<number> => {
+    const reached = new Set<number>();
+    const stack = [...startRoundIds];
+    while (stack.length) {
+      const roundId = stack.pop()!;
+      if (reached.has(roundId)) continue;
+      reached.add(roundId);
+      const next = winnerRuleFor(roundId)?.destination_round_id;
+      if (next != null) stack.push(next);
+    }
+    return reached;
+  };
+
+  // Winners side: winners-only paths from the opening rounds (nothing advances into them).
+  // Losers side: winners-only paths from wherever a loser drops down to, minus anything the
+  // Winners side also reaches (Grand Finals is fed by both). Single Elim has no drop-downs,
+  // so nothing lands on the Losers side.
+  const roundIdsWithIncoming = new Set(roundAdvancements.map((a) => a.destination_round_id));
+  const winnersSideRoundIds = followWinners(
+    rounds.filter((r) => !roundIdsWithIncoming.has(r.id)).map((r) => r.id),
+  );
+  const losersSideRoundIds = followWinners(
+    rounds.flatMap((r) => loserRuleFor(r.id)?.destination_round_id ?? []),
+  );
+  const isLosersRound = (roundId: number) =>
+    losersSideRoundIds.has(roundId) && !winnersSideRoundIds.has(roundId);
+
   const sortedPools = [...roundPools].sort(
     (a, b) => (a.sort_order ?? a.id) - (b.sort_order ?? b.id),
   );
@@ -70,8 +100,7 @@ export function buildBracketPhases(
         .filter((pr) => pr.round_id === round.id)
         .sort((a, b) => a.sort_order - b.sort_order);
 
-      const roundAdvancementsForRound = advancementsByRoundId.get(round.id) ?? [];
-      const winnerRule = resolveAdvancementRule(1, roundAdvancementsForRound);
+      const winnerRule = winnerRuleFor(round.id);
       const destinationRound = winnerRule
         ? roundsById.get(winnerRule.destination_round_id)
         : undefined;
@@ -92,7 +121,7 @@ export function buildBracketPhases(
     // us the paired Losers pool for this whole phase.
     let switchTargetPoolId: number | undefined;
     for (const round of poolRounds) {
-      const loserRule = resolveAdvancementRule(2, advancementsByRoundId.get(round.id) ?? []);
+      const loserRule = loserRuleFor(round.id);
       if (!loserRule) continue;
       const destinationRound = roundsById.get(loserRule.destination_round_id);
       if (destinationRound?.round_pool_id != null) {
@@ -106,6 +135,7 @@ export function buildBracketPhases(
       matches,
       switchTargetPoolId,
       switchLabel: switchTargetPoolId != null ? "Losers" : undefined,
+      isLosers: poolRounds.some((r) => isLosersRound(r.id)),
     };
   });
 

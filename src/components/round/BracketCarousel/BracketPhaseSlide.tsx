@@ -2,7 +2,6 @@ import { Box, Button, Heading, HStack, IconButton, Stack, Text } from "@chakra-u
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 
 import MatchCard from "./MatchCard";
-import { isLosersPhase } from "../../../helpers/buildBracketPhases";
 
 import type { BracketMatch, BracketPhase } from "../../../helpers/buildBracketPhases";
 
@@ -41,7 +40,7 @@ export default function BracketPhaseSlide({
   canGoPrevPhase,
   canGoNextPhase,
 }: BracketPhaseSlideProps) {
-  const isLosers = isLosersPhase(phase);
+  const { isLosers } = phase;
   // Red specifically matches the trash/delete icon buttons used elsewhere
   // (e.g. DeletablePlayerRow, DeleteRulesetDialog: colorPalette="red"
   // variant="outline") for consistency with the rest of the site — their
