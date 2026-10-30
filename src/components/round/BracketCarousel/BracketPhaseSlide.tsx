@@ -1,5 +1,4 @@
-import { Box, Button, Heading, HStack, IconButton, Stack, Text } from "@chakra-ui/react";
-import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+import { Box, Stack, Text } from "@chakra-ui/react";
 
 import MatchCard from "./MatchCard";
 
@@ -7,11 +6,8 @@ import type { BracketMatch, BracketPhase } from "../../../helpers/buildBracketPh
 
 interface BracketPhaseSlideProps {
   phase: BracketPhase;
-  onSwitchToPool: (poolId: number) => void;
-  onPrevPhase: () => void;
-  onNextPhase: () => void;
-  canGoPrevPhase: boolean;
-  canGoNextPhase: boolean;
+  onJumpToMatch: (roundId: number) => void;
+  highlightedRoundId: number | null;
 }
 
 /** Clusters consecutive matches that feed into the same next-round match
@@ -34,66 +30,15 @@ function groupMatchesByDestination(matches: BracketMatch[]): BracketMatch[][] {
 
 export default function BracketPhaseSlide({
   phase,
-  onSwitchToPool,
-  onPrevPhase,
-  onNextPhase,
-  canGoPrevPhase,
-  canGoNextPhase,
+  onJumpToMatch,
+  highlightedRoundId,
 }: BracketPhaseSlideProps) {
   const { isLosers } = phase;
-  const accentColor = isLosers ? "red.fg" : "cyan.solid";
-  const switchColor = isLosers ? "cyan.solid" : "red.fg";
-  const switchBorderColor = isLosers ? "cyan.solid" : "red.muted";
   const matchGroups = groupMatchesByDestination(phase.matches);
 
   return (
-    <Box px={4} py={2}>
-      <HStack justifyContent="space-between" alignItems="center" mb={4} gap={2}>
-        <IconButton
-          aria-label="Previous phase"
-          size="sm"
-          variant="outline"
-          colorPalette="blue"
-          flexShrink={0}
-          visibility={canGoPrevPhase ? "visible" : "hidden"}
-          onClick={onPrevPhase}
-        >
-          <IoChevronBack />
-        </IconButton>
-
-        <HStack flex="1" justifyContent="space-between" alignItems="center" gap={4} minW={0}>
-          <Heading size="md" letterSpacing="tight" color={accentColor}>
-            {phase.pool.name.toUpperCase()}
-          </Heading>
-
-          {phase.switchTargetPoolId != null && phase.switchLabel && (
-            <Button
-              size="sm"
-              variant="outline"
-              colorPalette={isLosers ? "cyan" : "red"}
-              color={switchColor}
-              borderColor={switchBorderColor}
-              flexShrink={0}
-              onClick={() => onSwitchToPool(phase.switchTargetPoolId!)}
-            >
-              Switch to {phase.switchLabel}
-            </Button>
-          )}
-        </HStack>
-
-        <IconButton
-          aria-label="Next phase"
-          size="sm"
-          variant="outline"
-          colorPalette="blue"
-          flexShrink={0}
-          visibility={canGoNextPhase ? "visible" : "hidden"}
-          onClick={onNextPhase}
-        >
-          <IoChevronForward />
-        </IconButton>
-      </HStack>
-
+    // no side padding: match cards line up with the control card above
+    <Box py={2}>
       {phase.matches.length === 0 ? (
         <Text color="fg.muted" fontStyle="italic">
           No matches in this phase yet.
@@ -103,7 +48,13 @@ export default function BracketPhaseSlide({
           {matchGroups.map((group) => (
             <Stack key={group[0].round.id} gap={1}>
               {group.map((match) => (
-                <MatchCard key={match.round.id} match={match} isLosers={isLosers} />
+                <MatchCard
+                  key={match.round.id}
+                  match={match}
+                  isLosers={isLosers}
+                  onJumpToMatch={onJumpToMatch}
+                  highlighted={highlightedRoundId === match.round.id}
+                />
               ))}
             </Stack>
           ))}
