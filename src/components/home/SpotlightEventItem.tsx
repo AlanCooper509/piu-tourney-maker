@@ -1,7 +1,8 @@
-import { Box, Flex, Heading, HStack, Text, VStack, Button } from "@chakra-ui/react";
+import { Box, Flex, Heading, HStack, Image, Text, VStack, Button } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import { IoMdCalendar } from "react-icons/io";
 import { CiLocationOn } from "react-icons/ci";
+import { IoArrowForward } from "react-icons/io5";
 import type { Event } from "../../types/Event";
 
 interface Props {
@@ -37,44 +38,38 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
         minH={showButton ? "400px" : "300px"}
         width="100%"
         position="relative"
-        bgImage={`url(${event.hero_img})`}
-        bgPos="center"
-        bgRepeat="no-repeat"
-        bgSize="cover"
         overflow="hidden"
-        // Rounded corners read as intentional inside the HomePage carousel
-        // (showButton=true), but on a standalone full-width hero (EventPage,
-        // TourneyPage, RoundPage — showButton=false) they instead read as
-        // an accident, since nothing else on the page is "card"-shaped.
         borderRadius={showButton ? "2xl" : "none"}
       >
-        {/* Shared Overlay */}
+        {/* Blurred bg image behind text for readability while maintaining stylistic consistency */}
         <Box
           position="absolute"
-          inset={0}
-          bg="rgba(0,0,0,0.40)"
-          backdropFilter="brightness(0.85) contrast(1.1)"
+          inset="-40px"
+          bgImage={`url(${event.hero_img})`}
+          bgPos="center"
+          bgRepeat="no-repeat"
+          bgSize="cover"
+          filter="blur(24px) brightness(0.45) saturate(1.2)"
         />
 
-        {/* Title Section */}
-        <Heading
-          as="h2"
-          fontSize={{ base: "30px", md: "48px" }}
-          fontWeight="bold"
-          textAlign="center"
+        {/* Sharp bg image copy: fixed 16:9 strip on top for mobile, left 2/3 of the card for desktop */}
+        <Box
+          position="relative"
+          flex={{ lg: "2" }}
+          w="100%"
+          aspectRatio={{ base: "16 / 9", lg: "auto" }}
           zIndex="1"
-          p={4}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          flex="1"
-          ml={{ base: 0, lg: 14 }}
-          lineHeight="1.2"
-          minH={{ base: "120px", lg: "auto" }}
-          textShadow={HERO_TEXT_SHADOW}
         >
-          {event.name}
-        </Heading>
+          <Image
+            src={event.hero_img}
+            alt=""
+            position="absolute"
+            inset={0}
+            w="100%"
+            h="100%"
+            objectFit="cover"
+          />
+        </Box>
 
         {/* Info Section */}
         <VStack
@@ -82,25 +77,27 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
           justify="center"
           gap={4}
           zIndex="1"
-          p={12}
-          py={{ base: 5, lg: 12 }}
-          w={{ base: "100%", lg: "600px" }}
-          flex="1"
-          bg={{ 
-            base: "rgba(26, 32, 44, 0.60)", // gray.800 equivalent with alpha
-            lg: "rgba(0, 0, 0, 0.0)"        // no effect for desktop (can experiment with opacity later)
-          }}
-          // Same reasoning as the outer Flex's borderRadius: rounded only
-          // makes sense inside the HomePage carousel (showButton=true) —
-          // on a standalone hero this mobile info panel should match the
-          // image's now-square corners instead of rounding on its own.
-          borderRadius={showButton ? { base: "2xl", lg: "none" } : "none"}
+          p={{ base: 6, lg: 8, xl: 12 }}
+          pl={{ lg: 6, xl: 8 }}
+          w="100%"
+          flex={{ lg: "1" }}
+          minW={{ lg: "380px" }}
           textShadow={HERO_TEXT_SHADOW}
         >
+          <Heading
+            as="h2"
+            fontSize={{ base: "28px", lg: "30px", xl: "38px" }}
+            fontWeight="bold"
+            lineHeight="1.2"
+            textAlign="left"
+          >
+            {event.name}
+          </Heading>
+
           <HStack align="center" gap={1}>
-            <Box as={IoMdCalendar} boxSize={{ base: "25px", lg: "30px" }} />
+            <Box as={IoMdCalendar} boxSize={{ base: "25px", lg: "24px", xl: "30px" }} />
             <Text
-              fontSize={{ base: "20px", lg: "26px" }}
+              fontSize={{ base: "20px", lg: "21px", xl: "26px" }}
               fontWeight="bold"
               textAlign="left"
             >
@@ -109,9 +106,9 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
           </HStack>
 
           <HStack align="center" gap={1}>
-            <Box as={CiLocationOn} boxSize={{ base: "25px", lg: "30px" }} />
+            <Box as={CiLocationOn} boxSize={{ base: "25px", lg: "24px", xl: "30px" }} />
             <Text 
-              fontSize={{ base: "14px", lg: "16px" }} 
+              fontSize={{ base: "14px", lg: "14px", xl: "16px" }} 
               fontWeight="bold"
               textAlign="left"
               flex="1"
@@ -121,9 +118,9 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
           </HStack>
 
           <Text 
-            fontSize={{ base: "14px", lg: "16px" }} 
+            fontSize={{ base: "14px", lg: "14px", xl: "16px" }} 
             textAlign="left" 
-            color="gray.200"
+            color="gray.50"
             maxW={{ base: "100%", lg: "500px" }}
             lineHeight="tall"
             lineClamp={showButton ? { base: 3, lg: 4 } : undefined}
@@ -132,18 +129,24 @@ export function SpotlightEventItem({ event, showButton = true }: Props) {
           </Text>
 
           {showButton && (
-            <Link to={`/event/${event.id}`}>
-              <Button
-                colorPalette="blue"
-                size="md"
-                borderRadius="lg"
-                mt={2}
-                textShadow="none"
-                _hover={{ transform: "scale(1.05)", transition: "0.2s" }}
-              >
-                 View Event
-               </Button>
-            </Link>
+            <Button
+              asChild // render as the Link itself, rather than a <button> nested inside an <a>
+              colorPalette="cyan"
+              size="md"
+              borderRadius="full"
+              px={5}
+              mt={2}
+              textShadow="none"
+              boxShadow="0 4px 14px rgba(0,0,0,0.45)"
+              css={{
+                "& svg": { transition: "transform 0.2s" },
+                "&:hover svg": { transform: "translateX(3px)" },
+              }}
+            >
+              <Link to={`/event/${event.id}`}>
+                View Event <IoArrowForward />
+              </Link>
+            </Button>
           )}
         </VStack>
       </Flex>
