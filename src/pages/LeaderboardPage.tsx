@@ -7,7 +7,9 @@ import { supabaseClient } from "../lib/supabaseClient";
 import getSupabaseTable from "../hooks/getSupabaseTable";
 import { useSyncEventForTourney } from "../hooks/useSyncEventForTourney";
 import { useCurrentEvent } from "../context/CurrentEventContext";
+import { useCurrentTourney } from "../context/CurrentTourneyContext";
 import PageBreadcrumb from "../components/ui/PageBreadcrumb";
+import { TourneyHeroBanner } from "../components/tourney/TourneyHeader/TourneyHeroBanner";
 import { roundPath, tourneyPath } from "../helpers/paths";
 import { calculateCombinedRoundRankings } from "../helpers/calculateCombinedRoundRankings";
 import { getScoresForPlayer } from "../helpers/getScoresForPlayer";
@@ -312,6 +314,10 @@ function Leaderboard() {
   const { data: tourneyPlayersData } = getSupabaseTable<PlayerTourney>("player_tourneys", { column: "tourney_id", value: tourneyFilterValue });
   const { data: tourneysData } = getSupabaseTable<Tourney>("tourneys", { column: "id", value: tourneyFilterValue });
   const tourneyName = tourneysData?.[0]?.name;
+  const { tourney: contextTourney } = useCurrentTourney();
+  // banner uses the tourney already in context (e.g. coming from RoundPage) until this page's own fetch lands
+  const bannerTourney = tourneysData?.[0]
+    ?? (contextTourney && String(contextTourney.id) === tourneyId ? contextTourney : null);
   // the URL's event (if any) shows immediately; the loaded tourney's own event wins if they differ
   const eventId = tourneysData?.[0]?.event_id ?? (urlEventId ? Number(urlEventId) : undefined);
   useSyncEventForTourney(eventId);
@@ -556,70 +562,73 @@ function Leaderboard() {
   if (!tourneyId || !roundId) return <div>Invalid Tourney or Round ID</div>;
 
   return (
-    <Container maxW="8xl">
-      <VStack w="100%" align="center" mt={12} pb={bottomPadding}>
-        {/* Breadcrumb back to the tourney / round, then the round as the page title */}
-        <VStack w={cardWidth} align="start" gap={3} mb={2}>
-          <PageBreadcrumb
-            items={[
-              ...(event ? [{ label: event.name, to: `/event/${event.id}` }] : []),
-              { label: tourneyName ?? "Tourney", to: tourneyPath(tourneyId, eventId) },
-              { label: round?.name ?? "Round", to: roundPath(tourneyId, roundId, eventId) },
-              { label: "Leaderboard" },
-            ]}
-          />
-          <Text fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold" color="white" lineHeight="1.2" alignSelf="center" textAlign="center">
-            {round?.name}
-          </Text>
+    <Box mt={4}>
+      <TourneyHeroBanner tourney={bannerTourney} />
+      <Container maxW="8xl">
+        <VStack w="100%" align="center" mt={6} pb={bottomPadding}>
+          {/* Breadcrumb back to the tourney / round, then the round as the page title */}
+          <VStack w={cardWidth} align="start" gap={3} mb={2}>
+            <PageBreadcrumb
+              items={[
+                ...(event ? [{ label: event.name, to: `/event/${event.id}` }] : []),
+                { label: tourneyName ?? "Tourney", to: tourneyPath(tourneyId, eventId) },
+                { label: round?.name ?? "Round", to: roundPath(tourneyId, roundId, eventId) },
+                { label: "Leaderboard" },
+              ]}
+            />
+            <Text fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold" color="white" lineHeight="1.2" alignSelf="center" textAlign="center">
+              {round?.name}
+            </Text>
+          </VStack>
+  
+          <Box w={cardWidth} borderRadius="2xl" shadow="xl" bg="gray.900">
+            <LeaderboardHeader round={round} expandedPlayers={expandedPlayers} toggleAll={toggleAll} headerFontSize={headerFontSize} />
+  
+            <AnimatePresence mode="popLayout">
+              {players.map((player, index) => {
+                const rank = index + 1;
+                const advancements = roundAdvancements ?? [];
+                const rule = resolveAdvancementRule(rank, advancements);
+                // no advancement rules at all usually means the final round, where nobody is "eliminated"
+                const isEliminated = advancements.length > 0 && !rule;
+                const prevRule = index > 0 ? resolveAdvancementRule(rank - 1, advancements) : undefined;
+                // a line between rank groups that advance to different places
+                const startsGroup = index > 0 && rule?.id !== prevRule?.id;
+                return (
+                  <motion.div
+                    key={player.name} // Essential for tracking movement
+                    layout // This handles the sliding re-order
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{
+                      layout: { type: "spring", stiffness: 300, damping: 30 },
+                      opacity: { duration: 0.2 }
+                    }}
+                  >
+                    {startsGroup && (
+                      <Separator my={3} borderColor="border.emphasized" />
+                    )}
+  
+                    <PlayerRow
+                      round={round}
+                      player={player}
+                      index={index}
+                      isExpanded={expandedPlayers.has(player.name)}
+                      toggleExpand={toggleExpand}
+                      updatedPlayer={updatedPlayer}
+                      rowFontSize={rowFontSize}
+                      songFontSize={songFontSize}
+                      isEliminated={isEliminated}
+                    />
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </Box>
         </VStack>
-
-        <Box w={cardWidth} borderRadius="2xl" shadow="xl" bg="gray.900">
-          <LeaderboardHeader round={round} expandedPlayers={expandedPlayers} toggleAll={toggleAll} headerFontSize={headerFontSize} />
-
-          <AnimatePresence mode="popLayout">
-            {players.map((player, index) => {
-              const rank = index + 1;
-              const advancements = roundAdvancements ?? [];
-              const rule = resolveAdvancementRule(rank, advancements);
-              // no advancement rules at all usually means the final round, where nobody is "eliminated"
-              const isEliminated = advancements.length > 0 && !rule;
-              const prevRule = index > 0 ? resolveAdvancementRule(rank - 1, advancements) : undefined;
-              // a line between rank groups that advance to different places
-              const startsGroup = index > 0 && rule?.id !== prevRule?.id;
-              return (
-                <motion.div
-                  key={player.name} // Essential for tracking movement
-                  layout // This handles the sliding re-order
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{
-                    layout: { type: "spring", stiffness: 300, damping: 30 },
-                    opacity: { duration: 0.2 }
-                  }}
-                >
-                  {startsGroup && (
-                    <Separator my={3} borderColor="border.emphasized" />
-                  )}
-
-                  <PlayerRow
-                    round={round}
-                    player={player}
-                    index={index}
-                    isExpanded={expandedPlayers.has(player.name)}
-                    toggleExpand={toggleExpand}
-                    updatedPlayer={updatedPlayer}
-                    rowFontSize={rowFontSize}
-                    songFontSize={songFontSize}
-                    isEliminated={isEliminated}
-                  />
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </Box>
-      </VStack>
-    </Container>
+      </Container>
+    </Box>
   );
 }
 

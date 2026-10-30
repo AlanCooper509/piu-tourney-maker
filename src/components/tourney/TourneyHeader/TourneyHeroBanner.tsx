@@ -1,7 +1,9 @@
-import { Box, Heading } from "@chakra-ui/react";
+import { Box, Heading, HStack, Text } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
+import { IoChevronBack } from "react-icons/io5";
 
 import { useCurrentEvent } from "../../../context/CurrentEventContext";
+import { tourneyPath } from "../../../helpers/paths";
 
 import type { Tourney } from "../../../types/Tourney";
 
@@ -16,36 +18,30 @@ const HERO_TEXT_SHADOW = "0 1px 2px rgba(0,0,0,0.9), 0 2px 12px rgba(0,0,0,0.75)
 // Last-resort image when neither the tourney nor its parent event has one set
 const DEFAULT_BANNER = "https://pbs.twimg.com/media/HHI5IPebQAAJnjf?format=webp&name=large";
 
-/**
- * The tournament page's own "you are here" graphic — background art behind
- * a single clickable title, fading into the breadcrumb/round-nav below it.
- * The title is the tourney name, but links UP to the parent event's page
- * (same target the breadcrumb's event link already uses) rather than back
- * to this same tourney page — this is the "go up a level" control, not a
- * self-link; the breadcrumb right below it still covers getting back to
- * this specific tourney. Image falls back from the tourney's own
- * thumbnail, to its parent event's hero image, to the site's generic
- * default banner.
- */
 export function TourneyHeroBanner({ tourney }: TourneyHeroBannerProps) {
   const { event } = useCurrentEvent();
 
-  if (!tourney) return null;
+  // context can still hold a previously visited event until the sync hook catches up
+  const parentEvent = tourney && event?.id === tourney.event_id ? event : null;
 
-  const bannerImg = tourney.thumbnail_img || event?.hero_img || DEFAULT_BANNER;
+  // hold off on the default until the parent event has loaded, otherwise it flashes before the event's image
+  const bannerImg = tourney?.thumbnail_img || (parentEvent ? parentEvent.hero_img || DEFAULT_BANNER : null);
 
   return (
     <Box
       position="relative"
       overflow="hidden"
-      minH={{ base: "90px", md: "130px" }}
+      minH={{ base: "110px", md: "130px" }}
       w="100%"
-      bgImage={`url(${bannerImg})`}
+      bg="gray.800"
+      bgImage={bannerImg ? `url(${bannerImg})` : undefined}
       bgSize="cover"
       bgPos="center"
       display="flex"
       alignItems="center"
       justifyContent="center"
+      pt={{ base: 12, md: 0 }}
+      pb={{ base: 4, md: 0 }}
     >
       <Box
         position="absolute"
@@ -55,24 +51,49 @@ export function TourneyHeroBanner({ tourney }: TourneyHeroBannerProps) {
         gradientTo="gray.900"
       />
 
-      <RouterLink to={`/event/${tourney.event_id}`}>
-        <Heading
-          as="h2"
-          position="relative"
-          zIndex={1}
-          fontSize={{ base: "2xl", md: "4xl" }}
-          fontWeight="bold"
-          letterSpacing="tight"
-          color="white"
-          textAlign="center"
-          px={4}
-          textShadow={HERO_TEXT_SHADOW}
-          _hover={{ color: "cyan.200" }}
-          transition="color 0.2s"
-        >
-          {tourney.name}
-        </Heading>
-      </RouterLink>
+      {tourney && (
+        <>
+          <Box position="absolute" top={3} left={0} right={0} zIndex={1} pointerEvents="none">
+            <Box maxW="1200px" mx="auto" px={4} textAlign="left">
+              <RouterLink to={`/event/${tourney.event_id}`} style={{ pointerEvents: "auto" }}>
+                <HStack
+                  display="inline-flex"
+                  gap={1}
+                  color="whiteAlpha.800"
+                  fontSize={{ base: "sm", md: "md" }}
+                  fontWeight="medium"
+                  textShadow={HERO_TEXT_SHADOW}
+                  css={{ "& svg": { filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.9))" } }}
+                  _hover={{ color: "cyan.200" }}
+                  transition="color 0.2s"
+                >
+                  <IoChevronBack />
+                  <Text>Event</Text>
+                </HStack>
+              </RouterLink>
+            </Box>
+          </Box>
+
+          <RouterLink to={tourneyPath(tourney.id, tourney.event_id)}>
+            <Heading
+              as="h2"
+              position="relative"
+              zIndex={1}
+              fontSize={{ base: "2xl", md: "4xl" }}
+              fontWeight="bold"
+              letterSpacing="tight"
+              color="white"
+              textAlign="center"
+              px={4}
+              textShadow={HERO_TEXT_SHADOW}
+              _hover={{ color: "cyan.200" }}
+              transition="color 0.2s"
+            >
+              {tourney.name}
+            </Heading>
+          </RouterLink>
+        </>
+      )}
     </Box>
   );
 }
