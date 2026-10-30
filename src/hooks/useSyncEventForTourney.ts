@@ -5,9 +5,10 @@ import { useCurrentEvent } from "../context/CurrentEventContext";
 import type { Event } from "../types/Event";
 
 /**
- * Keeps CurrentEventContext in sync with a tourney's parent event, so the Hero
- * banner shows the right event on any page reached directly by URL, not just
- * ones navigated to via the event/tourney pages themselves.
+ * Keeps CurrentEventContext in sync with a tourney's parent event, so anything
+ * reading it (TourneyHeroBanner's image fallback, TourneyHeaderText, etc.) shows
+ * the right event on any page reached directly by URL, not just ones navigated
+ * to via the event/tourney pages themselves.
  */
 export function useSyncEventForTourney(eventId: number | undefined) {
   const { setEvent } = useCurrentEvent();

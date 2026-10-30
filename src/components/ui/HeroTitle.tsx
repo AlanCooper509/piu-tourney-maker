@@ -2,10 +2,6 @@ import { Box, Flex, Heading } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import ProfileMenu from "./ProfileMenu/ProfileMenu";
 
-// Exported so page-specific heroes (e.g. TourneyHeroBanner) can fall back to
-// the same image as a last resort instead of duplicating the literal URL.
-export const DEFAULT_BANNER = "https://pbs.twimg.com/media/HHI5IPebQAAJnjf?format=webp&name=large";
-
 // Deliberately just a slim, basic bar — a big photo-hero here never
 // actually said anything about which page you were on, since it looked
 // the same everywhere. Pages that benefit from their own "you are here"

@@ -2,7 +2,6 @@ import { Box, Heading } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 
 import { useCurrentEvent } from "../../../context/CurrentEventContext";
-import { DEFAULT_BANNER } from "../../ui/HeroTitle";
 
 import type { Tourney } from "../../../types/Tourney";
 
@@ -13,6 +12,9 @@ interface TourneyHeroBannerProps {
 // Same crisp-edge-plus-soft-glow shadow SpotlightEventItem uses, so hero
 // text reads clearly over any photo, bright or busy.
 const HERO_TEXT_SHADOW = "0 1px 2px rgba(0,0,0,0.9), 0 2px 12px rgba(0,0,0,0.75)";
+
+// Last-resort image when neither the tourney nor its parent event has one set
+const DEFAULT_BANNER = "https://pbs.twimg.com/media/HHI5IPebQAAJnjf?format=webp&name=large";
 
 /**
  * The tournament page's own "you are here" graphic — background art behind
